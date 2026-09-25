@@ -9,7 +9,7 @@ const reply = (data: unknown, status = 200) => NextResponse.json(data, { status,
 export async function POST(request: NextRequest) {
   if (process.env.NODE_ENV === "production") return reply({ error: "La importación local solo está disponible en desarrollo." }, 404);
   if (!sameOrigin(request) || !catalogConfigured()) return reply({ error: "Solicitud no disponible." }, 403);
-  let uploaded: string[] = [];
+  const uploaded: string[] = [];
   let db: Awaited<ReturnType<typeof catalogAccess>>["db"] | null = null;
   try {
     const access = await catalogAccess(request);
