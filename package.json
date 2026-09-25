@@ -11,7 +11,8 @@
     "prepare:players": "node scripts/prepare-player-import.mjs",
     "prepare:milestones": "node scripts/prepare-milestone-import.mjs",
     "prepare:rwc-2025": "node scripts/prepare-rwc-2025-import.mjs",
-    "prepare:player-photos": "node scripts/prepare-player-photo-import.mjs"
+    "prepare:player-photos": "node scripts/prepare-player-photo-import.mjs",
+    "prepare:player-clubs": "node scripts/prepare-player-club-import.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.1",
