@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-*/
 /out/
 
 # production
@@ -32,6 +33,14 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+
+# Staged copies of real catalog data are local-only.
+/data/staging/
+
+# Local artifact workspaces and generated catalog sheets can contain private data.
+/.artifact-tool/
+/outputs/
+/tmp/
 
 # vercel
 .vercel
