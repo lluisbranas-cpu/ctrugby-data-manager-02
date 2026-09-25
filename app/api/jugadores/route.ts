@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Player = { id: string; first_name: string; last_name: string | null; published: boolean; version: number };
-type AdminPlayer = Player & { category: string | null; birth_year: number | null; season_count: number; linked_season_count: number };
+type AdminPlayer = Player & { category: string | null; birth_year: number | null; season_count: number; linked_season_count: number; club_history_count: number };
 const reply = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store", Vary: "Cookie" } });
 
 export async function GET(request: NextRequest) {
@@ -21,13 +21,13 @@ export async function GET(request: NextRequest) {
       return reply({ player_id: historyId, clubs: history.data ?? [] });
     }
     if (admin) {
-      const summary = await db.rpc("admin_player_catalog");
+      const summary = await db.rpc("admin_player_catalog_with_history");
       if (summary.error) return reply({ error: "No se han podido leer los datos privados de jugadores." }, 503);
       return reply({
         configured: true, admin: true,
         players: (summary.data as AdminPlayer[]).map((player) => ({
           id: player.id, first_name: player.first_name, last_name: player.last_name, published: player.published, version: player.version,
-          profile: { category: player.category, birth_year: player.birth_year }, season_count: player.season_count, linked_season_count: player.linked_season_count,
+          profile: { category: player.category, birth_year: player.birth_year }, season_count: player.season_count, linked_season_count: player.linked_season_count, club_history_count: player.club_history_count,
         })),
       });
     }
