@@ -12,6 +12,14 @@ export async function GET(request: NextRequest) {
   if (!catalogConfigured()) return reply({ configured: false, admin: false, players: [] });
   try {
     const { db, admin } = await catalogAccess(request);
+    const historyId = request.nextUrl.searchParams.get("history");
+    if (historyId) {
+      if (!admin) return reply({ error: "Acceso de administrador requerido." }, 403);
+      if (!/^CTR[0-9]{4}$/.test(historyId)) return reply({ error: "Jugador no válido." }, 400);
+      const history = await db.rpc("admin_player_club_history", { p_player_id: historyId });
+      if (history.error) return reply({ error: "No se ha podido leer el historial privado de clubs." }, 503);
+      return reply({ player_id: historyId, clubs: history.data ?? [] });
+    }
     if (admin) {
       const summary = await db.rpc("admin_player_catalog");
       if (summary.error) return reply({ error: "No se han podido leer los datos privados de jugadores." }, 503);

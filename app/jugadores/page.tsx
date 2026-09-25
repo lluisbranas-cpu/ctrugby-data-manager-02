@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 type Profile = { category: string | null; birth_year: number | null };
 type Player = { id: string; first_name: string; last_name: string | null; published: boolean; version: number; profile?: Profile | null; season_count?: number; linked_season_count?: number };
 type State = { configured: boolean; admin: boolean; players: Player[] };
+type ClubHistory = { club_id: string; club_name: string; city: string | null; country: string | null; participation_count: number };
 
 const localImportEnabled = process.env.NODE_ENV !== "production";
 const fullName = (player: Player) => [player.first_name, player.last_name].filter(Boolean).join(" ");
@@ -16,6 +17,8 @@ export default function PlayersPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"pending" | "published" | "all">("pending");
   const [busy, setBusy] = useState(false);
+  const [historyPlayer, setHistoryPlayer] = useState<Player | null>(null);
+  const [history, setHistory] = useState<ClubHistory[] | null>(null);
   const load = async () => {
     const response = await fetch("/api/jugadores", { cache: "no-store" });
     const data = await response.json();
@@ -92,6 +95,19 @@ export default function PlayersPage() {
     } catch (error) { setNotice(error instanceof Error ? error.message : "No se han podido importar las relaciones jugador–club."); }
     finally { setBusy(false); }
   };
+  const showHistory = async (player: Player) => {
+    if (historyPlayer?.id === player.id) { setHistoryPlayer(null); setHistory(null); return; }
+    setBusy(true); setNotice(""); setHistoryPlayer(player); setHistory(null);
+    try {
+      const response = await fetch(`/api/jugadores?history=${encodeURIComponent(player.id)}`, { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      setHistory(data.clubs ?? []);
+    } catch (error) {
+      setHistoryPlayer(null);
+      setNotice(error instanceof Error ? error.message : "No se ha podido leer el historial privado de clubs.");
+    } finally { setBusy(false); }
+  };
   const published = state?.players.filter((player) => player.published).length ?? 0;
   const seasons = state?.players.reduce((count, player) => count + (player.season_count ?? 0), 0) ?? 0;
   return <main className="catalog-app">
@@ -105,7 +121,7 @@ export default function PlayersPage() {
       <section className="catalog-panel"><header><div><p>REVISIÓN</p><h2>{state.admin ? "Fichas de jugadores" : "Jugadores publicados"}</h2><span>{state.admin ? "Las temporadas, medidas y año de nacimiento no pasan a la vista pública." : "La lista incorpora únicamente fichas revisadas."}</span></div>{localImportEnabled && state.admin && <div className="flex gap-2">{state.players.length === 0 && <button className="catalog-logout" disabled={busy} onClick={() => void importLocal()}>Cargar preparación local</button>}<button className="catalog-logout" disabled={busy} onClick={() => void importMilestones()}>Cargar hitos locales</button><button className="catalog-logout" disabled={busy} onClick={() => void importRwc2025()}>Cargar RWC 2025</button><button className="catalog-logout" disabled={busy} onClick={() => void importPhotos()}>Cargar fotos</button><button className="catalog-logout" disabled={busy} onClick={() => void importPlayerClubs()}>Cargar clubs</button></div>}</header>
       {state.admin && <div className="catalog-filters"><button onClick={() => setFilter("pending")} className={filter === "pending" ? "selected" : ""}>Pendientes</button><button onClick={() => setFilter("published")} className={filter === "published" ? "selected" : ""}>Publicados</button><button onClick={() => setFilter("all")} className={filter === "all" ? "selected" : ""}>Todos</button></div>}
       <div className="catalog-toolbar"><label>⌕<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar nombre, ID o categoría" /></label><p>{players.length} resultado{players.length === 1 ? "" : "s"}</p></div>
-      <div className="catalog-table"><div className="catalog-table-head"><span>JUGADOR</span><span>CATEGORÍA</span><span>ESTADO</span><span /></div><ul>{players.map((player, index) => <li key={player.id}><i>{String(index + 1).padStart(2, "0")}</i><div><b>{fullName(player)}</b><small>{player.id}{state.admin && player.season_count != null ? ` · ${player.season_count} temporada${player.season_count === 1 ? "" : "s"}` : ""}</small></div><div><b>{player.profile?.category ?? "Pendiente"}</b><small>{state.admin && player.profile?.birth_year ? `Nacimiento: ${player.profile.birth_year}` : ""}</small></div><span className={player.published ? "published" : ""}><i />{player.published ? "Publicado" : "Pendiente"}</span>{state.admin ? <button className={player.published ? "withdraw" : ""} disabled={busy} onClick={() => void publish(player)}>{player.published ? "Retirar" : "Publicar"}</button> : <strong>↗</strong>}</li>)}</ul>{!players.length && <div className="catalog-empty">{state.admin ? "Todavía no hay jugadores para este filtro." : "Todavía no hay jugadores publicados."}</div>}</div></section></>}
+      <div className="catalog-table"><div className="catalog-table-head"><span>JUGADOR</span><span>CATEGORÍA</span><span>ESTADO</span><span /></div><ul>{players.map((player, index) => <Fragment key={player.id}><li><i>{String(index + 1).padStart(2, "0")}</i><div><b>{fullName(player)}</b><small>{player.id}{state.admin && player.season_count != null ? ` · ${player.season_count} temporada${player.season_count === 1 ? "" : "s"}` : ""}</small></div><div><b>{player.profile?.category ?? "Pendiente"}</b><small>{state.admin && player.profile?.birth_year ? `Nacimiento: ${player.profile.birth_year}` : ""}</small></div><span className={player.published ? "published" : ""}><i />{player.published ? "Publicado" : "Pendiente"}</span>{state.admin ? <div className="player-row-actions"><button className="player-history-button" disabled={busy} onClick={() => void showHistory(player)}>{historyPlayer?.id === player.id ? "Cerrar" : "Historial"}</button><button className={player.published ? "withdraw" : ""} disabled={busy} onClick={() => void publish(player)}>{player.published ? "Retirar" : "Publicar"}</button></div> : <strong>↗</strong>}</li>{state.admin && historyPlayer?.id === player.id && <li className="player-club-history"><div><p>HISTORIAL PRIVADO DE CLUBS</p><h3>{fullName(player)}</h3>{history === null ? <span>Cargando historial…</span> : history.length ? <ul>{history.map((club) => <li key={club.club_id}><b>{club.club_name}</b><small>{[club.city, club.country].filter(Boolean).join(", ") || club.club_id}</small><em>{club.participation_count} participaciones registradas</em></li>)}</ul> : <span>No hay relaciones de club verificadas para esta ficha.</span>}</div></li>}</Fragment>)}</ul>{!players.length && <div className="catalog-empty">{state.admin ? "Todavía no hay jugadores para este filtro." : "Todavía no hay jugadores publicados."}</div>}</div></section></>}
     </div></section></div>
   </main>;
 }
