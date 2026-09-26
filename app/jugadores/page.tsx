@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
 type Profile = { category: string | null; birth_year: number | null };
@@ -129,7 +130,7 @@ export default function PlayersPage() {
   const seasons = state?.players.reduce((count, player) => count + (player.season_count ?? 0), 0) ?? 0;
   const histories = state?.players.filter((player) => (player.club_history_count ?? 0) > 0).length ?? 0;
   return <main className="catalog-app">
-    <header className="catalog-topbar"><Link href="/" className="catalog-brand"><span className="catalog-brand-mark">CT</span><span><strong>CTRugby Data Manager</strong><small>Base de datos</small></span></Link><span className="catalog-topbar-title">Base de datos y publicación</span><Link className="catalog-menu-button" href="/catalogos">Catálogos</Link></header>
+    <header className="catalog-topbar"><Link href="/" className="catalog-brand"><Image src="/ctrugby-logo-contrast.webp" alt="CTRugby" width={106} height={54} priority/><span><strong>CTRugby Data Manager</strong><small>Base de datos</small></span></Link><span className="catalog-topbar-title">Base de datos y publicación</span><Link className="catalog-menu-button" href="/catalogos">Catálogos</Link></header>
     <div className="catalog-shell"><aside className="catalog-sidebar"><p>GESTIÓN</p><Link className="catalog-nav" href="/catalogos">▦ Catálogos</Link><Link className="catalog-nav active" href="/jugadores">◉ Jugadores</Link><i/><p>PUBLICACIÓN</p><small><b/>Las fichas se revisan antes de publicarse.</small></aside><section className="catalog-workspace"><header className="catalog-heading"><div><p>BASE DE DATOS</p><h1>Jugadores</h1><span>Fichas y temporadas bajo revisión privada.</span></div><div><b className={state?.admin ? "admin" : ""}>{state?.admin ? "Administración" : "Vista pública"}</b></div></header><div className="catalog-content">
       {notice && <p className="catalog-notice" role="status">{notice}</p>}
       {!state && !notice && <div className="catalog-loading">Cargando jugadores…</div>}
