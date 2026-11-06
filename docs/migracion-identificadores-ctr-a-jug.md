@@ -59,3 +59,26 @@ Este documento no es autorización para cambiar IDs en producción sin copia val
 - La auditoría automática de lectura previa está en `scripts/preflight-migracion-ids-ctr-jug.sql`; no contiene escrituras.
 
 **Bloqueo activo:** no ejecutar la migración hasta confirmar copia restaurable que incluya Storage y resolver la correspondencia de `CTR0381`. La rama de compatibilidad actualmente preserva la funcionalidad de los 388 jugadores conciliados.
+
+## Investigación de CTR0381 (continuación)
+
+Las comprobaciones directas de solo lectura de Supabase muestran:
+
+| ID | Nombre | Temporadas | Fotos vinculadas en `player_profile_photos` | Participantes |
+| --- | --- | ---: | ---: | ---: |
+| `CTR0059` | Oriol Casanovas Gonzalez | 1 | 0 | 0 |
+| `CTR0381` | Oriol Casanovas | 0 | 0 | 0 |
+
+`CTR0381` tiene además una fila en `app_private.player_profiles` y **dos objetos** con `CTR0381` en su nombre dentro del bucket privado `catalog-media-private`, aunque no hay filas de fotos en `player_profile_photos`. La identidad **no está confirmada** como duplicado de `CTR0059`: nombres parecidos no justifican unir fichas.
+
+**Regla para el cutover:** preservar ambos registros y todos sus archivos hasta revisión documental de identidades. Ninguna migración automática podrá fusionar o borrar jugadores. `CTR0381` se convertiría en `JUG0381` solo tras confirmar que no colisiona semánticamente con otra ficha local; mientras tanto se mantiene sin cambio.
+
+## Bloqueadores para ejecutar en producción
+
+- Falta una copia restaurable e independiente de la **base de datos y de Storage**: una transacción SQL no revierte operaciones sobre objetos en Storage.
+- Es necesario actualizar las nueve claves externas sin alterar sus reglas de borrado y revisar relaciones adicionales sin FK.
+- Las imágenes antiguas en el bucket privado requieren copia y comprobación de integridad antes de actualizar `storage_key` u otras referencias; no modificar `storage.objects` directamente para trasladar archivos.
+- Faltan los informes CSV de conciliación `reports/player-id-reconciliation-20261105/*` en el repositorio accesible, aunque sí existe el puente generado. Sin esos originales, no se puede verificar el motivo documental de la exclusión.
+- La aplicación y sus rutas de lectura/escritura aún esperan formatos mezclados. La migración deberá desplegar una versión compatible antes de cambiar los identificadores en Supabase.
+
+**Decisión de seguridad:** mantener en producción la solución funcional con puente de 388 jugadores y seguir preparando el cambio en una rama aislada, sin ejecutar un `UPDATE` masivo.
