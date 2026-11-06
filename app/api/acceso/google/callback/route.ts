@@ -7,6 +7,7 @@ import { RETURN_COOKIE } from "@/lib/access-destination";
 import { sealPrivate, openPrivate } from "@/lib/pending-access";
 import { applicationOrigin, googleAdminOAuthEnabled, googleOAuthCookieOptions, GOOGLE_OAUTH_COOKIE } from "@/lib/google-admin-auth";
 import { requestOrigin } from "@/lib/request-origin";
+import { LOCAL_ADMIN_COOKIE } from "@/lib/local-admin-session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ function accessFailure(origin: string, reason: string) {
   const response = NextResponse.redirect(new URL(`/acceso?privado=1&oauth_error=${encodeURIComponent(reason)}`, origin));
   response.headers.set("Cache-Control", "no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
-  for (const name of [GOOGLE_OAUTH_COOKIE, ACCESS_PENDING_COOKIE, CATALOG_COOKIE, PUBLIC_COOKIE, GUEST_COOKIE, GUEST_PENDING_COOKIE, "ctrugby-email-access", RETURN_COOKIE]) {
+  for (const name of [GOOGLE_OAUTH_COOKIE, ACCESS_PENDING_COOKIE, CATALOG_COOKIE, PUBLIC_COOKIE, GUEST_COOKIE, GUEST_PENDING_COOKIE, "ctrugby-email-access", RETURN_COOKIE, LOCAL_ADMIN_COOKIE]) {
     response.cookies.set(name, "", { ...sessionCookieOptions, maxAge: 0 });
   }
   return response;
