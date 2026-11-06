@@ -5,12 +5,13 @@ import { PUBLIC_COOKIE, CATALOG_COOKIE, catalogClient, catalogConfigured, sameOr
 import { ACCESS_PENDING_COOKIE, beginAuthenticator, destinationFor, finishAuthenticator, loginContacts, normalizePhone, type LoginContact, type PendingAccess } from "@/lib/portal-auth";
 import { openPrivate, sealPrivate } from "@/lib/pending-access";
 import { googleAdminOAuthEnabled, GOOGLE_OAUTH_COOKIE } from "@/lib/google-admin-auth";
+import { LOCAL_ADMIN_COOKIE, issueLocalAdminSession, localAdminAvailable, localAdminCookieOptions } from "@/lib/local-admin-session";
 
 export const runtime = "nodejs";
 const reply = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store", Vary: "Cookie", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" } });
 const cookieOptions = { httpOnly: true, sameSite: "strict" as const, secure: process.env.NODE_ENV === "production", path: "/" };
 const savePending = (response: NextResponse, pending: PendingAccess) => response.cookies.set(ACCESS_PENDING_COOKIE, sealPrivate(pending), { ...cookieOptions, maxAge: 600 });
-const clearSessions = (response: NextResponse) => { for (const name of ["ctrugby-email-access", PUBLIC_COOKIE, CATALOG_COOKIE, ACCESS_PENDING_COOKIE, GUEST_COOKIE, GUEST_PENDING_COOKIE, GOOGLE_OAUTH_COOKIE]) response.cookies.set(name, "", { ...cookieOptions, maxAge: 0 }); return response; };
+const clearSessions = (response: NextResponse) => { for (const name of ["ctrugby-email-access", PUBLIC_COOKIE, CATALOG_COOKIE, ACCESS_PENDING_COOKIE, GUEST_COOKIE, GUEST_PENDING_COOKIE, GOOGLE_OAUTH_COOKIE, LOCAL_ADMIN_COOKIE]) response.cookies.set(name, "", { ...cookieOptions, maxAge: 0 }); return response; };
 const clearReturn = (response: NextResponse) => { response.cookies.set(RETURN_COOKIE, "", { ...cookieOptions, maxAge: 0 }); return response; };
 const contactMatches = (left: LoginContact, right: LoginContact) => left.subject_kind === right.subject_kind && left.subject_id === right.subject_id && left.phone_e164 === right.phone_e164;
 
@@ -37,9 +38,10 @@ export async function POST(request: NextRequest) {
       return response;
     }
     if (body.action === "local-admin") {
-      const localPreview = process.env.NODE_ENV !== "production" && ["localhost", "127.0.0.1", "::1"].includes(request.nextUrl.hostname);
-      if (!localPreview) return reply({ error: "Este acceso solo está disponible en la vista local." }, 403);
-      return clearReturn(clearSessions(reply({ ok: true, destination: "/jugadores" })));
+      if (!localAdminAvailable(request)) return reply({ error: "Este acceso solo está disponible en la vista local." }, 403);
+      const response = clearReturn(clearSessions(reply({ ok: true, destination: "/jugadores" })));
+      response.cookies.set(LOCAL_ADMIN_COOKIE, issueLocalAdminSession(), localAdminCookieOptions);
+      return response;
     }
     if (body.action === "logout") {
       const token = request.cookies.get(CATALOG_COOKIE)?.value ?? request.cookies.get(GUEST_COOKIE)?.value;
