@@ -82,3 +82,12 @@ Las comprobaciones directas de solo lectura de Supabase muestran:
 - La aplicación y sus rutas de lectura/escritura aún esperan formatos mezclados. La migración deberá desplegar una versión compatible antes de cambiar los identificadores en Supabase.
 
 **Decisión de seguridad:** mantener en producción la solución funcional con puente de 388 jugadores y seguir preparando el cambio en una rama aislada, sin ejecutar un `UPDATE` masivo.
+
+## Confirmación del titular (06/11/2026)
+
+El responsable de los datos ha revisado expresamente las dos fichas y **confirma que corresponden a dos personas distintas**:
+
+- `CTR0059` — Oriol Casanovas González: conservar su identidad y sus relaciones; destino propuesto `JUG0059`.
+- `CTR0381` — Oriol Casanovas: conservar como persona y ficha independiente; destino propuesto `JUG0381`.
+
+Por tanto, queda **descartada la fusión de ambos registros**. Esta validación resuelve la duda de identidad, pero no demuestra por sí sola que todos los datos locales y rutas de archivos estén ya conciliados. Antes de ejecutar la migración deben comprobarse la reserva del ID `JUG0381`, las referencias locales, el respaldo restaurable y los 874 objetos de Storage. El generador actual excluye `JUG0381` y deberá ajustarse en una revisión separada, sin asignarlo a `CTR0059`.
