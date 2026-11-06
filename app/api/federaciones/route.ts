@@ -32,7 +32,7 @@ const belongsToFederation = (club: Club, federation: Federation) => federation.s
 
 const yearsFromSeasonLabel = (record: { season_label?: string | null }) => [...new Set(String(record.season_label ?? "").match(/20\d{2}/g) ?? [])].map(Number);
 
-async function localMetrics() {
+async function localMetrics(visiblePlayerIds?: ReadonlySet<string>, visibleClubIds?: ReadonlySet<string>) {
   try {
     const base = path.join(process.cwd(), "data", "staging");
     const [clubsFile, seasonsFile, metricsFile, playersFile, milestonesFile, milestoneParticipantsFile, manualSelectionCallups, professionalClubMilestones] = await Promise.all([
@@ -45,7 +45,8 @@ async function localMetrics() {
       readManualSelectionCallups(),
       readProfessionalClubMilestones(),
     ]);
-    const clubs = JSON.parse(clubsFile) as Club[];
+    const clubs = (JSON.parse(clubsFile) as Club[])
+      .filter((club) => !visibleClubIds || visibleClubIds.has(club.id));
     const milestoneParticipants = JSON.parse(milestoneParticipantsFile) as MilestoneParticipant[];
     const milestones = JSON.parse(milestonesFile) as Milestone[];
     const participantPlayers = new Map(milestoneParticipants.filter((participant) => participant.player_id).map((participant) => [participant.id, participant.player_id!]));
@@ -56,7 +57,7 @@ async function localMetrics() {
     const selectedPlayersByFederation = new Map<string, Set<string>>();
     for (const milestone of milestones) {
       const playerId = participantPlayers.get(milestone.participant_id);
-      if (!playerId) continue;
+      if (!playerId || (visiblePlayerIds && !visiblePlayerIds.has(playerId))) continue;
       milestonesByPlayer.set(playerId, (milestonesByPlayer.get(playerId) ?? 0) + 1);
       const federationId = milestone.scope ? selectionFederationIds[milestone.scope] : null;
       if (!federationId) continue;
@@ -78,6 +79,7 @@ async function localMetrics() {
     }
     for (const selection of applyManualSelectionCallups(selectionRecords, manualSelectionCallups)) {
       const playerId = selection.player_id;
+      if (visiblePlayerIds && !visiblePlayerIds.has(playerId)) continue;
       const federationId = selection.federation_id;
       const selections = selectedFederationsByPlayer.get(playerId) ?? new Set<string>();
       selections.add(federationId);
@@ -91,16 +93,25 @@ async function localMetrics() {
       selectedPlayers.add(playerId);
       selectedPlayersByFederation.set(federationId, selectedPlayers);
     }
-    const shapedProfessionalClubMilestones = professionalClubMilestones.map((record) => shapeProfessionalClubRecord(record, clubs));
+    const shapedProfessionalClubMilestones = professionalClubMilestones
+      .filter((record) => !visiblePlayerIds || visiblePlayerIds.has(record.player_id))
+      .filter((record) => !visibleClubIds || !record.club_id || visibleClubIds.has(record.club_id))
+      .map((record) => shapeProfessionalClubRecord(record, clubs));
     const professionalByPlayer = new Map<string, ProfessionalClubMilestone[]>();
     for (const record of shapedProfessionalClubMilestones) {
       professionalByPlayer.set(record.player_id, [...(professionalByPlayer.get(record.player_id) ?? []), record]);
     }
     return {
       clubs,
-      seasons: mergeMilestoneTrajectory(JSON.parse(seasonsFile) as Season[], milestones, milestoneParticipants, clubs),
-      participations: new Map((JSON.parse(metricsFile) as PlayerMetric[]).map((metric) => [metric.player_id, metric.participation_count])),
-      players: new Map((JSON.parse(playersFile) as Player[]).map((player) => [player.id, player])),
+      seasons: mergeMilestoneTrajectory(JSON.parse(seasonsFile) as Season[], milestones, milestoneParticipants, clubs)
+        .filter((season) => (!visiblePlayerIds || visiblePlayerIds.has(season.player_id)) &&
+          (!visibleClubIds || !season.club_id || visibleClubIds.has(season.club_id))),
+      participations: new Map((JSON.parse(metricsFile) as PlayerMetric[])
+        .filter((metric) => !visiblePlayerIds || visiblePlayerIds.has(metric.player_id))
+        .map((metric) => [metric.player_id, metric.participation_count])),
+      players: new Map((JSON.parse(playersFile) as Player[])
+        .filter((player) => !visiblePlayerIds || visiblePlayerIds.has(player.id))
+        .map((player) => [player.id, player])),
       milestones: milestonesByPlayer,
       selections: selectedFederationsByPlayer,
       selectionYears: selectedFederationYearsByPlayer,
@@ -121,13 +132,17 @@ export async function GET(request: NextRequest) {
   if (!catalogConfigured()) return NextResponse.json({ configured: false, federations: [] }, { status: 503 });
   try {
     const { db, admin } = await catalogAccess(request);
-    const [federationResult, clubResult, federationSportsResult] = await Promise.all([
+    const [federationResult, clubResult, federationSportsResult, visiblePlayerResult] = await Promise.all([
       db.from("catalog_federations").select("id,name,scope,territory,country,active,website,published,version").order("country").order("scope").order("name"),
-      db.from("catalog_clubs").select("id,country,region"),
+      db.from("catalog_clubs").select("id,name,country,region"),
       db.from("catalog_federation_sports").select("federation_id,catalog_sports(name)"),
+      db.from("catalog_players").select("id").eq("published", true).range(0, 9999),
     ]);
     if (federationResult.error) return NextResponse.json({ error: "No se han podido cargar las federaciones publicadas." }, { status: 503 });
     if (clubResult.error) return NextResponse.json({ error: "No se han podido cargar los clubs asociados." }, { status: 503 });
+    if (visiblePlayerResult.error) return NextResponse.json({ error: "No se han podido comprobar los jugadores publicados." }, { status: 503 });
+    const visiblePlayerIds = new Set((visiblePlayerResult.data ?? []).map((player) => player.id));
+    const visibleClubIds = new Set((clubResult.data ?? []).map((club) => club.id));
     const federations = federationResult.data as Federation[];
     const sportNamesByFederation = new Map<string, string[]>();
     for (const record of (federationSportsResult.data ?? []) as unknown as FederationSport[]) {
@@ -137,7 +152,7 @@ export async function GET(request: NextRequest) {
     }
     const notes = admin ? await db.schema("app_private").from("federation_notes").select("federation_id,email") : { data: [] as { federation_id: string; email: string | null }[] };
     const emails = new Map((notes.data ?? []).map((note) => [note.federation_id, note.email]));
-    const local = await localMetrics();
+    const local = await localMetrics(admin ? undefined : visiblePlayerIds, admin ? undefined : visibleClubIds);
     const shieldFiles = new Set(await readdir(path.join(process.cwd(), "public", "federation-shields")).catch(() => [] as string[]));
     const clubs = local?.clubs ?? clubResult.data as Club[];
     const associatedClubs = new Map(federations.map((federation) => [federation.id, clubs.filter((club) => belongsToFederation(club, federation))]));

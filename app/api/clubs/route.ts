@@ -35,6 +35,9 @@ export async function GET(request: NextRequest) {
       .select("id,name,active,founded_text,disappeared_text,city,province,region,country,latitude,longitude,maps_url,website,instagram")
       .order("country").order("name");
     if (error) return NextResponse.json({ error: "No se han podido cargar los clubs publicados." }, { status: 503 });
+    const visiblePlayers = await db.from("catalog_players").select("id").eq("published", true).range(0, 9999);
+    if (visiblePlayers.error) return NextResponse.json({ error: "No se han podido comprobar los jugadores publicados." }, { status: 503 });
+    const visiblePlayerIds = new Set((visiblePlayers.data ?? []).map((player) => player.id));
 
     const base = path.join(process.cwd(), "data", "staging");
     const [seasonsRaw, metricsRaw, milestonesRaw, participantsRaw] = await Promise.all([
@@ -43,9 +46,12 @@ export async function GET(request: NextRequest) {
       readFile(path.join(base, "milestones.json"), "utf8"),
       readFile(path.join(base, "milestone-participants.json"), "utf8"),
     ]);
-    const seasons = mergeMilestoneTrajectory(JSON.parse(seasonsRaw) as Season[], JSON.parse(milestonesRaw) as Milestone[], JSON.parse(participantsRaw) as MilestoneParticipant[], data ?? []);
+    const seasons = mergeMilestoneTrajectory(JSON.parse(seasonsRaw) as Season[], JSON.parse(milestonesRaw) as Milestone[], JSON.parse(participantsRaw) as MilestoneParticipant[], data ?? [])
+      .filter((season) => visiblePlayerIds.has(season.player_id));
     const recentSeasons = seasons.filter((season) => season.club_id && season.season_year >= 2023);
-    const participationByPlayer = new Map((JSON.parse(metricsRaw) as Metric[]).map((metric) => [metric.player_id, metric.participation_count]));
+    const participationByPlayer = new Map((JSON.parse(metricsRaw) as Metric[])
+      .filter((metric) => visiblePlayerIds.has(metric.player_id))
+      .map((metric) => [metric.player_id, metric.participation_count]));
     const playerIdsByClub = new Map<string, Set<string>>();
     for (const season of recentSeasons) {
       const players = playerIdsByClub.get(season.club_id!) ?? new Set<string>();

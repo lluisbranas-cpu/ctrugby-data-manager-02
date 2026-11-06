@@ -2,6 +2,16 @@ import { randomUUID } from "node:crypto";
 import { catalogClient } from "@/lib/catalog";
 
 export type LoginContact = { subject_kind: "administrator" | "player" | "club"; subject_id: string; phone_e164: string | null };
+export const ACCESS_PENDING_COOKIE = "ctrugby-access-pending";
+export type PendingAccess = {
+  purpose?: "club";
+  provider?: "google";
+  token: string;
+  createdAt: number;
+  contact?: LoginContact;
+  factorId?: string;
+  challengeId?: string;
+};
 export const normalizePhone = (value: string) => value.replace(/[\s().-]/g, "");
 export const destinationFor = (contact: LoginContact) => contact.subject_kind === "administrator" ? "/jugadores" : contact.subject_kind === "player" ? `/jugadores/${contact.subject_id}` : `/clubs/${contact.subject_id}`;
 

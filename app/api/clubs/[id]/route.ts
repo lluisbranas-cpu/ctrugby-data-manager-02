@@ -7,7 +7,7 @@ import { requireConsultation } from "@/lib/consultation-access";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
-import { catalogAccess, catalogConfigured, sameOrigin } from "@/lib/catalog";
+import { catalogAccess, catalogClient, catalogConfigured, localAdminAccess, sameOrigin } from "@/lib/catalog";
 import { mergeMilestoneTrajectory } from "@/lib/milestone-trajectory";
 import { findClubDirectoryOverride } from "@/lib/club-directory-overrides";
 import { inferClubLocation } from "@/lib/club-location";
@@ -44,6 +44,13 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     const { db, admin } = publicTeams ? { db: null, admin: false } : await catalogAccess(_request);
     const result = db ? await db.from("catalog_clubs").select("id,name,active,founded_text,disappeared_text,city,province,region,country,latitude,longitude,maps_url,website,instagram").eq("id", id).maybeSingle() : { data: null, error: null };
     if (result.error) return NextResponse.json({ error: "No se ha podido cargar el club." }, { status: 503 });
+    let visiblePlayerIds: Set<string> | null = null;
+    if (!admin) {
+      const visibilityDb = publicTeams ? catalogClient() : db!;
+      const visiblePlayers = await visibilityDb.from("catalog_players").select("id").eq("published", true).range(0, 9999);
+      if (visiblePlayers.error) return NextResponse.json({ error: "No se han podido comprobar los jugadores publicados." }, { status: 503 });
+      visiblePlayerIds = new Set((visiblePlayers.data ?? []).map((player) => player.id));
+    }
     const sportResult = db ? await db.from("catalog_club_sports").select("catalog_sports(name)").eq("club_id", id) : { data: [] as { catalog_sports: { name: string } | { name: string }[] | null }[] };
     const sports = sportResult.data?.flatMap((row) => {
       const linked = row.catalog_sports;
@@ -51,7 +58,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     }) ?? ["Rugby"];
     const history = await readClubHistory(id);
     const groupClub = (await readGroupClubs()).find(club => club.id === id);
-    const club = groupClub ?? (publicTeams ? await stagedClub(id) : result.data ? { ...result.data, teams: findClubDirectoryOverride(id)?.teams } : findClubDirectoryOverride(id) ?? (admin || process.env.NODE_ENV !== "production" ? await stagedClub(id) : null));
+    const club = groupClub ?? (publicTeams ? await stagedClub(id) : result.data ? { ...result.data, teams: findClubDirectoryOverride(id)?.teams } : findClubDirectoryOverride(id) ?? (admin || localAdminAccess(_request) ? await stagedClub(id) : null));
     if (!club) return NextResponse.json({ error: "Club no encontrado." }, { status: 404 });
     const [seasonsRaw, playersRaw, metricsRaw, milestonesRaw, milestoneParticipantsRaw, clubsRaw] = await Promise.all([
       readFile(path.join(base, "player-seasons.json"), "utf8"), readFile(path.join(base, "players.json"), "utf8"), readCampusMetricsJson(), readFile(path.join(base, "milestones.json"), "utf8"), readFile(path.join(base, "milestone-participants.json"), "utf8"), readFile(path.join(base, "clubs.json"), "utf8"),
@@ -68,7 +75,8 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     const memberIds = groupClub ? await groupPlayerIds(id, groupYear, groupCategory, seasons) : null;
     const groupDefinitions = groupClub ? (await readTemporaryClubGroups()).filter(group => group.club_id === id) : [];
     const memberClubs = new Set(groupDefinitions.flatMap(group => group.club_ids));
-    const recent = seasons.filter(season => groupClub ? memberIds!.has(season.player_id) && memberClubs.has(season.club_id || "") && (!groupYear || groupYear === "all" || season.season_year % 100 === Number(groupYear.split("/").at(-1)) % 100) : season.club_id === id && season.season_year >= firstClubSeason);
+    const recent = seasons.filter(season => (!visiblePlayerIds || visiblePlayerIds.has(season.player_id)) &&
+      (groupClub ? memberIds!.has(season.player_id) && memberClubs.has(season.club_id || "") && (!groupYear || groupYear === "all" || season.season_year % 100 === Number(groupYear.split("/").at(-1)) % 100) : season.club_id === id && season.season_year >= firstClubSeason));
     const groupMemberships = await readGroupMemberships(seasons);
     const playerRows = [...new Set(recent.map((season) => season.player_id))].map((playerId) => {
       const player = players.get(playerId);

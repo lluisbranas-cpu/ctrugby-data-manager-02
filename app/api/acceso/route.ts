@@ -2,20 +2,19 @@ import { RETURN_COOKIE, destinationAfterLogin } from "@/lib/access-destination";
 import { GUEST_COOKIE, GUEST_PENDING_COOKIE } from "@/lib/guest-registration";
 import { NextRequest, NextResponse } from "next/server";
 import { PUBLIC_COOKIE, CATALOG_COOKIE, catalogClient, catalogConfigured, sameOrigin } from "@/lib/catalog";
-import { beginAuthenticator, destinationFor, finishAuthenticator, loginContacts, normalizePhone, type LoginContact } from "@/lib/portal-auth";
-import { openPending, sealPending } from "@/lib/pending-access";
+import { ACCESS_PENDING_COOKIE, beginAuthenticator, destinationFor, finishAuthenticator, loginContacts, normalizePhone, type LoginContact, type PendingAccess } from "@/lib/portal-auth";
+import { openPrivate, sealPrivate } from "@/lib/pending-access";
+import { googleAdminOAuthEnabled, GOOGLE_OAUTH_COOKIE } from "@/lib/google-admin-auth";
 
 export const runtime = "nodejs";
-const PENDING_COOKIE = "ctrugby-access-pending";
-type Pending = { purpose?: "club"; token: string; createdAt: number; contact?: LoginContact; factorId?: string; challengeId?: string };
 const reply = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store", Vary: "Cookie", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" } });
 const cookieOptions = { httpOnly: true, sameSite: "strict" as const, secure: process.env.NODE_ENV === "production", path: "/" };
-const savePending = (response: NextResponse, pending: Pending) => response.cookies.set(PENDING_COOKIE, sealPending(pending), { ...cookieOptions, maxAge: 600 });
-const clearSessions = (response: NextResponse) => { for (const name of ["ctrugby-email-access", PUBLIC_COOKIE, CATALOG_COOKIE, PENDING_COOKIE, GUEST_COOKIE, GUEST_PENDING_COOKIE]) response.cookies.set(name, "", { ...cookieOptions, maxAge: 0 }); return response; };
+const savePending = (response: NextResponse, pending: PendingAccess) => response.cookies.set(ACCESS_PENDING_COOKIE, sealPrivate(pending), { ...cookieOptions, maxAge: 600 });
+const clearSessions = (response: NextResponse) => { for (const name of ["ctrugby-email-access", PUBLIC_COOKIE, CATALOG_COOKIE, ACCESS_PENDING_COOKIE, GUEST_COOKIE, GUEST_PENDING_COOKIE, GOOGLE_OAUTH_COOKIE]) response.cookies.set(name, "", { ...cookieOptions, maxAge: 0 }); return response; };
 const clearReturn = (response: NextResponse) => { response.cookies.set(RETURN_COOKIE, "", { ...cookieOptions, maxAge: 0 }); return response; };
 const contactMatches = (left: LoginContact, right: LoginContact) => left.subject_kind === right.subject_kind && left.subject_id === right.subject_id && left.phone_e164 === right.phone_e164;
 
-async function challenge(pending: Pending, contact: LoginContact) {
+async function challenge(pending: PendingAccess, contact: LoginContact) {
   const { setup, ...factor } = await beginAuthenticator(pending.token);
   const response = clearSessions(reply({ ok: true, requiresCode: true, setup }));
   savePending(response, { ...pending, contact, ...factor });
@@ -68,17 +67,26 @@ export async function POST(request: NextRequest) {
         response.cookies.set(GUEST_COOKIE, token, { ...cookieOptions, maxAge: 3600 });
         return response;
       }
-      const pending: Pending = { ...(body.purpose === "club" ? { purpose: "club" as const } : {}), token: login.data.session.access_token, createdAt: Date.now() };
+      const pending: PendingAccess = { ...(body.purpose === "club" ? { purpose: "club" as const } : {}), token: login.data.session.access_token, createdAt: Date.now() };
       if (contacts.length === 1) return challenge(pending, contacts[0]);
       const response = clearSessions(reply({ ok: true, requiresPhone: true, choices: contacts.map((contact, index) => ({ index, label: contact.subject_kind === "administrator" ? "Administración" : `${contact.subject_kind === "club" ? "Club" : "Ficha"} ${contact.subject_id}`, ending: contact.phone_e164?.slice(-2) ?? null })) }));
       savePending(response, pending);
       return response;
     }
-    const value = request.cookies.get(PENDING_COOKIE)?.value;
-    const pending = value ? openPending<Pending>(value) : null;
+    const value = request.cookies.get(ACCESS_PENDING_COOKIE)?.value;
+    const pending = value ? openPrivate<PendingAccess>(value) : null;
     if (!pending || typeof pending.token !== "string" || !Number.isFinite(pending.createdAt) || pending.createdAt > Date.now() || Date.now() - pending.createdAt > 600_000) return clearSessions(reply({ error: "La validación ha caducado. Vuelve a iniciar sesión." }, 401));
     const allContacts = await loginContacts(pending.token);
     const contacts = pending.purpose === "club" ? allContacts.filter((contact) => contact.subject_kind === "club") : allContacts;
+    if (body.action === "start-google-admin-mfa") {
+      if (!googleAdminOAuthEnabled(request) || pending.provider !== "google" || pending.contact?.subject_kind !== "administrator") return clearSessions(reply({ error: "La sesión de Google no es válida para administración." }, 403));
+      const contact = contacts.find((item) => contactMatches(item, pending.contact!));
+      if (!contact || contact.subject_kind !== "administrator") return clearSessions(reply({ error: "La cuenta ya no tiene acceso de administrador." }, 403));
+      const { setup, ...factor } = await beginAuthenticator(pending.token);
+      const response = clearSessions(reply({ ok: true, requiresCode: true, setup }));
+      savePending(response, { ...pending, contact, ...factor });
+      return response;
+    }
     if (body.action === "select-phone") {
       if (typeof body.phone !== "string" || body.phone.length > 40 || !Number.isInteger(body.choice)) return reply({ error: "Elige un contacto e indica su teléfono completo, si lo tiene." }, 400);
       const selected = contacts[body.choice as number];
@@ -90,6 +98,10 @@ export async function POST(request: NextRequest) {
       const contact = contacts.find((item) => contactMatches(item, pending.contact!));
       if (!contact) return clearSessions(reply({ error: "El contacto ya no está autorizado. Vuelve a iniciar sesión." }, 403));
       const token = await finishAuthenticator(pending.token, pending.factorId, pending.challengeId, body.code);
+      if (contact.subject_kind === "administrator") {
+        const role = await catalogClient(token).rpc("app_is_admin");
+        if (role.error || role.data !== true) return clearSessions(reply({ error: "La cuenta ya no tiene acceso de administrador." }, 403));
+      }
       const tracked = await catalogClient(token).rpc("app_record_access", { p_kind: contact.subject_kind === "administrator" ? "administrator" : "private" });
       if (tracked.error) return clearSessions(reply({ error: "No se ha podido registrar la entrada. Vuelve a intentarlo." }, 503));
       const destination = destinationAfterLogin(request, contact.subject_kind === "club" ? `/clubs/${contact.subject_id}/autorizaciones` : destinationFor(contact), contact.subject_kind === "administrator" ? "administrator" : "private");

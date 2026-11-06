@@ -298,7 +298,12 @@ export async function GET(request: NextRequest) {
         if (result.error) return reply({ error: "No se ha podido cargar la navegación de jugadores." }, 503);
         return reply({ players: (result.data ?? []) });
       }
-      return reply({ players: (await localPlayers()).map(({ id, first_name, last_name }) => ({ id, first_name, last_name })) });
+      if (localAdminAccess(request)) {
+        return reply({ players: (await localPlayers()).map(({ id, first_name, last_name }) => ({ id, first_name, last_name })) });
+      }
+      const visible = await db.from("catalog_players").select("id,first_name,last_name").eq("published", true).order("id").range(0, 9999);
+      if (visible.error) return reply({ error: "No se ha podido cargar la navegación de jugadores." }, 503);
+      return reply({ players: visible.data ?? [] });
     }
     if (admin && !publicView && !localAdminAccess(request)) {
       const [summary, sheet, photoRows, clubLocations, metricsRaw, milestoneSummary, playerNews] = await Promise.all([
@@ -340,7 +345,7 @@ export async function GET(request: NextRequest) {
         photos,
       });
     }
-    const [players, participationByPlayer, milestoneSummary, sheetData, localProfiles, playerNews] = await Promise.all([
+    const [localDirectory, participationByPlayer, milestoneSummary, sheetData, localProfiles, playerNews] = await Promise.all([
       localPlayers(),
       localParticipationByPlayer(),
       localMilestoneSummaryByPlayer(),
@@ -348,6 +353,13 @@ export async function GET(request: NextRequest) {
       localPlayerProfilesById(),
       readPlayerNews(),
     ]);
+    let players = localDirectory;
+    if (!admin || publicView) {
+      const visible = await db.from("catalog_players").select("id").eq("published", true).range(0, 9999);
+      if (visible.error) return reply({ error: "No se han podido comprobar los jugadores publicados." }, 503);
+      const visibleIds = new Set((visible.data ?? []).map((player) => player.id));
+      players = localDirectory.filter((player) => visibleIds.has(player.id)).map((player) => ({ ...player, published: true }));
+    }
     const newsByPlayer = new Map<string, number>();
     for (const news of playerNews.filter((item) => item.published && item.type === "noticia")) newsByPlayer.set(news.player_id, (newsByPlayer.get(news.player_id) ?? 0) + 1);
     const publicPlayers = players;
@@ -372,7 +384,7 @@ export async function GET(request: NextRequest) {
       clubs: sheetData.clubs,
       // Keep the local portrait index available to public directory views too.
       // Featured players use this response outside the administrator session.
-      photos: await localPreparedPhotos(),
+      photos: Object.fromEntries(Object.entries(await localPreparedPhotos()).filter(([id]) => publicPlayerIds.has(id))),
     });
   } catch {
     return reply({ error: "No se ha podido conectar con el catálogo de jugadores." }, 503);
@@ -502,8 +514,6 @@ export async function POST(request: NextRequest) {
     return reply({ error: "No se ha podido procesar la solicitud." }, 400);
   }
 }
-
-
 
 
 
