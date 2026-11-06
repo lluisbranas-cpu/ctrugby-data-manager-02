@@ -84,6 +84,23 @@ export default function AccessPage() {
     } catch (cause) { setError(cause instanceof Error ? cause.message : "No se ha podido cambiar de modo."); }
     finally { setBusy(false); }
   }
+  async function selectIdentityAccess(kind: "private" | "club") {
+    setBusy(true); setError("");
+    try {
+      const response = await fetch("/api/acceso", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: kind === "club" ? "club-mode" : "private-mode" }),
+      });
+      const result = await response.json() as AccessReply;
+      if (!response.ok) throw new Error(result.error ?? "No se ha podido cambiar de acceso.");
+      restart();
+      setPrivateAccess(true);
+      setAdministrator(kind === "club");
+      setClubAccess(kind === "club");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "No se ha podido cambiar de acceso.");
+    } finally { setBusy(false); }
+  }
   async function enterLocalAdmin() {
     setBusy(true); setError("");
     try {
@@ -144,8 +161,8 @@ export default function AccessPage() {
           {!privateAccess && (
             <div className="mt-6 grid gap-3">
               <button type="button" disabled={busy} onClick={() => void enterPublic()} className="rounded-lg bg-red-700 px-4 py-3 text-sm font-black text-white disabled:opacity-50">Acceso público</button>
-              <button type="button" disabled={busy} aria-expanded={privateAccess && !clubAccess} onClick={() => { restart(); setPrivateAccess(true); setAdministrator(false); setClubAccess(false); }} className="rounded-lg border border-red-700 px-4 py-3 text-sm font-black text-red-700 disabled:opacity-50">Acceso privado</button>
-              <button type="button" disabled={busy} aria-expanded={clubAccess} onClick={() => { restart(); setPrivateAccess(true); setAdministrator(true); setClubAccess(true); }} className="rounded-lg border border-red-700 px-4 py-3 text-sm font-black text-red-700 disabled:opacity-50">Acceso por club</button>
+              <button type="button" disabled={busy} aria-expanded={privateAccess && !clubAccess} onClick={() => void selectIdentityAccess("private")} className="rounded-lg border border-red-700 px-4 py-3 text-sm font-black text-red-700 disabled:opacity-50">Acceso privado</button>
+              <button type="button" disabled={busy} aria-expanded={clubAccess} onClick={() => void selectIdentityAccess("club")} className="rounded-lg border border-red-700 px-4 py-3 text-sm font-black text-red-700 disabled:opacity-50">Acceso por club</button>
             </div>
           )}
           {privateAccess && !administrator && <EmailProfileAccess />}
