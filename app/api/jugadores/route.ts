@@ -19,6 +19,7 @@ import { readProfessionalCategories, type ProfessionalClubMilestone } from "@/li
 import { readPlayerNews } from "@/lib/player-news";
 import { likidHubPreviewReadOnly } from "@/lib/likidhub-preview";
 import { likidHubPreviewPlayersResponse } from "@/lib/likidhub-preview-api";
+import { canonicalLikidHubPlayerId } from "@/lib/likidhub-jug-ctr-bridge.generated";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -357,8 +358,13 @@ export async function GET(request: NextRequest) {
     if (!admin || publicView) {
       const visible = await db.from("catalog_players").select("id").eq("published", true).range(0, 9999);
       if (visible.error) return reply({ error: "No se han podido comprobar los jugadores publicados." }, 503);
+      // Supabase keeps CTR IDs while the local directory and its related records use JUG IDs.
+      // Match through the verified bridge instead of assuming the numeric suffix is enough.
       const visibleIds = new Set((visible.data ?? []).map((player) => player.id));
-      players = localDirectory.filter((player) => visibleIds.has(player.id)).map((player) => ({ ...player, published: true }));
+      players = localDirectory.filter((player) => {
+        const catalogId = canonicalLikidHubPlayerId(player.id);
+        return catalogId !== null && visibleIds.has(catalogId);
+      }).map((player) => ({ ...player, published: true }));
     }
     const newsByPlayer = new Map<string, number>();
     for (const news of playerNews.filter((item) => item.published && item.type === "noticia")) newsByPlayer.set(news.player_id, (newsByPlayer.get(news.player_id) ?? 0) + 1);
