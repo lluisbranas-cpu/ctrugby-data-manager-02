@@ -30,6 +30,11 @@ export async function POST(request: NextRequest) {
     if (raw.length > 8000) return reply({ error: "Solicitud demasiado grande." }, 413);
     const body = JSON.parse(raw) as Record<string, unknown>;
     if (!body || typeof body !== "object") return reply({ error: "Solicitud no válida." }, 400);
+    if (body.action === "private-mode" || body.action === "club-mode") {
+      // Switching away from local administration must remove its signed cookie
+      // before displaying an identity form, not only after login succeeds.
+      return clearReturn(clearSessions(reply({ ok: true, role: body.action === "club-mode" ? "club" : "private" })));
+    }
     if (body.action === "public-mode") {
       const token = request.cookies.get(CATALOG_COOKIE)?.value ?? request.cookies.get(GUEST_COOKIE)?.value;
       if (token) await catalogClient(token).auth.admin.signOut(token, "local").catch(() => undefined);
