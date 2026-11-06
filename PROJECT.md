@@ -1,8 +1,14 @@
-# CTRugby Data Manager 02
+# LikidHub
+
+## Identidad actual
+
+- Producto: Likid.
+- Base compartida: LikidHub.
+- Regla de contenido: CTRugby se conserva únicamente cuando identifica una entidad, fuente o hecho histórico real.
 
 ## Propósito
 
-Nueva base de CTRugby Data Manager. El objetivo vigente es publicarla y, durante esa preparación, reorganizar los datos para que puedan evolucionar sin depender de la copia local anterior.
+Nueva base de LikidHub. El objetivo vigente es publicarla y, durante esa preparación, reorganizar los datos para que puedan evolucionar sin depender de la copia local anterior.
 
 ## Estado recuperado
 

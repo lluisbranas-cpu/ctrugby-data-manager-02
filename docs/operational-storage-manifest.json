@@ -1,0 +1,16 @@
+[
+  { "namespace": "club", "key": "histories", "file": "data/staging/club-histories.json" },
+  { "namespace": "club", "key": "palettes", "file": "data/staging/club-palettes.json" },
+  { "namespace": "catalog", "key": "professional-categories", "file": "data/staging/professional-categories.json" },
+  { "namespace": "hito", "key": "publication", "file": "data/staging/hito-publication.json" },
+  { "namespace": "hito", "key": "manual-selection-callups", "file": "data/staging/manual-selection-callups.json" },
+  { "namespace": "hito", "key": "sources", "file": "data/staging/milestone-sources.json" },
+  { "namespace": "player", "key": "participation-metrics", "file": "data/staging/player-participation-metrics.json" },
+  { "namespace": "player", "key": "featured-order", "file": "data/staging/featured-player-order.json" },
+  { "namespace": "player", "key": "review-short-links", "file": "data/staging/player-review-short-links.json" },
+  { "namespace": "staff", "key": "featured-milestones", "file": "data/staging/staff-featured-milestones.json" },
+  { "namespace": "staff", "key": "role-categories", "file": "data/staging/staff-role-categories.json" },
+  { "namespace": "contact", "key": "messages", "file": "data/staging/contact-messages.json" },
+  { "namespace": "competition", "key": "season-2026-27", "file": "data/competition/2026-27.json" },
+  { "namespace": "competition", "key": "callups-2026-27", "file": "data/competition/callups-2026-27.json" }
+]

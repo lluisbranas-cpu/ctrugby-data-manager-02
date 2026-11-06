@@ -1,0 +1,93 @@
+.redCards article {
+  background: #e42636 !important;
+  border-color: #ff7b86 !important;
+  color: #fff !important;
+}
+
+.redCards article > div:last-child {
+  background: #e42636;
+  border-top-color: #fff !important;
+  color: #fff;
+}
+
+.redCards article h4,
+.redCards article p,
+.redCards article span,
+.redCards article a {
+  color: #fff !important;
+}
+
+.redCards article > div:last-child > div {
+  border-top-color: #ffffff80 !important;
+}
+
+.redCards article > div:first-child span {
+  color: #101d42 !important;
+}
+
+.methodSeal {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 3;
+  width: clamp(110px, 13vw, 170px);
+  transform: rotate(-10deg);
+  pointer-events: none;
+}
+
+.methodSeal img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 650px) {
+  .methodSeal {
+    top: 16px;
+    right: 16px;
+    width: 108px;
+  }
+}
+.categoryTabs button {
+  border: 1px solid #ffffff99;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.categoryTabs button:hover {
+  border-color: #fff;
+  background: #ffffff1a;
+  color: #fff;
+}
+
+.categoryTabs button[aria-pressed="true"] {
+  border-color: #ff7b86;
+  background: #e42636;
+  color: #fff;
+}
+.clubTenure {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.clubTenure b {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+}
+
+.tenureShields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+}
+
+.tenureShields img {
+  width: 18px;
+  height: 20px;
+  object-fit: contain;
+}

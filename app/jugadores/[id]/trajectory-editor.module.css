@@ -1,0 +1,42 @@
+.heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.heading h2 { margin: 0; }
+.history .heading h2 { margin-bottom: 0; }
+.heading { margin-bottom: 16px; }
+.history :global(.trajectory-complete) li { grid-template-columns: 58px 120px 42px 54px minmax(0, 1fr); }
+.history :global(.trajectory-complete) li > small { grid-column: 2; overflow-wrap: anywhere; white-space: normal; }
+.history :global(.trajectory-complete) li > :global(.trajectory-season-photo), .history :global(.trajectory-complete) li > :global(.trajectory-season-photo-placeholder) { grid-column: 3; }
+.history :global(.trajectory-complete) li > :global(.trajectory-club-shield), .history :global(.trajectory-complete) li > :global(.trajectory-club-shield-placeholder) { grid-column: 4; }
+.history :global(.trajectory-complete) li > a, .history :global(.trajectory-complete) li > strong { grid-column: 5; white-space: normal; overflow-wrap: anywhere; }
+.history :global(.trajectory-complete) li.editableRow { grid-template-columns: 58px 120px 42px 54px minmax(0, 1fr) 72px; }
+.history :global(.trajectory-complete) .rowActions { grid-column: 6; grid-row: 1; display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; align-self: center; }
+.history :global(.trajectory-complete) .rowEdit, .history :global(.trajectory-complete) .rowDelete { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 32px; border: 1px solid #d4d4d4; border-radius: 4px; padding: 5px 7px; background: white; font-size: 12px; cursor: pointer; }
+.history :global(.trajectory-complete) .rowDelete { width: 32px; padding: 5px; border-color: #fecaca; color: #b91c1c; }
+.inlineEditor { grid-column: 1 / -1; grid-row: 2; border-top: 1px solid #e5e5e5; padding: 8px 0 12px; min-width: 0; }
+.inlineEditor .fields { border-bottom: 0; padding: 8px 0; }
+.actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.actions .rowSave, .actions .rowCancel { min-height: 36px; padding: 7px 10px; border: 1px solid #d4d4d4; border-radius: 4px; background: #fff; font-size: 14px; cursor: pointer; }
+.actions .rowSave { background: #166534; color: #fff; border-color: #166534; }
+.actions button:disabled, .rowEdit:disabled, .rowDelete:disabled { opacity: .5; cursor: default; }
+.rowEdit:focus-visible, .rowDelete:focus-visible, .rowSave:focus-visible, .rowCancel:focus-visible { outline: 2px solid #15803d; outline-offset: 3px; }
+.history :global(.trajectory-period) small { line-height: 1.3; overflow-wrap: anywhere; }
+.heading button, .add { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #d4d4d4; border-radius: 4px; min-height: 34px; padding: 6px 10px; background: white; color: #262626; font-size: 13px; cursor: pointer; }
+.add { margin-top: 16px; }
+.heading button:focus-visible, .add:focus-visible { outline: 2px solid #15803d; outline-offset: 3px; }
+.fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 16px 0; border-bottom: 1px solid #e5e5e5; }
+.fields label { display: grid; gap: 5px; min-width: 0; font-size: 12px; color: #525252; }
+.fields input { width: 100%; min-width: 0; border: 1px solid #d4d4d4; border-radius: 4px; padding: 8px; color: #171717; font-size: 14px; }
+.fields input[type=file] { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; }
+.fields :global(.trajectory-row-photo) { grid-column: 1 / -1; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.editor { margin-top: 16px; border-top: 1px solid #d4d4d4; padding-top: 8px; }
+@media (max-width: 600px) { .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .history :global(.trajectory-complete) li { grid-template-columns: 42px 84px 34px 38px minmax(0, 1fr); gap: 5px; } }
+@media (max-width: 560px) { .history :global(.trajectory-complete) li.editableRow { grid-template-columns: 36px 84px 30px 32px minmax(0, 1fr) 68px; gap: 4px; } .rowEdit span { display: none; } }
+@media (max-width: 560px) { .history :global(.trajectory-complete) li.editableRow > :global(.trajectory-season-photo), .history :global(.trajectory-complete) li.editableRow > :global(.trajectory-season-photo-placeholder) { width: 28px; height: 28px; } .history :global(.trajectory-complete) li.editableRow > :global(.trajectory-club-shield), .history :global(.trajectory-complete) li.editableRow > :global(.trajectory-club-shield-placeholder) { width: 30px; height: 26px; } }
+@media (max-width: 360px) { .fields { grid-template-columns: minmax(0, 1fr); } }
+
+.professionalCategory { display: block; margin-top: 4px; font-weight: 700; color: #525252; overflow-wrap: anywhere; }
+
+.categoryDetails { display: grid; gap: 7px; }
+.categoryItem { display: grid; gap: 2px; line-height: 1.3; }
+.categoryCaption { font-size: 9px; font-weight: 500; color: #64717c; }

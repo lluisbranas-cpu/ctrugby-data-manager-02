@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import Link from "next/link";
+import Link from "@/app/components/sport-link";
 export default function Recovery() {
   const token = useRef("");
   const [ready, setReady] = useState(false);
@@ -39,7 +39,7 @@ export default function Recovery() {
   }
   return <main className="min-h-screen bg-neutral-100 px-6 py-16 text-neutral-950">
     <section className="mx-auto max-w-md rounded-2xl bg-white p-8 shadow">
-      <p className="font-black text-red-700">CTRugby</p>
+      <p className="font-black text-red-700">Rugby</p>
       <h1 className="my-4 text-2xl font-bold">Nueva contraseña</h1>
       <p role="status">{message}</p>
       {ready && !done && <form onSubmit={submit} className="mt-6 space-y-5">

@@ -1,0 +1,683 @@
+{
+  "created_at": "2026-10-16T09:49:55.277Z",
+  "criteria": [
+    "federation",
+    "category",
+    "gender",
+    "format",
+    "season"
+  ],
+  "milestones": [
+    {
+      "id": "MIL003005",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-18/",
+      "row": 4
+    },
+    {
+      "id": "MIL003006",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-18/",
+      "row": 4
+    },
+    {
+      "id": "MIL003007",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-18/",
+      "row": 4
+    },
+    {
+      "id": "MIL003008",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-18/",
+      "row": 4
+    },
+    {
+      "id": "MIL003009",
+      "url": "https://rugby.cat/seleccio-s17-femenina/",
+      "row": 5
+    },
+    {
+      "id": "MIL003010",
+      "url": "https://rugby.cat/seleccio-s17-femenina/",
+      "row": 5
+    },
+    {
+      "id": "MIL003011",
+      "url": "https://rugby.cat/seleccio-s17-femenina/",
+      "row": 5
+    },
+    {
+      "id": "MIL003012",
+      "url": "https://rugby.cat/seleccio-s17-femenina/",
+      "row": 5
+    },
+    {
+      "id": "MIL003013",
+      "url": "https://rugby.cat/seleccio-s17-femenina/",
+      "row": 5
+    },
+    {
+      "id": "MIL003014",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-16/",
+      "row": 6
+    },
+    {
+      "id": "MIL003015",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-16/",
+      "row": 6
+    },
+    {
+      "id": "MIL003016",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-16/",
+      "row": 6
+    },
+    {
+      "id": "MIL003017",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-16/",
+      "row": 6
+    },
+    {
+      "id": "MIL003018",
+      "url": "https://rugby.cat/seleccio-rugby-catalunya-sub-16/",
+      "row": 6
+    },
+    {
+      "id": "MIL003019",
+      "url": "https://rugby.cat/seleccio-s15-femenina/",
+      "row": 7
+    },
+    {
+      "id": "MIL003020",
+      "url": "https://rugby.cat/seleccio-s15-femenina/",
+      "row": 7
+    },
+    {
+      "id": "MIL003021",
+      "url": "https://rugby.cat/seleccio-s15-femenina/",
+      "row": 7
+    },
+    {
+      "id": "MIL003022",
+      "url": "https://rugby.cat/seleccio-s15-femenina/",
+      "row": 7
+    },
+    {
+      "id": "MIL003023",
+      "url": "https://rugby.cat/seleccio-s15-femenina/",
+      "row": 7
+    },
+    {
+      "id": "MIL003024",
+      "url": "https://rugby.cat/seleccio-s15-femenina/",
+      "row": 7
+    },
+    {
+      "id": "MIL003025",
+      "url": "https://rugby.cat/seleccio-s14/",
+      "row": 8
+    },
+    {
+      "id": "MIL003026",
+      "url": "https://rugby.cat/seleccio-s14/",
+      "row": 8
+    },
+    {
+      "id": "MIL003027",
+      "url": "https://rugby.cat/seleccio-s14/",
+      "row": 8
+    },
+    {
+      "id": "MIL003028",
+      "url": "https://rugby.cat/seleccio-s14/",
+      "row": 8
+    },
+    {
+      "id": "MIL003029",
+      "url": "https://rugby.cat/seleccio-s14/",
+      "row": 8
+    },
+    {
+      "id": "MIL003030",
+      "url": "https://rugby.cat/seleccio-s14/",
+      "row": 8
+    },
+    {
+      "id": "MIL003031",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 99
+    },
+    {
+      "id": "MIL003032",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 99
+    },
+    {
+      "id": "MIL003033",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 99
+    },
+    {
+      "id": "MIL003034",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 99
+    },
+    {
+      "id": "MIL003035",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 99
+    },
+    {
+      "id": "MIL003036",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 100
+    },
+    {
+      "id": "MIL003037",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 100
+    },
+    {
+      "id": "MIL003038",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 100
+    },
+    {
+      "id": "MIL003039",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 100
+    },
+    {
+      "id": "MIL003040",
+      "url": "https://ferugby.es/listas-de-las-leonas7s-y-los-leones7s-m18-elegidos-para-disputar-el-campeonato-de-europa/",
+      "row": 100
+    }
+  ],
+  "manual": [
+    {
+      "id": "SEL-1791707659133-11ed9db2",
+      "player_id": "CTR0364",
+      "key": "b37b2a418cf8161a44401990915e7467b58a49b6268437b335c23ab8917c6bb7",
+      "url": "https://ferugby.es/los-leones7s-se-concentran-en-sant-cugat-del-6-al-18-de-septiembre/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - Concentración StQ"
+    },
+    {
+      "id": "SEL-1791707623312-fdd4e8c7",
+      "player_id": "CTR0364",
+      "key": "2aca6ea2f33b38888ae75552a47935aa26e6570c270a14506dd63e726217eac8",
+      "url": "https://ferugby.es/muchas-caras-nuevas-en-las-listas-de-los-leones7s-y-las-leonas7s-para-disputar-el-europeo/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - Europeo Hamburgo"
+    },
+    {
+      "id": "SEL-1791707579364-336bca75",
+      "player_id": "CTR0364",
+      "key": "53f3cb3b420e3b7638fc86e307598631e31030dace322c3cd0d044fe95270609",
+      "url": "https://ferugby.es/los-leones7s-y-las-leonas7s-elegidos-para-comenzar-el-asalto-final-a-las-svns-world-championship-en-hong-kong/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - Hong Kong"
+    },
+    {
+      "id": "SEL-1791707545135-144698ab",
+      "player_id": "CTR0364",
+      "key": "7c0ca6d642ddb218cbfe69d713b38e5c6f618a79c0d3b335a67842c506b83855",
+      "url": "https://ferugby.es/convocatorias-de-los-leones7s-y-las-leonas7s-para-las-hsbc-svns-de-hong-kong-y-singapur/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - SVNS Hong Kong y Singapur"
+    },
+    {
+      "id": "SEL-1791707501408-37da5979",
+      "player_id": "CTR0364",
+      "key": "1ae4136427e386e73d8a53e0b310bd72c7f8b5750e8a662f6320c2ff2d82b335",
+      "url": "https://ferugby.es/lista-de-los-leones7s-y-las-leonas7s-para-los-svns-de-vancouver-y-los-angeles/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - SVNS Vancouver y LA"
+    },
+    {
+      "id": "SEL-1791707443401-d79ecf26",
+      "player_id": "CTR0364",
+      "key": "6b32dbd34cc9b2971513219f517de2aa70a696d312ba8578032da5c9f5bf4071",
+      "url": "https://ferugby.es/los-13-leones7s-que-buscaran-demostrar-su-nivel-en-perth/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - SVNS Perth"
+    },
+    {
+      "id": "SEL-1791707404162-988a6574",
+      "player_id": "CTR0364",
+      "key": "260f8f2ceb592d725b416ddb544ce3a06ea5c8a7951b6fc1ba82a536ad72972a",
+      "url": "https://ferugby.es/leones7s-rugby-7-convocatoria-elche/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - 2º combinado Elche"
+    },
+    {
+      "id": "SEL-1791707335206-36bc9987",
+      "player_id": "CTR0364",
+      "key": "9ba0cee288d2849bb769dc33fcc78406ec75c38e17b7523b131b398f34b184e1",
+      "url": "https://ferugby.es/la-oportunidad-de-redimirse-de-las-leonas7s-nada-mas-empezar-y-la-relajacion-para-los-leones7s-en-hamburgo/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - Hamburgo"
+    },
+    {
+      "id": "SEL-1791706874120-777ffdb4",
+      "player_id": "CTR0364",
+      "key": "d47fbb6ee2ce49915d467aad7078d766c6445b6dcb892ff31bcdff700e3ee8ee",
+      "url": "https://ferugby.es/leones7s-la-academia-domina-la-lista-previa-para-las-series-de-los-angeles/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Leones 7s - Lista previa Series LA"
+    },
+    {
+      "id": "SEL-1791706805015-cb975115",
+      "player_id": "CTR0364",
+      "key": "4723f0de759003db86f03bed3802d404af0738b2768e4d59a5619a0a6b7e7be3",
+      "url": "https://ferugby.es/los-tres-leones7s-m18-de-bronce-apuestan-por-el-oro-en-el-europeo/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Rugby 7 - Europeo 2022"
+    },
+    {
+      "id": "SEL-1791706468704-80982456",
+      "player_id": "CTR0364",
+      "key": "14c2e5d8f6aa86be73412b19da9d9f07ae19d0c5033f396b68c478805abb9f77",
+      "url": "https://ferugby.es/los-leones-m18-acaban-la-temporada-con-doblete-de-victorias-ante-los-estadounidenses-de-eira/",
+      "method": "Jugador, categoría, federación, género, modalidad y temporada verificados",
+      "notes": "Rugby XV"
+    },
+    {
+      "id": "SEL-1791706375917-5e7c79f6",
+      "player_id": "CTR0364",
+      "key": "62474bfd19ee8babdcea1d64184a8197d076e29e44782a1c1a5d8b4b585f8903",
+      "url": "https://ferugby.es/los-leones7s-m18-arrancan-con-victoria-en-el-campeonato-de-europa/",
+      "method": "Artículo verificado por evento y año",
+      "notes": "Rugby 7 - Europeo 2021"
+    },
+    {
+      "id": "SEL-1791706245543-a5855a2f",
+      "player_id": "CTR0364",
+      "key": "045564c1aa1e6b6b9644f97329a5bb94395d8f8c10ca68725db7cf07c1e1583c",
+      "url": "https://ferugby.es/los-leones7s-m18-arrancan-con-victoria-en-el-campeonato-de-europa/",
+      "method": "Jugador, categoría, federación, género, modalidad y temporada verificados",
+      "notes": "Rugby 7"
+    }
+  ],
+  "pending": [
+    {
+      "id": "MIL000001",
+      "reason": "Sin fuente compatible con categoría, ámbito, género y temporada"
+    },
+    {
+      "id": "MIL003041",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003042",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003043",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003044",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003045",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003046",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003047",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003048",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003049",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003050",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003051",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003052",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003053",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003054",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003055",
+      "reason": "Varias fuentes compatibles"
+    },
+    {
+      "id": "MIL003056",
+      "reason": "Sin fuente compatible con categoría, ámbito, género y temporada"
+    },
+    {
+      "id": "MIL003057",
+      "reason": "Sin fuente compatible con categoría, ámbito, género y temporada"
+    },
+    {
+      "id": "MIL003058",
+      "reason": "Sin fuente compatible con categoría, ámbito, género y temporada"
+    },
+    {
+      "id": "SEL-1791750303011-63f46edb",
+      "player_id": "CTR0197",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791739798691-b52bf524",
+      "player_id": "CTR0270",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791739755816-c6511a59",
+      "player_id": "CTR0378",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791739652142-91159c5e",
+      "player_id": "CTR0378",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791739544923-b3bce6af",
+      "player_id": "CTR0270",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791739526030-885429d1",
+      "player_id": "CTR0270",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791739412228-67a02092",
+      "player_id": "CTR0377",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738465762-a4cb6488",
+      "player_id": "CTR0063",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738436043-cce45412",
+      "player_id": "CTR0105",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738238194-0c989769",
+      "player_id": "CTR0056",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738194367-85007180",
+      "player_id": "CTR0237",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738174256-71ef9bc2",
+      "player_id": "CTR0237",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738131511-c9612607",
+      "player_id": "CTR0368",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738108003-4fd80c61",
+      "player_id": "CTR0368",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738087972-25f0bc59",
+      "player_id": "CTR0368",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791738034636-d3afb1ae",
+      "player_id": "CTR0034",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737957007-d8c70eec",
+      "player_id": "CTR0227",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737904486-153166bb",
+      "player_id": "CTR0370",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737890710-66bb1fc8",
+      "player_id": "CTR0370",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737859397-fb973c24",
+      "player_id": "CTR0369",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737835371-a2b7e32f",
+      "player_id": "CTR0369",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737786918-dd4abd61",
+      "player_id": "CTR0100",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737748981-1bcc7889",
+      "player_id": "CTR0024",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737720699-63c323da",
+      "player_id": "CTR0178",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737686771-517dc7d1",
+      "player_id": "CTR0130",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737654246-c112dcc6",
+      "player_id": "CTR0239",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791737595001-52f98d20",
+      "player_id": "CTR0239",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736805186-d23e4465",
+      "player_id": "CTR0025",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736759628-38ce516d",
+      "player_id": "CTR0016",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736725687-8f361514",
+      "player_id": "CTR0018",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736703174-6662bb8b",
+      "player_id": "CTR0017",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736667077-0df3ecbf",
+      "player_id": "CTR0141",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736644239-99535f54",
+      "player_id": "CTR0127",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736619407-443aa483",
+      "player_id": "CTR0121",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736601288-188dfebf",
+      "player_id": "CTR0129",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736560938-839abc0f",
+      "player_id": "CTR0124",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736547751-2066c400",
+      "player_id": "CTR0220",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736491559-65c1e603",
+      "player_id": "CTR0219",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736418149-02133ceb",
+      "player_id": "CTR0123",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736331760-4469f274",
+      "player_id": "CTR0193",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791736312333-8a047a1a",
+      "player_id": "CTR0247",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735793637-cabc6a89",
+      "player_id": "CTR0120",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735745530-b6892d9c",
+      "player_id": "CTR0217",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735715192-c99bd219",
+      "player_id": "CTR0006",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735667283-162c3eab",
+      "player_id": "CTR0003",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735530573-b38ac3d8",
+      "player_id": "CTR0069",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735497649-302a870c",
+      "player_id": "CTR0238",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735422615-10302320",
+      "player_id": "CTR0218",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735341431-fa718a1d",
+      "player_id": "CTR0046",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735282169-580074e1",
+      "player_id": "CTR0134",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735164518-b4073d71",
+      "player_id": "CTR0101",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735113246-5cfe3950",
+      "player_id": "CTR0144",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791735079317-ad85883c",
+      "player_id": "CTR0047",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791734809902-7e0322eb",
+      "player_id": "CTR0327",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791732841753-4c816929",
+      "player_id": "CTR0250",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791732809149-ff866b58",
+      "player_id": "CTR0213",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791732774174-54986711",
+      "player_id": "CTR0120",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791732705790-3066cee6",
+      "player_id": "CTR0067",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791707267124-c1db1fbf",
+      "player_id": "CTR0364",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791706582776-d8045ac5",
+      "player_id": "CTR0364",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    },
+    {
+      "id": "SEL-1791706078329-40f536b6",
+      "player_id": "CTR0364",
+      "reason": "Datos insuficientes o varias fuentes para la selección y temporada"
+    }
+  ],
+  "preserved": [],
+  "backup": "C:\\ctrugby-data-manager-02\\copias-actualizaciones\\fuentes-asociadas-1792144195304"
+}

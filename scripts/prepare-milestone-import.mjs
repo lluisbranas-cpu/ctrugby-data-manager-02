@@ -63,8 +63,8 @@ for (const [index, source] of milestones.entries()) {
 
 const metrics = [];
 for (const [legacyId, count] of Object.entries(counters)) {
-  const matched = /^CTR0+(\d+)$/.exec(legacyId);
-  const player_id = matched ? `CTR${matched[1].padStart(4, "0")}` : null;
+  const matched = /^(?:CTR|JUG)0+(\d+)$/.exec(legacyId);
+  const player_id = matched ? `JUG${matched[1].padStart(4, "0")}` : null;
   if (!player_id || !playerIds.has(player_id)) { problems.push({ id: legacyId, field: "participaciones", reason: "jugador sin correspondencia" }); continue; }
   if (!Number.isInteger(count) || count < 0) problems.push({ id: legacyId, field: "participaciones", reason: "contador inválido" });
   const participation_years = years[legacyId];

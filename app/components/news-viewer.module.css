@@ -1,0 +1,14 @@
+.dialog { width: min(1200px, calc(100vw - 32px)); height: min(900px, calc(100dvh - 32px)); max-width: none; max-height: none; margin: auto; border: 1px solid #d4d4d4; border-radius: 12px; padding: 0; background: #fff; color: #171717; box-shadow: 0 20px 80px #0006; overflow: hidden; }
+.dialog::backdrop { background: #0009; }
+.layout { display: flex; flex-direction: column; height: 100%; }
+.header { display: flex; flex-shrink: 0; align-items: center; gap: 16px; padding: 14px 16px; border-bottom: 1px solid #e5e5e5; text-align: left; }
+.image { width: 160px; height: 90px; flex-shrink: 0; border-radius: 7px; object-fit: contain; background: #f5f5f5; }
+.copy { min-width: 0; flex: 1; }
+.copy small { font-size: 11px; color: #737373; overflow-wrap: anywhere; }
+.copy h2 { margin: 5px 0 0; font-size: 18px; font-weight: 800; line-height: 1.3; overflow-wrap: anywhere; }
+.close { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; align-self: flex-start; border: 1px solid #fecaca; border-radius: 7px; background: #fff; color: #dc2626; cursor: pointer; }
+.close:focus-visible, .footer a:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; }
+.web { display: block; flex: 1; width: 100%; min-height: 0; border: 0; background: #f5f5f5; }
+.footer { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px 16px; border-top: 1px solid #e5e5e5; font-size: 11px; color: #737373; }
+.footer a { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; color: #b91c1c; white-space: nowrap; }
+@media (max-width: 600px) { .dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); border-radius: 8px; } .header { gap: 9px; padding: 10px; } .image { width: 80px; height: 65px; } .copy h2 { font-size: 13px; } .copy small { font-size: 10px; } .close { width: 34px; height: 34px; } .footer { padding: 8px 10px; } }

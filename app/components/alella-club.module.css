@@ -1,0 +1,35 @@
+.page{--navy:#173858;--blue:#48a6cd;--pale:#eaf5fa;background:#fff;color:var(--navy);min-height:100vh}.utility{display:flex;justify-content:space-between;background:var(--navy);color:#fff;padding:12px 5%;font-size:12px}.header{display:flex;align-items:center;justify-content:space-between;gap:30px;padding:24px 5%;border-bottom:4px solid var(--blue)}.brand{display:flex;align-items:center;gap:16px;font-size:clamp(20px,3vw,32px);color:var(--blue);letter-spacing:-1px}.brand img{width:65px;height:80px;object-fit:contain}.brand strong{font-weight:850}.brand small{display:block;font-size:10px;letter-spacing:3px;color:var(--navy);margin-top:3px}.header nav{display:flex;gap:24px;font-size:13px;font-weight:700}.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:50px;padding:72px 7%;background:linear-gradient(120deg,#f5fbff,#e4f2f9);overflow:hidden}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:var(--blue);margin-bottom:18px}.hero h1{font-size:clamp(38px,5.5vw,78px);line-height:1.05;letter-spacing:-3px;font-weight:900;margin-bottom:24px}.hero h1 em{font-style:normal;color:var(--blue)}.hero p:not(.eyebrow){max-width:490px;line-height:1.8;color:#4c667e;font-size:15px}.button{display:inline-block;margin-top:28px;padding:16px 24px;background:var(--navy);color:#fff;font-size:13px;font-weight:800}.heroShield{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:repeating-linear-gradient(165deg,transparent 0 54px,#48a6cd15 55px 70px);border-radius:50%}.heroShield img{width:60%;max-height:310px;object-fit:contain;filter:drop-shadow(0 20px 20px #17385822)}.heroShield span{font-size:clamp(24px,4vw,55px);font-weight:900;letter-spacing:6px;color:#17385833;margin-top:20px}.ribbon{background:var(--blue);color:#fff;padding:19px 7%;display:flex;justify-content:space-between;font-weight:750;font-size:13px}.squad{padding:64px 7% 80px;scroll-margin-top:20px}.squad h2,.club h2{font-size:clamp(32px,4vw,52px);font-weight:900;letter-spacing:-2px;line-height:1.1}.squad h2 span{color:var(--blue)}.intro{max-width:760px;color:#627487;line-height:1.8;margin:20px 0 30px;font-size:14px}.filters{display:flex;gap:16px;align-items:end;flex-wrap:wrap;padding:22px;background:var(--pale);border-top:3px solid var(--blue)}.filters label{display:grid;gap:8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px}.filters select,.filters input{background:#fff;border:1px solid #c7dce8;padding:12px;color:var(--navy);font-size:14px;text-transform:none;letter-spacing:0;min-height:46px}.search{flex:1;min-width:180px}.filters strong{font-size:12px;padding-bottom:15px}.note{font-size:11px;color:#63798c;margin:15px 0 28px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}.card{border:1px solid #e1ebf0;background:white;box-shadow:0 5px 18px #17385808}.photo{height:260px;position:relative;background:linear-gradient(145deg,#eaf5fa,#c8e3ef);overflow:hidden}.portrait{height:100%;width:100%;object-fit:cover;object-position:top}.shield{height:100%;width:100%;object-fit:contain;padding:45px}.photo>span{position:absolute;bottom:0;left:0;background:var(--blue);color:white;font-size:11px;font-weight:800;padding:8px 14px}.cardBody{padding:22px}.cardBody p{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#5c829c;margin-bottom:12px}.cardBody h3{font-size:22px;line-height:1.2;min-height:55px}.cardBody h3 strong{font-weight:850}.cardBody a{display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-top:24px;border-top:1px solid #deebf2;padding-top:15px}.cardBody a span{color:var(--blue)}.empty{padding:60px;text-align:center;background:var(--pale)}.empty button{margin-top:20px;text-decoration:underline}.club{background:var(--navy);color:white;padding:65px 7%;display:flex;align-items:center;justify-content:space-between;gap:30px}.club p:not(.eyebrow){font-size:14px;max-width:500px;margin-top:22px;line-height:1.8;color:#d3e6ef}.club .button{background:var(--blue)}.club>img{width:150px;max-height:220px;object-fit:contain}.footer{display:flex;justify-content:space-between;padding:26px 7%;font-size:11px;color:#597387}.page a:focus-visible,.page button:focus-visible{outline:3px solid #48a6cd;outline-offset:4px}@media(max-width:1000px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.header{flex-wrap:wrap}.photo{height:230px}}@media(max-width:700px){.hero{grid-template-columns:1fr;padding:40px 6%;gap:25px}.heroShield{height:210px}.heroShield img{max-height:160px}.heroShield span{font-size:26px;margin-top:6px}.hero h1{letter-spacing:-1.5px}.header nav{gap:20px}.header{padding:20px 6%;gap:20px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.photo{height:210px}.cardBody{padding:16px}.cardBody h3{font-size:19px}.squad{padding:40px 5%}.ribbon span:last-child{display:none}.club>img{width:90px}.footer{gap:18px;flex-wrap:wrap}}@media(max-width:400px){.grid{grid-template-columns:1fr}.photo{height:300px}.club{flex-wrap:wrap}}
+
+/* Fotos cuadradas, con fondo blanco y sin rellenos de color. */
+.photo{height:auto;aspect-ratio:1/1;background:#fff}.portrait{object-fit:contain;object-position:center}.shield{padding:20%}
+
+/* Identidad Club Rugby Alella: verde, amarillo y una portada de rugby. */
+.page{--navy:#123f2a;--blue:#e6bf12;--pale:#f1f5ee;color:#173d2a}
+.utility{background:#102b20}
+.header{background:#fff;border-bottom-color:#e6bf12}
+.brand{color:#173d2a;letter-spacing:-.8px}
+.brand strong{color:#315d30}
+.brand small{color:#53664e}
+.hero{position:relative;display:block;min-height:600px;padding:120px 7% 80px;background:linear-gradient(90deg,#082d23d9,#164a32a8),url('https://www.clubrugbyalella.com/hero-scrum.webp') center/cover;color:white}
+.hero>div:first-child{position:relative;z-index:1;max-width:850px}
+.hero h1{font-family:Impact,'Arial Narrow',sans-serif;text-transform:uppercase;font-size:clamp(48px,7vw,94px);line-height:1.03;letter-spacing:-1px;font-weight:900}
+.hero h1 em{color:#f1ce20}
+.hero p:not(.eyebrow){color:#f1f5ee;max-width:620px;font-size:16px}
+.hero .eyebrow{color:#f1ce20}
+.hero .button{background:#e6bf12;color:#153f2a;border-radius:6px}
+.heroShield{display:none}
+.ribbon{background:#e6bf12;color:#173d2a}
+.eyebrow{color:#52703e}
+.squad h2 span{color:#b79800}
+.squad h2,.club h2{text-transform:uppercase;letter-spacing:-1px}
+.filters{background:#f1f5ee;border-top-color:#e6bf12;border-radius:8px}
+.filters input,.filters select{border-color:#cbd7c7;border-radius:5px}
+.card{border-color:#dce5d8;border-radius:8px;overflow:hidden}
+.cardBody p{color:#4c6945}
+.photo>span{background:#e6bf12;color:#173d2a}
+.cardBody a span{color:#52703e}
+.club{background:#123f2a}
+.club .eyebrow{color:#e6bf12}
+.club .button{background:#e6bf12;color:#173d2a;border-radius:6px}
+.footer{color:#4c6945}
+@media(max-width:700px){.hero{min-height:510px;padding:75px 6% 55px}.hero h1{font-size:56px}.hero p:not(.eyebrow){font-size:14px}}

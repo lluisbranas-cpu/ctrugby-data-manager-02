@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 export const COOKIE = "ctrugby-pilot-session";
 export const PLAYER = "TEST001";
 export function configured() {
-  return process.env.CTRUGBY_PILOT_ENABLED === "true" &&
+  return false && process.env.CTRUGBY_PILOT_ENABLED === "true" &&
     Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY);
 }
 export function client(token?: string) {
@@ -24,7 +24,4 @@ export async function access(request: NextRequest) {
   const role = await db.rpc("pilot_is_admin");
   return { db, admin: !role.error && role.data === true };
 }
-export function sameOrigin(request: NextRequest) {
-  return request.headers.get("origin") === request.nextUrl.origin &&
-    request.headers.get("sec-fetch-site") !== "cross-site";
-}
+export { sameOrigin } from "@/lib/request-origin";

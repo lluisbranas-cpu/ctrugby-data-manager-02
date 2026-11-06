@@ -1,0 +1,34 @@
+[
+  {
+    "id": "cabrera-s16b",
+    "clubId": "ESP0022",
+    "category": "S16-B",
+    "phases": [
+      "Fase Previa Grup F"
+    ]
+  },
+  {
+    "id": "73ddd680-72b0-481e-a50c-adbd770dc0bd",
+    "clubId": "ESP0034",
+    "category": "S16-B",
+    "phases": [
+      "Fase Previa Grup F"
+    ]
+  },
+  {
+    "id": "db2bc9c3-9d77-4a24-a989-76f5b2a89eed",
+    "clubId": "ESP0040",
+    "category": "S16",
+    "phases": [
+      "Fase Previa Grup F"
+    ]
+  },
+  {
+    "id": "9bd24f1b-5d84-47c6-8860-736a9b722ed3",
+    "clubId": "ATC0002",
+    "category": "S16",
+    "phases": [
+      "Fase Previa Grup F"
+    ]
+  }
+]

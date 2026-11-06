@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
-import Link from "next/link";
+import Link from "@/app/components/sport-link";
 type Player = { id: string; name: string; season: string; version: number;
   photoUrl: string | null; pilot_clubs: { name: string } };
 type State = { configured: boolean; admin: boolean; player?: Player | null; notes?: string };
@@ -69,7 +69,7 @@ export default function PilotPage() {
   const input = "mt-2 w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-950";
   return <main className="min-h-screen bg-neutral-100 text-neutral-950">
     <header className="relative flex items-center justify-between bg-neutral-950 px-6 py-5 text-white">
-      <Link href="/" className="text-2xl font-black">CTRugby <span className="text-red-500">· Prueba</span></Link>
+      <Link href="/" className="text-2xl font-black">Rugby <span className="text-red-500">· Prueba</span></Link>
       <button aria-label="Menú" aria-expanded={menu} aria-controls="pilot-menu" onClick={() => setMenu(!menu)}
         className="rounded-lg border border-neutral-600 px-4 py-2 text-2xl">{menu ? "×" : "☰"}</button>
       {menu && <nav id="pilot-menu" aria-label="Navegación" className="absolute right-6 top-20 z-10 rounded-xl bg-neutral-900 p-5 shadow-xl"

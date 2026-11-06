@@ -1,0 +1,19 @@
+.card{border-color:#9bbada!important}
+.minimalCard{min-height:112px!important;padding:20px 24px!important;justify-content:center}
+.sportLine{display:flex;flex-wrap:wrap;align-items:center;gap:12px;width:100%}
+.sportLabel{display:inline-flex;align-items:center;gap:12px;min-width:0}
+.sportIcon{font-size:30px!important;line-height:1!important}
+.sportName{font-size:22px!important;line-height:1!important}
+.status{flex-shrink:0;max-width:100%;margin-left:auto;border:1px solid #1b4980!important;background:#1b4980!important;color:#fff!important;text-decoration:none}
+.status:hover{border-color:#12365f!important;background:#12365f!important;color:#fff!important}
+.header{min-height:72px!important;padding:0 28px!important;background:#1b4980!important;box-shadow:0 3px 14px rgba(14,42,75,.22)!important}
+.brand{gap:0!important}
+.logo{display:block;width:116px;height:60px;object-fit:contain}
+.eyebrow{color:#1b4980!important}
+.soon{border:1px solid #1b4980!important;background:#1b4980!important;color:#fff!important}
+.available{background:#1b4980!important;color:#fff!important}
+.active{border-color:#1b4980!important;background:#fff!important;color:inherit!important;box-shadow:none!important}
+.active:hover{box-shadow:0 6px 16px #1b49801f!important}
+.active:focus-visible{outline-color:#1b4980!important}
+.note>span{color:#1b4980!important}
+@media(max-width:700px){.header{height:72px!important;padding:0 16px!important}.logo{width:104px;height:56px}}

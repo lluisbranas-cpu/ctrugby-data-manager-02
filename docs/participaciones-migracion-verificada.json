@@ -1,0 +1,334 @@
+{
+  "verified": true,
+  "total": 37,
+  "fromTable": 15,
+  "fromTrajectory": 22,
+  "published": 22,
+  "pendingReview": 15,
+  "fieldsVerified": [
+    "id",
+    "player_id",
+    "player_name",
+    "category",
+    "club_name",
+    "club_id",
+    "season_label",
+    "notes",
+    "created_at"
+  ],
+  "originalRecordsPreserved": 9,
+  "backup": "C:\\ctrugby-data-manager-02\\copias-actualizaciones\\migracion-participaciones-1792147604806",
+  "mapping": [
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791742086925-eac2af69",
+      "id": "0f4dcd0d-d478-5e15-a1e7-0ed72c4e5288"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791656892635-5a43952b",
+      "id": "5c80f8c7-044a-5ce7-ae7f-24b0150bb3c6"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791656879251-d0d6f9d6",
+      "id": "34233dc9-1b64-5e00-abf2-5461932df1f4"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791655951702-b31fcf10",
+      "id": "77bb1265-ab43-55fa-aa13-225ff533c5bc"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791655499689-5d8dd245",
+      "id": "6433ebca-3137-55c7-ae9f-8fa6ef529905"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791655398574-2d5be2be",
+      "id": "3614b7ab-8388-57c9-a962-afa7029aca5f"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791655366579-454fe398",
+      "id": "57be8601-382a-594b-a358-3fc075d9858f"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791655348384-5df2e52a",
+      "id": "d1304dbc-f48b-5f0b-af60-b0dde687de7c"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791655272017-7aa4f15d",
+      "id": "3e822a5e-4cab-5aea-adf4-249b64f61da3"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791644048406-d566353e",
+      "id": "841c841a-1c16-58db-a89e-a763ede1e1d4"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791643967012-41e29e99",
+      "id": "8131a943-c830-5729-af54-9050500032a9"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791643948899-e05ffec4",
+      "id": "8b0a51b0-9a97-5734-a649-be7b0a1d5482"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791643799730-7b91643e",
+      "id": "9f6d61c0-c2ea-53b6-ac90-c7c046679bd9"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791643710591-50460e50",
+      "id": "77c3344f-9e8b-55f8-a94d-156910d39fc6"
+    },
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791643295434-c1cb90f6",
+      "id": "f73432fc-c200-59b3-aad3-fa2b42be77f1"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0024-2026",
+      "id": "0ee2761c-7b1c-574e-abb4-99bb282fd3fa"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0056-2026",
+      "id": "a2de0092-a788-5117-ad65-e275892163b0"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0063-2026",
+      "id": "5b470991-d180-5fb4-a8e3-9923c4178492"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0074-2026",
+      "id": "2e261b99-d7e3-5f0b-a67b-45ed58face55"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0100-2026",
+      "id": "595530e3-23cc-5550-a9a2-e92a716cf911"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0130-2026",
+      "id": "dc26e178-1200-540c-aa83-73c0fa81b966"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0178-2026",
+      "id": "ffcc129c-491d-5964-a30f-7c7f280ba7fc"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0197-2026",
+      "id": "1aba4fae-c7fd-52a1-ab18-21f06132707d"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0239-2026",
+      "id": "432622c6-e30e-51aa-a07f-ef8f3de8a3ee"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0363-2026",
+      "id": "3e44a6ec-48a1-53de-ac6c-52505b4c7eb5"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0364-2022",
+      "id": "f040147e-2ce4-5781-a8e7-a13fd6c97077"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0364-2023",
+      "id": "ef6856f7-bdde-5875-a0d1-72532e5c471c"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0364-2026",
+      "id": "6accae20-eeb5-5192-af7b-7708de0c0807"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0368-2014",
+      "id": "ef1500dc-9bff-53b0-a2dc-8f241a275eac"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0368-2015",
+      "id": "b649c59f-3c5a-54ef-a1e2-e9f6a909ebb3"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0368-2016",
+      "id": "1c792721-6628-5c7c-af0d-aa19d648404c"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0368-2017",
+      "id": "f129c9a5-71d2-598d-a3ad-0005cc68e8a6"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0368-2018",
+      "id": "e8392d4b-d267-5471-a9d4-5cfd86f6f8f0"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0368-2019",
+      "id": "2d543613-c55e-5501-a2dd-7c81a08b297f"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0368-2026",
+      "id": "2732e063-04c4-5483-a5ff-ca22375cac20"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0375-2027",
+      "id": "59ae7cbe-13bc-5bbc-ab88-30ca36ece729"
+    },
+    {
+      "source_kind": "player-trajectory",
+      "legacy_id": "trajectory-CTR0376-2026",
+      "id": "12ef6e61-c0d8-5204-a33a-31cfad259aeb"
+    }
+  ],
+  "missing": [
+    {
+      "legacy_id": "PRO-1791742086925-eac2af69",
+      "player_id": "CTR0237",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791656892635-5a43952b",
+      "player_id": "CTR0360",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791656879251-d0d6f9d6",
+      "player_id": "CTR0034",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791655951702-b31fcf10",
+      "player_id": "CTR0359",
+      "fields": [
+        "club",
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791655499689-5d8dd245",
+      "player_id": "CTR0358",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791655398574-2d5be2be",
+      "player_id": "CTR0357",
+      "fields": [
+        "club",
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791655366579-454fe398",
+      "player_id": "CTR0356",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791655348384-5df2e52a",
+      "player_id": "CTR0316",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791655272017-7aa4f15d",
+      "player_id": "CTR0319",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791644048406-d566353e",
+      "player_id": "CTR0370",
+      "fields": [
+        "club",
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791643967012-41e29e99",
+      "player_id": "CTR0368",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791643948899-e05ffec4",
+      "player_id": "CTR0367",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791643799730-7b91643e",
+      "player_id": "CTR0366",
+      "fields": [
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791643710591-50460e50",
+      "player_id": "CTR0361",
+      "fields": [
+        "club",
+        "season"
+      ]
+    },
+    {
+      "legacy_id": "PRO-1791643295434-c1cb90f6",
+      "player_id": "CTR0362",
+      "fields": [
+        "club",
+        "season"
+      ]
+    }
+  ],
+  "retired": true,
+  "retiredAt": "2026-10-16T10:48:44.294Z",
+  "activeSource": "data/staging/player-news (type=participacion)",
+  "redirect": "/clubes-profesionales -> /noticias?tipo=participacion",
+  "imagesFromCategories": 36,
+  "pendingCategoryImages": [
+    {
+      "source_kind": "professional-table",
+      "legacy_id": "PRO-1791655951702-b31fcf10",
+      "id": "77bb1265-ab43-55fa-aa13-225ff533c5bc",
+      "image_url": null,
+      "image_updated_at": null
+    }
+  ]
+}

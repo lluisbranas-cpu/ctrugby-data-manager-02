@@ -1,0 +1,44 @@
+{
+  "spreadsheetId": "1Oh4cgM0RuJSbsy0IEKmAzEOoCa0L49uFs3YYzxwD8p8",
+  "sourceRows": 3008,
+  "updated": 3003,
+  "pending": [
+    {
+      "row": 211,
+      "name": "Alex García Obertura",
+      "scope": "FCR",
+      "category": "S14",
+      "id": null
+    },
+    {
+      "row": 212,
+      "name": "Alex Gonzalez",
+      "scope": "FCR",
+      "category": "S14",
+      "id": null
+    },
+    {
+      "row": 234,
+      "name": "Alex Torres",
+      "scope": "FCR",
+      "category": "S14",
+      "id": null
+    },
+    {
+      "row": 432,
+      "name": "Aran Jimenez",
+      "scope": "FCR",
+      "category": "S14",
+      "id": null
+    },
+    {
+      "row": 666,
+      "name": "Charles Burke",
+      "scope": "FCR",
+      "category": "S14",
+      "id": null
+    }
+  ],
+  "preservedSourceRecords": 3058,
+  "backup": "C:/ctrugby-data-manager-02/copias-actualizaciones/hitos-fuentes-1792142194977"
+}

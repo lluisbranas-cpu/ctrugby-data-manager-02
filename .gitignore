@@ -48,3 +48,46 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*
+
+# LIKIDHUB - Copias y archivos temporales
+/backups/
+/copias-actualizaciones/
+/ctrugby-data-manager-02/
+/Nueva carpeta/
+
+*.zip
+*.bak
+*.backup
+*.log
+*.exe
+*.lnk
+
+/build-error*.txt
+/cambios_ctrugby.txt
+/reports/
+/tsconfig.json.backup
+
+
+# LIKIDHUB - Copias y archivos temporales
+/backups/
+/copias-actualizaciones/
+/ctrugby-data-manager-02/
+/Nueva carpeta/
+
+*.zip
+*.bak
+*.backup
+*.log
+*.exe
+*.lnk
+
+/build-error*.txt
+/cambios_ctrugby.txt
+/reports/
+/tsconfig.json.backup
+
+
+data/backups/

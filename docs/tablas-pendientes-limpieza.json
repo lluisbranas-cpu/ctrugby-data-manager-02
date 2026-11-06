@@ -1,0 +1,50 @@
+{
+  "tabla_vigente": {
+    "nombre": "Hitos deportivos",
+    "ruta": "/hitos",
+    "vistas": [
+      "Participaciones",
+      "Convocatorias"
+    ]
+  },
+  "pendientes": [
+    {
+      "nombre": "Hitos deportivos (borrar)",
+      "ruta": null,
+      "archivos": [
+        "C:/ctrugby-data-manager-02/copias-actualizaciones/hitos-ruta-1792142529727/hitos-antiguos-borrar.tsx"
+      ],
+      "entradas_menu_retiradas": [
+        "Hitos",
+        "Administrar hitos"
+      ],
+      "nota": "La ruta /hitos se ha reutilizado como tabla vigente. No borrar app/hitos/page.tsx."
+    },
+    {
+      "nombre": "Fuente de hitos (borrar)",
+      "ruta": "/hitos/fuente",
+      "archivos": [
+        "app/hitos/fuente/page.tsx"
+      ],
+      "motivo": "Vista auxiliar de la tabla antigua"
+    }
+  ],
+  "estado": "Solo marcado; no se han borrado datos ni archivos.",
+  "dependencias_a_conservar": [
+    "Los registros de hitos siguen alimentando las convocatorias detectadas y la trayectoria.",
+    "Tabla de selecciones sigue alimentando el desplegable de convocatorias."
+  ],
+  "limpieza": "Realizar únicamente cuando el usuario lo solicite y comprobar antes las dependencias de datos y APIs.",
+  "redirecciones": {
+    "/hitos/convocatorias": "/hitos",
+    "/participaciones": "/hitos?vista=participaciones"
+  },
+  "participaciones": {
+    "tabla": "/noticias?tipo=participacion",
+    "almacenamiento": "data/staging/player-news (type=participacion)",
+    "total": 37,
+    "verificado": true,
+    "tablaAnteriorRetirada": true,
+    "backup": "C:\\ctrugby-data-manager-02\\copias-actualizaciones\\migracion-participaciones-1792147604806"
+  }
+}

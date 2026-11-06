@@ -36,7 +36,7 @@ if (!Array.isArray(sourcePlayers) || Array.isArray(sourceSeasons) || !Array.isAr
 const problems = [];
 const players = sourcePlayers.map((row) => {
   const id = requiredText(row.id, "id", row.id ?? null, problems).toUpperCase();
-  if (!/^CTR[0-9]{4}$/.test(id)) problems.push({ id, field: "id", reason: "formato inválido" });
+  if (!/^JUG[0-9]{4}$/.test(id)) problems.push({ id, field: "id", reason: "formato inválido" });
   const first_name = requiredText(row.nombre, "nombre", id, problems);
   const last_name = optionalText(row.apellidos);
   const birth = row.nacimiento == null || row.nacimiento === "" ? null : Number(row.nacimiento);
@@ -81,11 +81,11 @@ for (const [player_id, byYear] of Object.entries(sourceSeasons)) {
     const height = source.altura == null || source.altura === "" ? null : Number(source.altura);
     if (weight != null && (!Number.isFinite(weight) || weight < 0 || weight > 250)) problems.push({ id: player_id, field: `peso ${season_year}`, reason: "valor inválido" });
     if (height != null && (!Number.isFinite(height) || height < 0 || height > 260)) problems.push({ id: player_id, field: `altura ${season_year}`, reason: "valor inválido" });
-    seasons.push({ player_id, season_year, club_id, legacy_club_name, position_text: optionalText(source.posicion), weight_kg: weight, height_cm: height });
+    seasons.push({ player_id, season_year, registration_number: null, club_id, legacy_club_name, position_text: optionalText(source.posicion), weight_kg: weight, height_cm: height });
   }
 }
 
-const expectedUnresolved = new Set(["CTR0254|2025|NAAS", "CTR0269|2025|BELENOS RC", "CTR0274|2025|VF", "CTR0278|2025|GIJON RC"]);
+const expectedUnresolved = new Set(["JUG0254|2025|NAAS", "JUG0269|2025|BELENOS RC", "JUG0274|2025|VF", "JUG0278|2025|GIJON RC"]);
 for (const entry of unresolved) {
   const key = `${entry.player_id}|${entry.season_year}|${entry.legacy_club_name}`;
   if (!expectedUnresolved.has(key)) problems.push({ id: entry.player_id, field: `club ${entry.season_year}`, reason: `relación no prevista: ${entry.legacy_club_name}` });
@@ -107,7 +107,7 @@ const sql = [
   "-- Inserta solo registros inexistentes, deja todos los jugadores sin publicar y conserva las relaciones pendientes.", "begin;",
   insert("public.catalog_players", ["id", "first_name", "last_name"], players),
   insert("app_private.player_profiles", ["player_id", "category", "birth_year"], players.map(({ id, category, birth_year }) => ({ player_id: id, category, birth_year }))),
-  insert("app_private.player_seasons", ["player_id", "season_year", "club_id", "legacy_club_name", "position_text", "weight_kg", "height_cm"], seasons),
+  insert("app_private.player_seasons", ["player_id", "season_year", "registration_number", "club_id", "legacy_club_name", "position_text", "weight_kg", "height_cm"], seasons),
   "commit;", "",
 ].join("\n");
 

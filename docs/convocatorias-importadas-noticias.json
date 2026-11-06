@@ -1,0 +1,1134 @@
+{
+  "verified": true,
+  "total": 223,
+  "milestones": 149,
+  "manual": 74,
+  "published": 223,
+  "pending": 0,
+  "withUrl": 160,
+  "missing": {
+    "url": 63,
+    "season": 56,
+    "category": 52,
+    "gender": 84
+  },
+  "mapping": [
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000001",
+      "news_id": "b5def32a-d72c-5d65-a851-e478e7b6cb92"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000002",
+      "news_id": "9368d98f-c276-5a5a-aed3-eeedeceb8fef"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000004",
+      "news_id": "dd838774-8e15-56e3-ace6-19b96f26bccf"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000012",
+      "news_id": "41057d8f-b6f3-5ae3-aa4b-b1f01adcb850"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000015",
+      "news_id": "af8c12dc-fa99-5d67-af0b-edbe794a27e7"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000016",
+      "news_id": "ff90d1a0-0a87-5342-af1f-f6dfb954ab29"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000017",
+      "news_id": "2ae9633b-2407-5c26-a5b2-b5c97c5f37ed"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000024",
+      "news_id": "7cca7501-014b-52ef-a094-79be3c2353c1"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000025",
+      "news_id": "5ef8556e-b54a-5d88-a947-3a864bd9cf3b"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000028",
+      "news_id": "82770440-b9e5-5fca-aa27-a88a09dfe5aa"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000037",
+      "news_id": "75785e97-06d5-576d-af48-580bd5f93736"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000038",
+      "news_id": "6512c97e-4561-5d14-a96d-e4067164b278"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000047",
+      "news_id": "5a82bf84-1d26-5ae6-a003-17b3af8dbcee"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000050",
+      "news_id": "04533a08-2679-5942-a0ea-32db015831f8"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000056",
+      "news_id": "464007f8-0f64-596d-a57e-09ff9721cd2c"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000057",
+      "news_id": "d9f9f673-5bea-5133-aee3-6d958f830fe5"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000071",
+      "news_id": "f736669a-f2fb-501a-a324-0e559d1dec00"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000072",
+      "news_id": "6b0a3d16-5758-566e-ae49-23f86a7c03ea"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000086",
+      "news_id": "d6624c07-ba8b-58c6-a698-0a6ef1f4dcf7"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000087",
+      "news_id": "8378beff-dc50-5cf8-adea-4f94cdbee53d"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000089",
+      "news_id": "c802f209-7f01-5f51-acd7-b6bfb8e77309"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000095",
+      "news_id": "1c5e1bea-31f4-5db9-a19a-8ee6b67ab728"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000096",
+      "news_id": "8a048c8a-1acc-50e7-ad77-b4ed958713f6"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000131",
+      "news_id": "782f56dd-2d12-5189-a18f-990047b175bc"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000136",
+      "news_id": "1bb29efd-49d8-578f-a8d0-79beac05c42c"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000142",
+      "news_id": "ff0b5cf1-59ad-58b0-abca-0365d9161d05"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000147",
+      "news_id": "ff049389-3e3c-5e93-a69b-beacdbc6c267"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000156",
+      "news_id": "b22c971a-3f66-5940-aab3-c0dd7b57a554"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000170",
+      "news_id": "7ca2dbf5-204c-53f7-abb4-224ae36b2163"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000175",
+      "news_id": "4d3c2614-3877-5895-a871-bf97641eba62"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000184",
+      "news_id": "8c282323-265d-591a-aec9-0a3a76482657"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000186",
+      "news_id": "f521887b-85ae-5ad0-a199-edb63c698f69"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000190",
+      "news_id": "e81b6b37-8681-5333-a951-826993b40384"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000194",
+      "news_id": "ff2ed1b3-c459-53e0-a58d-d5b99c58305a"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000196",
+      "news_id": "65b8f312-2993-5695-a3ec-2f0e53612d2e"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000198",
+      "news_id": "7cbc9d7a-2b7c-5021-ab7a-ee93d7f777ed"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000199",
+      "news_id": "6e8c0759-3c58-5abb-ac33-3494b2ffe842"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000201",
+      "news_id": "fe62a670-78e3-55f8-a4fc-c12a6a4b60a4"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000210",
+      "news_id": "e79a9b40-1e84-5402-abde-4c744baf0056"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000280",
+      "news_id": "a47554c0-7427-5a78-a016-e32d5b715b2e"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000281",
+      "news_id": "1b575423-f36e-504b-ad26-071e12494067"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000284",
+      "news_id": "75348dbd-eae1-5a35-a58e-a825dbc7a501"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000287",
+      "news_id": "2fbed2bf-0c4d-5981-af3a-a7398cbb9049"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000291",
+      "news_id": "16e4bb6d-d337-5e40-a40a-bb144bde1b18"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000292",
+      "news_id": "3e3f969f-6409-5c4a-a738-b35c3cf47257"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000293",
+      "news_id": "572c5717-63e8-5ee9-aa71-8ecf7761e6d2"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000297",
+      "news_id": "e93a46d7-701b-5133-a7dc-340f051ce704"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000301",
+      "news_id": "e23d782a-13d4-5602-a640-fff6e3ceed0e"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000306",
+      "news_id": "d2903372-4e64-5409-afe8-5350a3195191"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000307",
+      "news_id": "b5e8a911-b44e-5327-a8a8-3697052e51c4"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000308",
+      "news_id": "8fe3f08c-dff1-5c5d-ab00-c55a25e2a5a6"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000316",
+      "news_id": "2054b919-b0f1-5083-a438-351c218e9dab"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000318",
+      "news_id": "00f63752-c44c-58f1-abc2-fe2dc5557eea"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000320",
+      "news_id": "88819eba-ddfa-5fa7-aabf-9f47bac55ed2"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000321",
+      "news_id": "bb771c5f-b356-5beb-a6ff-b635642ad9ea"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000324",
+      "news_id": "4a218e55-3f5b-5f35-aeb9-e9428c010111"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000331",
+      "news_id": "5595a501-f7b3-5d52-a7b5-a7e43e8f979c"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000332",
+      "news_id": "b72d89d3-ad6f-58ba-a8a9-af5fbcf7f621"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000334",
+      "news_id": "d4276b7c-0a15-58de-af70-cfe1f854b146"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000337",
+      "news_id": "94d18dc7-b78c-57b5-ae8f-dbc0edee1ad4"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000338",
+      "news_id": "04b1453d-fba5-57ec-a9f4-cbd2ea7cfe70"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000346",
+      "news_id": "0d0735d5-0475-5710-adf8-d6b8eeb23956"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000348",
+      "news_id": "846a8d83-5d68-5fed-aedd-6d32e415968a"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000350",
+      "news_id": "3cd5da8a-b3d4-5971-aa07-9b23084d2b63"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000351",
+      "news_id": "c535bb07-a1a1-5bce-acd9-11439f16cee8"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000354",
+      "news_id": "8872bb3f-f39d-5693-a143-742baeee5d60"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000361",
+      "news_id": "09b4feed-8816-518d-a729-b2d6602641fa"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000362",
+      "news_id": "eb494615-1cac-5510-adb3-b6ec86358ed7"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000364",
+      "news_id": "dee9200f-38ed-55a6-ae74-272584857660"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000384",
+      "news_id": "f8fb5b52-fc13-5ebb-a916-e1119d011432"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000452",
+      "news_id": "d02db7b9-6bce-5dbe-a53f-b51bc05564f8"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000469",
+      "news_id": "f0b796ee-2888-5d1f-a25d-1dff8d1f4a5b"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000482",
+      "news_id": "9acbff22-7d66-5cfd-ae35-e8138f237054"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000489",
+      "news_id": "d51120c5-d2d8-50b8-a294-a3d7ed5217ed"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000506",
+      "news_id": "3d67a939-1e60-527f-ab4d-e1bd73ba7381"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000519",
+      "news_id": "de354ddd-de94-5ff0-aa62-f249360d13e1"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000524",
+      "news_id": "5b3cf9bc-abb4-5fed-a8c5-8d69b408b454"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000546",
+      "news_id": "a3d6f59d-742d-536b-ac45-652db8f021f6"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000547",
+      "news_id": "4f7dab04-3fc9-57a6-acac-deafa5d94136"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000548",
+      "news_id": "bf68989d-13b7-5009-a459-6110d1ec6e42"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000557",
+      "news_id": "58f750ba-1d4e-57e6-a24c-9550187983e4"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000566",
+      "news_id": "78a5551a-cf57-56ff-aaff-7bb7d48a8690"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000567",
+      "news_id": "a3a4e4b5-a588-5494-ac04-29968d64a776"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000597",
+      "news_id": "636d5040-f948-5888-a559-51dbd1b532b5"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000604",
+      "news_id": "3d105e30-1c55-5138-a9f5-5bdcf7e54b09"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000605",
+      "news_id": "e3baf812-0dbf-5c16-ab52-1331c3041894"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000608",
+      "news_id": "d60f435b-086e-5803-a23e-e4cbe78424e4"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000609",
+      "news_id": "70108317-a654-593d-a8e2-e416c21076d0"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000611",
+      "news_id": "c5612935-f00e-5851-a716-073d554897bf"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000612",
+      "news_id": "fd2de789-d11a-51ec-a6fb-f5faff82639f"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000613",
+      "news_id": "b8937c7a-726b-5e32-a673-ca75b2dcc409"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000614",
+      "news_id": "b7536f08-f33a-5fe1-a1a5-1f0af87357ed"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000615",
+      "news_id": "831ae5ea-3b68-54d5-a8be-a06b904b6ba4"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000644",
+      "news_id": "8ca402f6-5c2b-5865-a610-720e164ea349"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000682",
+      "news_id": "cfc1b31f-6938-52c1-abdf-a19cec1fbc9b"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000745",
+      "news_id": "628b63bd-9d83-5d36-a1ea-c8c5594d0638"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000772",
+      "news_id": "8177aefa-9b3b-5ada-a820-8f2e2cd89242"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL000869",
+      "news_id": "abd9fe9d-9178-52d2-afed-5f5f953812d2"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001100",
+      "news_id": "e8344fb8-a541-50b0-a806-72a0ce8b2ee8"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001110",
+      "news_id": "35a0673a-8016-5d02-acb2-1aaacab118e2"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001174",
+      "news_id": "2dfe3694-e1ed-5fca-ab34-8d705adc887e"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001177",
+      "news_id": "664c6c8a-2e31-51ad-a171-76c7150e70c9"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001231",
+      "news_id": "7ea7f4a9-c173-50fb-a8c4-e5d202070d73"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001355",
+      "news_id": "433a5992-10c2-5a12-a9c6-f41a1b37bc91"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001378",
+      "news_id": "b6c2b351-cde0-52d5-a6f1-3e6835a672d6"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001403",
+      "news_id": "3a1ac5f5-7e33-5ad8-a6e9-0321621e9afe"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001456",
+      "news_id": "0a9f0d22-38f9-5fb1-a535-fc625e844eb4"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001457",
+      "news_id": "9685843a-e4ae-5f3d-aa68-9a0ea0b0467e"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001460",
+      "news_id": "69107bfa-bf88-5c25-ab35-9cb96e5c6e0f"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001486",
+      "news_id": "3750f4f3-08b2-5a72-afe0-ea6ecf6c5dbd"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001562",
+      "news_id": "c415ceda-c913-5f2b-abdb-ed7635103f7f"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001565",
+      "news_id": "790df733-ddc1-5dc0-af92-05cc80bca33f"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001585",
+      "news_id": "e2f7ee22-4482-54b9-a38c-15206e9146a1"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001631",
+      "news_id": "34bcd9d3-e6b3-5e71-aafb-c5ab3d4093fe"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001632",
+      "news_id": "c3189e7d-53d4-5f65-a272-4427d19790b1"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001633",
+      "news_id": "bcba0ecc-b0da-5ee2-ae35-52e2d040d30a"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001652",
+      "news_id": "e72f9321-ad8d-567d-a70a-e44a1fd08a33"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001669",
+      "news_id": "844cc349-450d-53ba-a787-8dcaea336178"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001675",
+      "news_id": "49040659-f1d0-5de4-a2de-34243117f390"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001712",
+      "news_id": "d326cf32-04aa-537f-ad21-ad6103d66fb3"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL001715",
+      "news_id": "b1bfac61-1c94-5ae7-a043-9a1d267e6489"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002058",
+      "news_id": "cac943b1-eab5-523e-a057-bf214499b500"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002217",
+      "news_id": "14d7cccd-1728-57bd-a538-046d60f3a6f1"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002296",
+      "news_id": "c2f3e821-578a-5e02-a6f4-1f875548c01f"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002413",
+      "news_id": "bc2414bb-287b-5885-affa-edab2b0ebf0f"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002427",
+      "news_id": "e1637521-2628-58b6-ace2-93f0df66fb26"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002443",
+      "news_id": "9bdb7111-3b10-5b30-a4fe-56cb8122a600"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002484",
+      "news_id": "dbdc51c8-9c29-5f10-ac02-aa3cde8b3150"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002530",
+      "news_id": "64826069-88da-58f1-ac99-f06dc70316cd"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002549",
+      "news_id": "7c5c7283-af16-5fc5-af66-d9a01a387b7e"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002550",
+      "news_id": "bc14b049-0879-5cec-a303-efc685003a48"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002557",
+      "news_id": "abc8bf48-3a36-5784-a1a8-ecb87327a2e9"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002594",
+      "news_id": "2871c41a-2e02-552c-abfe-52d77ae21acc"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002614",
+      "news_id": "37864b14-86bd-5615-a8dc-1c4b579ecdaa"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002659",
+      "news_id": "d9719cf0-3aeb-56f6-a3a2-13dd2ac4cbf4"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002675",
+      "news_id": "54b628d5-f074-5e2a-abe3-df64ffcfe151"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002678",
+      "news_id": "35de75e9-f23b-5c4c-a9f4-605dba1a2b45"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002759",
+      "news_id": "800402e9-8275-56d7-aade-609e36db73a1"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002794",
+      "news_id": "81fea4f5-9b8c-558a-a393-9c5dfd19c832"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002835",
+      "news_id": "233aad7c-3f27-5300-ac5c-c04d8195a2f2"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002848",
+      "news_id": "9d23cc27-6318-57df-a1d3-6e4c615d54f8"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002873",
+      "news_id": "5855942e-3db9-537f-ac98-2cb1263d2eb8"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002899",
+      "news_id": "4d114049-4e00-5cce-ac3c-fc3c6219f221"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002933",
+      "news_id": "193fddf5-2a75-563d-a7dd-13322aee419b"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL002974",
+      "news_id": "57ac6adb-bc79-5231-a79c-7f8570d76c55"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL003000",
+      "news_id": "7747a3f0-d51e-539a-aede-b894cf0271de"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL003001",
+      "news_id": "83f520e2-b83a-5aac-a287-1eab38787907"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL003002",
+      "news_id": "da71bcc9-d95b-5681-a7da-0986c142fb90"
+    },
+    {
+      "source_kind": "selection-milestone",
+      "source_id": "MIL003061",
+      "news_id": "14f7cb1f-393d-54fc-a51c-c35c808c13e9"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791750303011-63f46edb",
+      "news_id": "9eeb5796-35ee-5c0c-ab5d-f3b0dd316134"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791739798691-b52bf524",
+      "news_id": "d05f5d8f-3317-5245-a772-d365548c3a64"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791739755816-c6511a59",
+      "news_id": "916051fc-ffbb-57b5-a46b-b64840ce45c2"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791739652142-91159c5e",
+      "news_id": "fae39cf2-3e82-59dd-a6c6-0d1828619b38"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791739544923-b3bce6af",
+      "news_id": "42b40779-32e0-56fd-a25d-209c2fa34768"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791739526030-885429d1",
+      "news_id": "6b5ab469-4404-5f1c-a08f-ea31ebbc0b44"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791739412228-67a02092",
+      "news_id": "7cc2c0ab-aefa-53d9-a383-bbeda56f0fd3"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738465762-a4cb6488",
+      "news_id": "b3bd9ebf-9455-59bb-a1b4-9e7ae876bb47"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738436043-cce45412",
+      "news_id": "20cb6221-f453-5bff-a04a-9dd79b6ceb58"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738238194-0c989769",
+      "news_id": "984ff913-488d-592e-abe5-a185f844e818"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738194367-85007180",
+      "news_id": "e8af5802-f561-51bd-ab8f-7753291c23c2"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738174256-71ef9bc2",
+      "news_id": "1009483f-d812-5719-afc0-bb1dd89d4aad"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738131511-c9612607",
+      "news_id": "5ac74b65-39bd-5521-a2b7-35fa786f38c9"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738108003-4fd80c61",
+      "news_id": "147b5317-55bc-5163-a39b-c6bed1469ac3"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738087972-25f0bc59",
+      "news_id": "71411707-23ae-5e7c-afdf-d161755c1897"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791738034636-d3afb1ae",
+      "news_id": "a47ab7be-31fb-5985-a6b2-9eee1a360dcb"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737957007-d8c70eec",
+      "news_id": "50906c71-5bb3-5248-afea-0d957711d02d"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737904486-153166bb",
+      "news_id": "e7aaef26-6a65-5a7f-ae6e-6516a7eccd7d"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737890710-66bb1fc8",
+      "news_id": "174bfc40-7357-590e-ab74-18e1d730f03e"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737859397-fb973c24",
+      "news_id": "126545c2-48cb-5ceb-ac31-c8367cf7985d"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737835371-a2b7e32f",
+      "news_id": "844dbe95-fd48-521a-a555-9bee6197bd16"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737786918-dd4abd61",
+      "news_id": "da692184-ecf4-58e6-a561-41197e42f36b"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737748981-1bcc7889",
+      "news_id": "cc0d2b7d-df1f-5f65-a05a-4c382d2c22ee"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737720699-63c323da",
+      "news_id": "c61e6c99-5f26-5a0b-a34a-41ffba1d1737"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737686771-517dc7d1",
+      "news_id": "b5ebd24b-71d3-5bd4-a30e-06629d370363"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737654246-c112dcc6",
+      "news_id": "0da1adf9-948d-5279-a306-2126282f0fc8"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791737595001-52f98d20",
+      "news_id": "002665ca-2dc1-57bf-abb1-8676bcfacb85"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736805186-d23e4465",
+      "news_id": "8060614d-96e5-5282-a5b2-a2d3f4bae3ad"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736759628-38ce516d",
+      "news_id": "1d0bb549-9f3f-5265-ad2d-4a259c461757"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736725687-8f361514",
+      "news_id": "a5a5eb60-113f-582f-a420-b7755cac6579"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736703174-6662bb8b",
+      "news_id": "a7e25cca-ec0b-53e6-a7c3-069e2b2631d7"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736667077-0df3ecbf",
+      "news_id": "587ab223-55a8-5f5c-a233-d846e88d9d69"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736644239-99535f54",
+      "news_id": "3dcc7b70-1ac5-541d-a3bc-56dd21d3e5a4"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736619407-443aa483",
+      "news_id": "3ac93eef-28e5-5c86-a30c-a6c93c6f1e86"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736601288-188dfebf",
+      "news_id": "60d33708-2870-5348-af95-10e397b32db9"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736560938-839abc0f",
+      "news_id": "e4162688-0b24-5fcf-af8e-30807832a6f3"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736547751-2066c400",
+      "news_id": "a49d3f64-2316-546f-a9dd-425c17d8c6ee"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736491559-65c1e603",
+      "news_id": "d3f256d4-3f3e-5526-a2a4-856fa99dd410"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736418149-02133ceb",
+      "news_id": "a375d801-1402-598e-aa0d-cf49a6f06d10"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736331760-4469f274",
+      "news_id": "65670648-689b-51b5-af5e-c9f8fe37f5da"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791736312333-8a047a1a",
+      "news_id": "cebec482-c5fa-51c8-a4b7-7f355dfa18a5"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735793637-cabc6a89",
+      "news_id": "f9abad02-8ccc-5c0d-ae69-bc9403e61e68"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735745530-b6892d9c",
+      "news_id": "0bddd14d-89d2-5a22-a1a6-02e28bd27726"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735715192-c99bd219",
+      "news_id": "b55fca66-cd57-52c7-a959-e603b9077345"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735667283-162c3eab",
+      "news_id": "cdd2c83d-998d-5730-a10f-fb28e50b489b"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735530573-b38ac3d8",
+      "news_id": "4a81cae4-e08f-5002-a32d-42a42613d6dc"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735497649-302a870c",
+      "news_id": "ddf5fb4b-e138-537d-a683-f143cab6397e"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735422615-10302320",
+      "news_id": "9fd7482d-8ea6-5241-a92a-1af2c93d9bc9"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735341431-fa718a1d",
+      "news_id": "e4ca87eb-423d-5e51-a97e-019d06891282"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735282169-580074e1",
+      "news_id": "7701c3d6-43a0-5aca-ab2b-bfb88588f466"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735164518-b4073d71",
+      "news_id": "d07af1f1-e23b-5d67-a673-e4f50de19fcc"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735113246-5cfe3950",
+      "news_id": "7d626b0e-08c5-5882-aebf-37458fd1d3bd"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791735079317-ad85883c",
+      "news_id": "1c5983a6-7d06-5e75-ade9-fa49dbe5253f"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791734809902-7e0322eb",
+      "news_id": "d5883044-27cf-5e80-af80-134ce6e00c23"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791732841753-4c816929",
+      "news_id": "3703599f-0ddf-5bea-ac3e-f93b878759d0"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791732809149-ff866b58",
+      "news_id": "d587c850-ca3d-5d5d-ac2e-37a153d1dbbb"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791732774174-54986711",
+      "news_id": "fda7843d-337c-5353-a9d6-7b1b9ca6cd62"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791732705790-3066cee6",
+      "news_id": "3bfffa01-a463-5bcc-afec-4429fdaa2791"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707659133-11ed9db2",
+      "news_id": "d49c5139-59e6-5543-afd7-0c2f24ae7b09"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707623312-fdd4e8c7",
+      "news_id": "00251cd0-a3f0-5299-ab23-1d06868b46e2"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707579364-336bca75",
+      "news_id": "69f63ed3-ab9a-521e-a4a0-c795d640abed"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707545135-144698ab",
+      "news_id": "1ce2f057-dffa-550f-a684-f8e7e072bdad"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707501408-37da5979",
+      "news_id": "145be837-5201-5f2f-aaf1-9bac9271bcb2"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707443401-d79ecf26",
+      "news_id": "08e93bad-93b7-5b96-adb8-5a21d7572ad4"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707404162-988a6574",
+      "news_id": "fb0f04e7-cd1f-5352-aeed-9cd3e0cd96b5"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707335206-36bc9987",
+      "news_id": "42ab0ce6-4d6f-541f-a4a5-42d1312ed518"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791707267124-c1db1fbf",
+      "news_id": "fa1ccd8c-3f1a-56fd-ac46-7b19314bccfd"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791706874120-777ffdb4",
+      "news_id": "d1ac8a4a-3ebb-50b2-abc3-7b6f950f371e"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791706805015-cb975115",
+      "news_id": "91d11bd7-5e9c-5bfe-a0a2-29c10f03f29a"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791706582776-d8045ac5",
+      "news_id": "81511191-030f-56f8-af58-50cda3069e76"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791706468704-80982456",
+      "news_id": "7a9f9a5c-bf85-5234-a140-d590bb9f342c"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791706375917-5e7c79f6",
+      "news_id": "eddeb7d9-d6dd-5663-a118-878a0b6f821f"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791706245543-a5855a2f",
+      "news_id": "1cb0056e-9ce2-5993-a949-8a335761c613"
+    },
+    {
+      "source_kind": "selection-manual",
+      "source_id": "SEL-1791706078329-40f536b6",
+      "news_id": "32c600b7-968e-55fd-ae8e-bf04bcc30231"
+    }
+  ],
+  "originalNewsCount": 46,
+  "backup": "C:\\ctrugby-data-manager-02\\copias-actualizaciones\\datos-convocatorias-noticias-1792149116376"
+}

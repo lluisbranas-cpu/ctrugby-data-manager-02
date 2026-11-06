@@ -1,0 +1,611 @@
+{
+  "corrected": 59,
+  "changes": [
+    {
+      "file": "04533a08-2679-5942-a0ea-32db015831f8.json",
+      "id": "04533a08-2679-5942-a0ea-32db015831f8",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000050"
+    },
+    {
+      "file": "04b1453d-fba5-57ec-a9f4-cbd2ea7cfe70.json",
+      "id": "04b1453d-fba5-57ec-a9f4-cbd2ea7cfe70",
+      "oldId": "CTR0332",
+      "oldName": "Marc Riera",
+      "player_id": "CTR0362",
+      "player_name": "Hugo Gonzalez",
+      "sourceName": "Hugo González",
+      "originId": "MIL000338"
+    },
+    {
+      "file": "0d0735d5-0475-5710-adf8-d6b8eeb23956.json",
+      "id": "0d0735d5-0475-5710-adf8-d6b8eeb23956",
+      "oldId": "CTR0332",
+      "oldName": "Marc Riera",
+      "player_id": "CTR0362",
+      "player_name": "Hugo Gonzalez",
+      "sourceName": "Hugo González",
+      "originId": "MIL000346"
+    },
+    {
+      "file": "14d7cccd-1728-57bd-a538-046d60f3a6f1.json",
+      "id": "14d7cccd-1728-57bd-a538-046d60f3a6f1",
+      "oldId": "CTR0325",
+      "oldName": "Marcelo Chorny",
+      "player_id": "CTR0356",
+      "player_name": "Paula Garzón",
+      "sourceName": "Paula Garzón",
+      "originId": "MIL002217"
+    },
+    {
+      "file": "14f7cb1f-393d-54fc-a51c-c35c808c13e9.json",
+      "id": "14f7cb1f-393d-54fc-a51c-c35c808c13e9",
+      "oldId": "CTR0330",
+      "oldName": "Jos Porto",
+      "player_id": "CTR0375",
+      "player_name": "Maider Aresti",
+      "sourceName": "Maider ARESTI",
+      "originId": "MIL003061"
+    },
+    {
+      "file": "1b575423-f36e-504b-ad26-071e12494067.json",
+      "id": "1b575423-f36e-504b-ad26-071e12494067",
+      "oldId": "CTR0327",
+      "oldName": "Rory Teague",
+      "player_id": "CTR0358",
+      "player_name": "Elsa Del Pino",
+      "sourceName": "Elsa Del Pino",
+      "originId": "MIL000281"
+    },
+    {
+      "file": "1bb29efd-49d8-578f-a8d0-79beac05c42c.json",
+      "id": "1bb29efd-49d8-578f-a8d0-79beac05c42c",
+      "oldId": "CTR0341",
+      "oldName": "Lisandro Arbizu",
+      "player_id": "CTR0372",
+      "player_name": "Aritz Giménez",
+      "sourceName": "Aritz Giménez",
+      "originId": "MIL000136"
+    },
+    {
+      "file": "1c5e1bea-31f4-5db9-a19a-8ee6b67ab728.json",
+      "id": "1c5e1bea-31f4-5db9-a19a-8ee6b67ab728",
+      "oldId": "CTR0341",
+      "oldName": "Lisandro Arbizu",
+      "player_id": "CTR0372",
+      "player_name": "Aritz Giménez",
+      "sourceName": "Aritz Giménez",
+      "originId": "MIL000095"
+    },
+    {
+      "file": "2ae9633b-2407-5c26-a5b2-b5c97c5f37ed.json",
+      "id": "2ae9633b-2407-5c26-a5b2-b5c97c5f37ed",
+      "oldId": "CTR0333",
+      "oldName": "Alex Casajuana",
+      "player_id": "CTR0363",
+      "player_name": "Alberto Carmona",
+      "sourceName": "Alberto Carmona",
+      "originId": "MIL000017"
+    },
+    {
+      "file": "2dfe3694-e1ed-5fca-ab34-8d705adc887e.json",
+      "id": "2dfe3694-e1ed-5fca-ab34-8d705adc887e",
+      "oldId": "CTR0338",
+      "oldName": "Niccolo Grassi",
+      "player_id": "CTR0369",
+      "player_name": "Martí Vicente",
+      "sourceName": "Martí Vicente",
+      "originId": "MIL001174"
+    },
+    {
+      "file": "34bcd9d3-e6b3-5e71-aafb-c5ab3d4093fe.json",
+      "id": "34bcd9d3-e6b3-5e71-aafb-c5ab3d4093fe",
+      "oldId": "CTR0339",
+      "oldName": "Baltazar Taibo",
+      "player_id": "CTR0370",
+      "player_name": "Pau Anguita",
+      "sourceName": "Pau Anguita Regi",
+      "originId": "MIL001631"
+    },
+    {
+      "file": "35a0673a-8016-5d02-acb2-1aaacab118e2.json",
+      "id": "35a0673a-8016-5d02-acb2-1aaacab118e2",
+      "oldId": "CTR0338",
+      "oldName": "Niccolo Grassi",
+      "player_id": "CTR0369",
+      "player_name": "Martí Vicente",
+      "sourceName": "Martí Vicente",
+      "originId": "MIL001110"
+    },
+    {
+      "file": "3a1ac5f5-7e33-5ad8-a6e9-0321621e9afe.json",
+      "id": "3a1ac5f5-7e33-5ad8-a6e9-0321621e9afe",
+      "oldId": "CTR0338",
+      "oldName": "Niccolo Grassi",
+      "player_id": "CTR0369",
+      "player_name": "Martí Vicente",
+      "sourceName": "Martí Vicente",
+      "originId": "MIL001403"
+    },
+    {
+      "file": "3d67a939-1e60-527f-ab4d-e1bd73ba7381.json",
+      "id": "3d67a939-1e60-527f-ab4d-e1bd73ba7381",
+      "oldId": "CTR0329",
+      "oldName": "Benoit Labeyrie",
+      "player_id": "CTR0360",
+      "player_name": "Leire Aguilar",
+      "sourceName": "Leire Aguilar",
+      "originId": "MIL000506"
+    },
+    {
+      "file": "433a5992-10c2-5a12-a9c6-f41a1b37bc91.json",
+      "id": "433a5992-10c2-5a12-a9c6-f41a1b37bc91",
+      "oldId": "CTR0338",
+      "oldName": "Niccolo Grassi",
+      "player_id": "CTR0369",
+      "player_name": "Martí Vicente",
+      "sourceName": "Martí Vicente",
+      "originId": "MIL001355"
+    },
+    {
+      "file": "464007f8-0f64-596d-a57e-09ff9721cd2c.json",
+      "id": "464007f8-0f64-596d-a57e-09ff9721cd2c",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000056"
+    },
+    {
+      "file": "4f7dab04-3fc9-57a6-acac-deafa5d94136.json",
+      "id": "4f7dab04-3fc9-57a6-acac-deafa5d94136",
+      "oldId": "CTR0330",
+      "oldName": "Jos Porto",
+      "player_id": "CTR0375",
+      "player_name": "Maider Aresti",
+      "sourceName": "Maider ARESTI",
+      "originId": "MIL000547"
+    },
+    {
+      "file": "54b628d5-f074-5e2a-abe3-df64ffcfe151.json",
+      "id": "54b628d5-f074-5e2a-abe3-df64ffcfe151",
+      "oldId": "CTR0264",
+      "oldName": "Samuel Carballo",
+      "player_id": "CTR0355",
+      "player_name": "Samu Ezeala",
+      "sourceName": "Samuel Ezeala",
+      "originId": "MIL002675"
+    },
+    {
+      "file": "58f750ba-1d4e-57e6-a24c-9550187983e4.json",
+      "id": "58f750ba-1d4e-57e6-a24c-9550187983e4",
+      "oldId": "CTR0330",
+      "oldName": "Jos Porto",
+      "player_id": "CTR0375",
+      "player_name": "Maider Aresti",
+      "sourceName": "Maider ARESTI",
+      "originId": "MIL000557"
+    },
+    {
+      "file": "5a82bf84-1d26-5ae6-a003-17b3af8dbcee.json",
+      "id": "5a82bf84-1d26-5ae6-a003-17b3af8dbcee",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000047"
+    },
+    {
+      "file": "5b3cf9bc-abb4-5fed-a8c5-8d69b408b454.json",
+      "id": "5b3cf9bc-abb4-5fed-a8c5-8d69b408b454",
+      "oldId": "CTR0329",
+      "oldName": "Benoit Labeyrie",
+      "player_id": "CTR0360",
+      "player_name": "Leire Aguilar",
+      "sourceName": "Leire Aguilar",
+      "originId": "MIL000524"
+    },
+    {
+      "file": "5ef8556e-b54a-5d88-a947-3a864bd9cf3b.json",
+      "id": "5ef8556e-b54a-5d88-a947-3a864bd9cf3b",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000025"
+    },
+    {
+      "file": "6512c97e-4561-5d14-a96d-e4067164b278.json",
+      "id": "6512c97e-4561-5d14-a96d-e4067164b278",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000038"
+    },
+    {
+      "file": "664c6c8a-2e31-51ad-a171-76c7150e70c9.json",
+      "id": "664c6c8a-2e31-51ad-a171-76c7150e70c9",
+      "oldId": "CTR0338",
+      "oldName": "Niccolo Grassi",
+      "player_id": "CTR0369",
+      "player_name": "Martí Vicente",
+      "sourceName": "Martí Vicente",
+      "originId": "MIL001177"
+    },
+    {
+      "file": "6b0a3d16-5758-566e-ae49-23f86a7c03ea.json",
+      "id": "6b0a3d16-5758-566e-ae49-23f86a7c03ea",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000072"
+    },
+    {
+      "file": "75785e97-06d5-576d-af48-580bd5f93736.json",
+      "id": "75785e97-06d5-576d-af48-580bd5f93736",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000037"
+    },
+    {
+      "file": "782f56dd-2d12-5189-a18f-990047b175bc.json",
+      "id": "782f56dd-2d12-5189-a18f-990047b175bc",
+      "oldId": "CTR0341",
+      "oldName": "Lisandro Arbizu",
+      "player_id": "CTR0372",
+      "player_name": "Aritz Giménez",
+      "sourceName": "Aritz Giménez",
+      "originId": "MIL000131"
+    },
+    {
+      "file": "78a5551a-cf57-56ff-aaff-7bb7d48a8690.json",
+      "id": "78a5551a-cf57-56ff-aaff-7bb7d48a8690",
+      "oldId": "CTR0330",
+      "oldName": "Jos Porto",
+      "player_id": "CTR0375",
+      "player_name": "Maider Aresti",
+      "sourceName": "Maider ARESTI",
+      "originId": "MIL000566"
+    },
+    {
+      "file": "790df733-ddc1-5dc0-af92-05cc80bca33f.json",
+      "id": "790df733-ddc1-5dc0-af92-05cc80bca33f",
+      "oldId": "CTR0339",
+      "oldName": "Baltazar Taibo",
+      "player_id": "CTR0370",
+      "player_name": "Pau Anguita",
+      "sourceName": "Pau Anguita Regi",
+      "originId": "MIL001565"
+    },
+    {
+      "file": "7cca7501-014b-52ef-a094-79be3c2353c1.json",
+      "id": "7cca7501-014b-52ef-a094-79be3c2353c1",
+      "oldId": "CTR0333",
+      "oldName": "Alex Casajuana",
+      "player_id": "CTR0363",
+      "player_name": "Alberto Carmona",
+      "sourceName": "Alberto Carmona",
+      "originId": "MIL000024"
+    },
+    {
+      "file": "7ea7f4a9-c173-50fb-a8c4-e5d202070d73.json",
+      "id": "7ea7f4a9-c173-50fb-a8c4-e5d202070d73",
+      "oldId": "CTR0338",
+      "oldName": "Niccolo Grassi",
+      "player_id": "CTR0369",
+      "player_name": "Martí Vicente",
+      "sourceName": "Martí Vicente",
+      "originId": "MIL001231"
+    },
+    {
+      "file": "82770440-b9e5-5fca-aa27-a88a09dfe5aa.json",
+      "id": "82770440-b9e5-5fca-aa27-a88a09dfe5aa",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000028"
+    },
+    {
+      "file": "844cc349-450d-53ba-a787-8dcaea336178.json",
+      "id": "844cc349-450d-53ba-a787-8dcaea336178",
+      "oldId": "CTR0339",
+      "oldName": "Baltazar Taibo",
+      "player_id": "CTR0370",
+      "player_name": "Pau Anguita",
+      "sourceName": "Pau Anguita Regi",
+      "originId": "MIL001669"
+    },
+    {
+      "file": "8a048c8a-1acc-50e7-ad77-b4ed958713f6.json",
+      "id": "8a048c8a-1acc-50e7-ad77-b4ed958713f6",
+      "oldId": "CTR0341",
+      "oldName": "Lisandro Arbizu",
+      "player_id": "CTR0372",
+      "player_name": "Aritz Giménez",
+      "sourceName": "Aritz Giménez",
+      "originId": "MIL000096"
+    },
+    {
+      "file": "94d18dc7-b78c-57b5-ae8f-dbc0edee1ad4.json",
+      "id": "94d18dc7-b78c-57b5-ae8f-dbc0edee1ad4",
+      "oldId": "CTR0332",
+      "oldName": "Marc Riera",
+      "player_id": "CTR0362",
+      "player_name": "Hugo Gonzalez",
+      "sourceName": "Hugo González",
+      "originId": "MIL000337"
+    },
+    {
+      "file": "9acbff22-7d66-5cfd-ae35-e8138f237054.json",
+      "id": "9acbff22-7d66-5cfd-ae35-e8138f237054",
+      "oldId": "CTR0326",
+      "oldName": "Jean-Luc Trogno",
+      "player_id": "CTR0357",
+      "player_name": "Laura Ramírez",
+      "sourceName": "Laura Ramírez",
+      "originId": "MIL000482"
+    },
+    {
+      "file": "a3d6f59d-742d-536b-ac45-652db8f021f6.json",
+      "id": "a3d6f59d-742d-536b-ac45-652db8f021f6",
+      "oldId": "CTR0329",
+      "oldName": "Benoit Labeyrie",
+      "player_id": "CTR0360",
+      "player_name": "Leire Aguilar",
+      "sourceName": "Leire Aguilar",
+      "originId": "MIL000546"
+    },
+    {
+      "file": "af8c12dc-fa99-5d67-af0b-edbe794a27e7.json",
+      "id": "af8c12dc-fa99-5d67-af0b-edbe794a27e7",
+      "oldId": "CTR0333",
+      "oldName": "Alex Casajuana",
+      "player_id": "CTR0363",
+      "player_name": "Alberto Carmona",
+      "sourceName": "Alberto Carmona",
+      "originId": "MIL000015"
+    },
+    {
+      "file": "b1bfac61-1c94-5ae7-a043-9a1d267e6489.json",
+      "id": "b1bfac61-1c94-5ae7-a043-9a1d267e6489",
+      "oldId": "CTR0325",
+      "oldName": "Marcelo Chorny",
+      "player_id": "CTR0356",
+      "player_name": "Paula Garzón",
+      "sourceName": "Paula Garzón",
+      "originId": "MIL001715"
+    },
+    {
+      "file": "b6c2b351-cde0-52d5-a6f1-3e6835a672d6.json",
+      "id": "b6c2b351-cde0-52d5-a6f1-3e6835a672d6",
+      "oldId": "CTR0338",
+      "oldName": "Niccolo Grassi",
+      "player_id": "CTR0369",
+      "player_name": "Martí Vicente",
+      "sourceName": "Martí Vicente",
+      "originId": "MIL001378"
+    },
+    {
+      "file": "bcba0ecc-b0da-5ee2-ae35-52e2d040d30a.json",
+      "id": "bcba0ecc-b0da-5ee2-ae35-52e2d040d30a",
+      "oldId": "CTR0339",
+      "oldName": "Baltazar Taibo",
+      "player_id": "CTR0370",
+      "player_name": "Pau Anguita",
+      "sourceName": "Pau Anguita Regi",
+      "originId": "MIL001633"
+    },
+    {
+      "file": "bf68989d-13b7-5009-a459-6110d1ec6e42.json",
+      "id": "bf68989d-13b7-5009-a459-6110d1ec6e42",
+      "oldId": "CTR0330",
+      "oldName": "Jos Porto",
+      "player_id": "CTR0375",
+      "player_name": "Maider Aresti",
+      "sourceName": "Maider ARESTI",
+      "originId": "MIL000548"
+    },
+    {
+      "file": "c3189e7d-53d4-5f65-a272-4427d19790b1.json",
+      "id": "c3189e7d-53d4-5f65-a272-4427d19790b1",
+      "oldId": "CTR0339",
+      "oldName": "Baltazar Taibo",
+      "player_id": "CTR0370",
+      "player_name": "Pau Anguita",
+      "sourceName": "Pau Anguita Regi",
+      "originId": "MIL001632"
+    },
+    {
+      "file": "c415ceda-c913-5f2b-abdb-ed7635103f7f.json",
+      "id": "c415ceda-c913-5f2b-abdb-ed7635103f7f",
+      "oldId": "CTR0339",
+      "oldName": "Baltazar Taibo",
+      "player_id": "CTR0370",
+      "player_name": "Pau Anguita",
+      "sourceName": "Pau Anguita Regi",
+      "originId": "MIL001562"
+    },
+    {
+      "file": "cac943b1-eab5-523e-a057-bf214499b500.json",
+      "id": "cac943b1-eab5-523e-a057-bf214499b500",
+      "oldId": "CTR0325",
+      "oldName": "Marcelo Chorny",
+      "player_id": "CTR0356",
+      "player_name": "Paula Garzón",
+      "sourceName": "Paula Garzón",
+      "originId": "MIL002058"
+    },
+    {
+      "file": "cfc1b31f-6938-52c1-abdf-a19cec1fbc9b.json",
+      "id": "cfc1b31f-6938-52c1-abdf-a19cec1fbc9b",
+      "oldId": "CTR0342",
+      "oldName": "Freddy Masò",
+      "player_id": "CTR0373",
+      "player_name": "Martí Omar",
+      "sourceName": "Martí Omar",
+      "originId": "MIL000682"
+    },
+    {
+      "file": "d326cf32-04aa-537f-ad21-ad6103d66fb3.json",
+      "id": "d326cf32-04aa-537f-ad21-ad6103d66fb3",
+      "oldId": "CTR0325",
+      "oldName": "Marcelo Chorny",
+      "player_id": "CTR0356",
+      "player_name": "Paula Garzón",
+      "sourceName": "Paula Garzón",
+      "originId": "MIL001712"
+    },
+    {
+      "file": "d51120c5-d2d8-50b8-a294-a3d7ed5217ed.json",
+      "id": "d51120c5-d2d8-50b8-a294-a3d7ed5217ed",
+      "oldId": "CTR0326",
+      "oldName": "Jean-Luc Trogno",
+      "player_id": "CTR0357",
+      "player_name": "Laura Ramírez",
+      "sourceName": "Laura Ramírez",
+      "originId": "MIL000489"
+    },
+    {
+      "file": "d6624c07-ba8b-58c6-a698-0a6ef1f4dcf7.json",
+      "id": "d6624c07-ba8b-58c6-a698-0a6ef1f4dcf7",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000086"
+    },
+    {
+      "file": "d9719cf0-3aeb-56f6-a3a2-13dd2ac4cbf4.json",
+      "id": "d9719cf0-3aeb-56f6-a3a2-13dd2ac4cbf4",
+      "oldId": "CTR0264",
+      "oldName": "Samuel Carballo",
+      "player_id": "CTR0355",
+      "player_name": "Samu Ezeala",
+      "sourceName": "Samuel Ezeala",
+      "originId": "MIL002659"
+    },
+    {
+      "file": "d9f9f673-5bea-5133-aee3-6d958f830fe5.json",
+      "id": "d9f9f673-5bea-5133-aee3-6d958f830fe5",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000057"
+    },
+    {
+      "file": "de354ddd-de94-5ff0-aa62-f249360d13e1.json",
+      "id": "de354ddd-de94-5ff0-aa62-f249360d13e1",
+      "oldId": "CTR0329",
+      "oldName": "Benoit Labeyrie",
+      "player_id": "CTR0360",
+      "player_name": "Leire Aguilar",
+      "sourceName": "Leire Aguilar",
+      "originId": "MIL000519"
+    },
+    {
+      "file": "e2f7ee22-4482-54b9-a38c-15206e9146a1.json",
+      "id": "e2f7ee22-4482-54b9-a38c-15206e9146a1",
+      "oldId": "CTR0339",
+      "oldName": "Baltazar Taibo",
+      "player_id": "CTR0370",
+      "player_name": "Pau Anguita",
+      "sourceName": "Pau Anguita Regi",
+      "originId": "MIL001585"
+    },
+    {
+      "file": "e72f9321-ad8d-567d-a70a-e44a1fd08a33.json",
+      "id": "e72f9321-ad8d-567d-a70a-e44a1fd08a33",
+      "oldId": "CTR0339",
+      "oldName": "Baltazar Taibo",
+      "player_id": "CTR0370",
+      "player_name": "Pau Anguita",
+      "sourceName": "Pau Anguita Regi",
+      "originId": "MIL001652"
+    },
+    {
+      "file": "e8344fb8-a541-50b0-a806-72a0ce8b2ee8.json",
+      "id": "e8344fb8-a541-50b0-a806-72a0ce8b2ee8",
+      "oldId": "CTR0338",
+      "oldName": "Niccolo Grassi",
+      "player_id": "CTR0369",
+      "player_name": "Martí Vicente",
+      "sourceName": "Martí Vicente",
+      "originId": "MIL001100"
+    },
+    {
+      "file": "f0b796ee-2888-5d1f-a25d-1dff8d1f4a5b.json",
+      "id": "f0b796ee-2888-5d1f-a25d-1dff8d1f4a5b",
+      "oldId": "CTR0326",
+      "oldName": "Jean-Luc Trogno",
+      "player_id": "CTR0357",
+      "player_name": "Laura Ramírez",
+      "sourceName": "Laura Ramírez",
+      "originId": "MIL000469"
+    },
+    {
+      "file": "f736669a-f2fb-501a-a324-0e559d1dec00.json",
+      "id": "f736669a-f2fb-501a-a324-0e559d1dec00",
+      "oldId": "CTR0337",
+      "oldName": "Jackson Iose",
+      "player_id": "CTR0368",
+      "player_name": "Alberto Millan",
+      "sourceName": "Alberto Millan",
+      "originId": "MIL000071"
+    },
+    {
+      "file": "ff0b5cf1-59ad-58b0-abca-0365d9161d05.json",
+      "id": "ff0b5cf1-59ad-58b0-abca-0365d9161d05",
+      "oldId": "CTR0341",
+      "oldName": "Lisandro Arbizu",
+      "player_id": "CTR0372",
+      "player_name": "Aritz Giménez",
+      "sourceName": "Aritz Giménez",
+      "originId": "MIL000142"
+    },
+    {
+      "file": "ff90d1a0-0a87-5342-af1f-f6dfb954ab29.json",
+      "id": "ff90d1a0-0a87-5342-af1f-f6dfb954ab29",
+      "oldId": "CTR0333",
+      "oldName": "Alex Casajuana",
+      "player_id": "CTR0363",
+      "player_name": "Alberto Carmona",
+      "sourceName": "Alberto Carmona",
+      "originId": "MIL000016"
+    }
+  ],
+  "unresolved": [
+    {
+      "id": "a375d801-1402-598e-aa0d-cf49a6f06d10",
+      "player": "CTR0123",
+      "expectedName": "Ismael Alvarez Hnarejos",
+      "matches": 0
+    },
+    {
+      "id": "e23d782a-13d4-5602-a640-fff6e3ceed0e",
+      "player": "CTR0319",
+      "expectedName": "Gaia Tartinville",
+      "matches": 0
+    }
+  ],
+  "imagesPreserved": 11,
+  "backup": "C:\\ctrugby-data-manager-02\\copias-actualizaciones\\correccion-jugadores-convocatorias-1792150635179"
+}

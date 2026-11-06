@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 type SheetRow = Record<string, unknown>;
 type Issue = { sheet: string; row: number; field: string; message: string };
 type PlayerRow = { action: "actualizar" | "nuevo"; id: string; first_name: string; last_name: string | null; category: string | null; birth_year: number | null; version: number };
-type SeasonRow = { action: "actualizar" | "nuevo"; player_id: string; season_year: number; club_id: string | null; legacy_club_name: string | null; position_text: string | null; weight_kg: number | null; height_cm: number | null };
+type SeasonRow = { action: "actualizar" | "nuevo"; player_id: string; season_year: number; registration_number: string | null; club_id: string | null; legacy_club_name: string | null; position_text: string | null; weight_kg: number | null; height_cm: number | null };
 type CatalogPlayer = { id: string; version: number };
 
 const reply = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store", Vary: "Cookie" } });
@@ -62,7 +62,7 @@ function parsePlayers(source: SheetRow[], issues: Issue[]) {
     const row = index + 2;
     const sheet = "Jugadores";
     const id = required(sourceRow["ID jugador"], 7, sheet, row, "ID jugador", issues).toUpperCase();
-    if (!/^CTR[0-9]{4}$/.test(id)) issues.push({ sheet, row, field: "ID jugador", message: "debe tener el formato CTR0000" });
+    if (!/^JUG[0-9]{4}$/.test(id)) issues.push({ sheet, row, field: "ID jugador", message: "debe tener el formato JUG0000" });
     const birthYear = number(sourceRow["Año nacimiento"], 1900, 2026, false, sheet, row, "Año nacimiento", issues);
     if (birthYear != null && !Number.isInteger(birthYear)) issues.push({ sheet, row, field: "Año nacimiento", message: "debe ser un año entero" });
     privateOnly(sourceRow.Publicar, sheet, row, issues);
@@ -81,7 +81,7 @@ function parseSeasons(source: SheetRow[], issues: Issue[]) {
     const row = index + 2;
     const sheet = "Temporadas";
     const playerId = required(sourceRow["ID jugador"], 7, sheet, row, "ID jugador", issues).toUpperCase();
-    if (!/^CTR[0-9]{4}$/.test(playerId)) issues.push({ sheet, row, field: "ID jugador", message: "debe tener el formato CTR0000" });
+    if (!/^JUG[0-9]{4}$/.test(playerId)) issues.push({ sheet, row, field: "ID jugador", message: "debe tener el formato JUG0000" });
     const clubId = optional(sourceRow["ID club"], 7, sheet, row, "ID club", issues)?.toUpperCase() ?? null;
     if (clubId && !/^[A-Z]{3}[0-9]{4}$/.test(clubId)) issues.push({ sheet, row, field: "ID club", message: "debe tener el formato AAA0000" });
     const seasonYear = number(sourceRow.Temporada, 2000, 2035, true, sheet, row, "Temporada", issues);
@@ -90,7 +90,8 @@ function parseSeasons(source: SheetRow[], issues: Issue[]) {
     const height = number(sourceRow["Altura cm"], 0, 260, false, sheet, row, "Altura cm", issues);
     privateOnly(sourceRow.Publicar, sheet, row, issues);
     return {
-      action: action(sourceRow["Acción"], sheet, row, issues), player_id: playerId, season_year: seasonYear ?? 0, club_id: clubId,
+      action: action(sourceRow["Acción"], sheet, row, issues), player_id: playerId, season_year: seasonYear ?? 0,
+      registration_number: optional(sourceRow["Número inscripción"], 40, sheet, row, "Número inscripción", issues), club_id: clubId,
       legacy_club_name: optional(sourceRow["Club (referencia)"], 160, sheet, row, "Club (referencia)", issues),
       position_text: optional(sourceRow["Posición"], 100, sheet, row, "Posición", issues), weight_kg: weight, height_cm: height,
     };

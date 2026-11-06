@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import { professionalSeasonYear, planProfessionalTrajectory } from '../lib/professional-trajectory.mjs';
+assert.equal(professionalSeasonYear('2025/26'), 2026);
+assert.equal(professionalSeasonYear('2021/2022'), 2022);
+for (const label of [null, '', 'Actual a 2026-10-16', '2025/2027', '2025']) assert.equal(professionalSeasonYear(label), null);
+const source = { player_id: 'JUG0001', season_year: 2026, club_id: 'OLD', position_text: '8', weight_kg: 90, height_cm: 180 };
+const record = { id: 'A', player_id: 'JUG0001', category: 'Top 14', club_id: 'NEW', club_name: 'New Club', season_label: '2025/26' };
+const clubs = [{ id: 'NEW', name: 'New Club' }];
+const resolve = () => null;
+const plan = planProfessionalTrajectory([record, { ...record, id: 'B', season_label: null }], [source], new Set(['JUG0001']), clubs, resolve);
+assert.equal(plan.transferred.length, 1); assert.equal(plan.pending.length, 1);
+assert.deepEqual(plan.seasons[0], { ...source, club_id: 'NEW', legacy_club_name: null });
+assert.equal(plan.categories['JUG0001|2026'], 'Top 14'); assert.equal(source.club_id, 'OLD');
+const conflict = planProfessionalTrajectory([record, { ...record, id: 'C', club_id: null, club_name: 'Other Club' }], [], new Set(['JUG0001']), clubs, resolve);
+assert.equal(conflict.transferred.length, 0); assert.equal(conflict.pending.length, 2);
+const missing = planProfessionalTrajectory([record], [], new Set(), clubs, resolve);
+assert.equal(missing.transferred.length, 0);
+console.log('OK: temporadas, conservación de medidas y posición, pendientes sin fecha, conflictos y jugadores ausentes.');

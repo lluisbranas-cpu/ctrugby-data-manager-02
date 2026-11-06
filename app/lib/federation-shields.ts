@@ -39,9 +39,12 @@ export const federationShieldUrls: Record<string, string> = {
   "FN023": "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Ftongarugbyunion.org&sz=256",
   "FN024": "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Frugby.nl&sz=256",
   "FN025": "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Fwww.rugby.be&sz=256",
-  "FN026": "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Fwww.suisserugby.com&sz=256"
+  "FN026": "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Fwww.suisserugby.com&sz=256",
+  "FT018": "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Flombardia.federugby.it&sz=256",
+  "FT019": "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Fwww.rugbypiemonte.it&sz=256",
+  "FT020": "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Fliguria.federugby.it&sz=256"
 };
 
 export function federationShieldUrl(id: string) {
-  return federationShieldUrls[id] ?? null;
+  return /^F[A-Z]\d{3}$/.test(id) ? `/api/federaciones/escudo/${id}` : null;
 }

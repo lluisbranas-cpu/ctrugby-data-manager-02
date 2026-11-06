@@ -89,6 +89,7 @@ export const clubShieldUrls: Record<string, string> = {
   "ESP0091": "https://lh3.googleusercontent.com/d/14mPglfUNycv5jevfT6NU_mbgXTWmK__9=w200",
   "ESP0092": "https://lh3.googleusercontent.com/d/1dFPLD9VDfvFJS37VZG6SnhRmhzVTt9mq=w200",
   "ESP0093": "https://lh3.googleusercontent.com/d/13yuoLH7oi10xxyNps-ANOXDaRMKO_Eu0=w200",
+  "ESP0094": "/api/clubs/escudo/ESP0094",
   "ESP0095": "https://lh3.googleusercontent.com/d/1OYuLxSgx6B-56i7WUQ6weziJgqgxU7QF=w200",
   "ESP0096": "https://lh3.googleusercontent.com/d/1P7mWqY48r80yNT8FkWLfv_4bmYAFcB3L=w200",
   "ESP0097": "https://lh3.googleusercontent.com/d/12aoBeBNmvokCiQVnFLwz8ZKYkY-l--QD=w200",
@@ -143,6 +144,7 @@ export const clubShieldUrls: Record<string, string> = {
   "ESP0147": "https://lh3.googleusercontent.com/d/1QvrfHDci1BvC9Aq7FiCsV5gu13Ki8_d8=w200",
   "ESP0148": "https://lh3.googleusercontent.com/d/1FOo8vUFzQ93-GIASA89CxzWnWcyKR7Fq=w200",
   "ESP0150": "https://lh3.googleusercontent.com/d/1tFTzsdv6QyTzj7fXpLlPKZRx98hTWRd4=w200",
+  "ESP0152": "/api/clubs/escudo/ESP0152",
   "ESP0158": "https://lh3.googleusercontent.com/d/1PvKFzTcaWE6bwfpPgSarHu6tir-xaIcX=w200",
   "ESP0159": "https://lh3.googleusercontent.com/d/1Tz5d_IfyX73iw0OP_bYbAg4oLVCyqDux=w200",
   "ESP0160": "https://lh3.googleusercontent.com/d/1R7JLly4gkz8hTF7GeKQTChkNIEG2syh-=w200",
@@ -192,6 +194,7 @@ export const clubShieldUrls: Record<string, string> = {
   "FRA0001": "https://lh3.googleusercontent.com/d/1IcVwFcV7_3ZZ-ntcQ7qyLtCnBCkuPd_T=w200",
   "FRA0003": "https://lh3.googleusercontent.com/d/1ODY_wXoCoS6QX2jjpzAXlAsjB9o8T7b6=w200",
   "FRA0005": "https://lh3.googleusercontent.com/d/1JozgN4_h7eNo8LgIRjB9wWoya8SB4ay4=w200",
+  "FRA0006": "/api/clubs/escudo/FRA0006",
   "FRA0007": "https://lh3.googleusercontent.com/d/12lDhNaR43ZnUOnFxBhN16ssyoDAqzLvk=w200",
   "ITA0001": "https://lh3.googleusercontent.com/d/1-eOh_zET-QQ67y2H4nuf0yo-PApX4yBo=w200",
   "ITA0002": "https://lh3.googleusercontent.com/d/1d-nXqlk9E8L4QH_KkaJwVBvLPFuYX3oB=w200",
@@ -200,6 +203,11 @@ export const clubShieldUrls: Record<string, string> = {
   "ARG0001": "https://lh3.googleusercontent.com/d/1E70JC3HqUCwxcZNTz2zaYPZN5EfGdKkH=w200"
 };
 
-export function clubShieldUrl(id: string) {
-  return clubShieldUrls[id] ?? null;
+export function clubShieldUrl(id: string, version?: number) {
+  // A club does not need to have a legacy catalogue URL before it can receive
+  // its first uploaded shield. Once the editor bumps `version`, the API route
+  // is also used for IDs that were not in the legacy catalogue.
+  if (!/^[A-Z]{3}\d{4}$/.test(id)) return null;
+  const suffix = version ? `?v=${version}` : "";
+  return `/api/clubs/escudo/${encodeURIComponent(id)}${suffix}`;
 }

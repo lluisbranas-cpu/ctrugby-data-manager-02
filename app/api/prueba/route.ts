@@ -1,3 +1,4 @@
+import { requireConsultation } from "@/lib/consultation-access";
 import { NextRequest, NextResponse } from "next/server";
 import { access, client, configured, COOKIE, PLAYER, sameOrigin } from "@/lib/pilot";
 export const runtime = "nodejs";
@@ -7,6 +8,9 @@ const reply = (data: unknown, status = 200) => NextResponse.json(data, {
 });
 const recoveryRequests = new Map<string, number>();
 export async function GET(request: NextRequest) {
+  const consultationDenied = await requireConsultation(request);
+  if (consultationDenied) return consultationDenied;
+
   if (!configured()) return reply({ configured: false, admin: false });
   try {
     const { db, admin } = await access(request);

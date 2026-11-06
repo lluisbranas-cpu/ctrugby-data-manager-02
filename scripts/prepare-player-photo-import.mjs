@@ -11,7 +11,7 @@ if (!process.argv[2]) throw new Error("Uso: node scripts/prepare-player-photo-im
 if (!(await stat(sourceDirectory).catch(() => null))?.isDirectory()) throw new Error("La carpeta de la aplicación anterior no existe.");
 const ids = JSON.parse(await readFile(path.join(sourceDirectory, "player-photos-data.json"), "utf8"));
 const players = JSON.parse(await readFile(path.join(projectDirectory, "data", "staging", "players.json"), "utf8"));
-if (!Array.isArray(ids) || !ids.every((id) => typeof id === "string" && /^CTR\d{4}$/.test(id)) || !Array.isArray(players)) throw new Error("El índice de fotografías no tiene el formato esperado.");
+if (!Array.isArray(ids) || !ids.every((id) => typeof id === "string" && /^JUG\d{4}$/.test(id)) || !Array.isArray(players)) throw new Error("El índice de fotografías no tiene el formato esperado.");
 if (new Set(ids).size !== ids.length) throw new Error("El índice de fotografías contiene identificadores duplicados.");
 const playerIds = new Set(players.map((player) => player.id));
 const sourcePhotos = path.join(sourceDirectory, "..", "public", "player-photos");
@@ -21,6 +21,7 @@ if (await stat(manifestFile).then(() => true).catch(() => false)) throw new Erro
 
 await mkdir(preparedDirectory, { recursive: true });
 const mask = Buffer.from('<svg width="300" height="300"><circle cx="150" cy="150" r="150" fill="white"/></svg>');
+const rim = Buffer.from('<svg width="300" height="300"><circle cx="150" cy="150" r="147.5" fill="none" stroke="white" stroke-width="3"/></svg>');
 const manifest = [];
 const problems = [];
 for (const player_id of ids) {
@@ -28,12 +29,12 @@ for (const player_id of ids) {
   const source_file = path.join(sourcePhotos, `${player_id}.webp`);
   if (!(await stat(source_file).catch(() => null))?.isFile()) { problems.push({ player_id, reason: "archivo de origen no encontrado" }); continue; }
   const metadata = await sharp(source_file, { limitInputPixels: 20_000_000 }).metadata();
-  if (metadata.format !== "webp" || !metadata.width || !metadata.height) { problems.push({ player_id, reason: "imagen WebP inválida" }); continue; }
+  if (metadata.format !== "webp" || !metadata.width || !metadata.height || !metadata.hasAlpha) { problems.push({ player_id, reason: "imagen WebP transparente inválida" }); continue; }
   const storage_key = `player-portraits/${player_id}.png`;
   const prepared_file = path.join(preparedDirectory, `${player_id}.png`);
   const prepared = await sharp(source_file, { limitInputPixels: 20_000_000 }).rotate()
     .resize(300, 300, { fit: "fill" }).ensureAlpha()
-    .composite([{ input: mask, blend: "dest-in" }]).png().toBuffer();
+    .composite([{ input: mask, blend: "dest-in" }, { input: rim }]).png().toBuffer();
   await writeFile(prepared_file, prepared);
   const preparedMetadata = await sharp(prepared).metadata();
   if (preparedMetadata.width !== 300 || preparedMetadata.height !== 300 || !preparedMetadata.hasAlpha) { problems.push({ player_id, reason: "la copia preparada no conserva 300px y alfa" }); continue; }
