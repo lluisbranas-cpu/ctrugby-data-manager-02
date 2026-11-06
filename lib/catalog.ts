@@ -1,6 +1,7 @@
 import { GUEST_COOKIE } from "@/lib/guest-registration";
 import { createClient } from "@supabase/supabase-js";
 import type { NextRequest } from "next/server";
+import { localAdminSessionValid } from "@/lib/local-admin-session";
 
 export const PUBLIC_COOKIE = "ctrugby-public-mode";
 
@@ -30,7 +31,7 @@ export function catalogServiceClient() {
 }
 
 export function localAdminAccess(request: NextRequest) {
-  return request.cookies.get(PUBLIC_COOKIE)?.value !== "1" && process.env.NODE_ENV !== "production" && ["localhost", "127.0.0.1", "::1"].includes(request.nextUrl.hostname);
+  return request.cookies.get(PUBLIC_COOKIE)?.value !== "1" && localAdminSessionValid(request);
 }
 
 // Retired: kept for archived source copies that still import this symbol.
@@ -46,8 +47,8 @@ export function catalogAccess(request: NextRequest) {
 }
 async function resolveCatalogAccess(request: NextRequest) {
   const anonymous = () => ({ db: catalogClient(), admin: false, authenticated: false, guest: false });
-  // Local development is a trusted workspace preview. It intentionally avoids
-  // making the administrator complete the production sign-in flow on localhost.
+  // Only an explicit signed development session enables local administrative preview.
+  // Merely browsing localhost must not bypass private or club permissions.
   if (localAdminAccess(request)) return { db: catalogServiceClient(), admin: true, authenticated: true, guest: false };
   // Public mode always uses the anonymous database client and has no editing privileges.
   if (request.cookies.get(PUBLIC_COOKIE)?.value === "1") return { ...anonymous(), guest: true };
