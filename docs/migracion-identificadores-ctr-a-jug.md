@@ -11,7 +11,7 @@ Estado: AUDITORÍA REALIZADA, MIGRACIÓN DE PRODUCCIÓN **NO EJECUTADA** (06/11/
 ## Inventario comprobado mediante consultas SQL de solo lectura
 
 - `public.catalog_players`: 389 registros, 389 IDs `CTR####`, 0 `JUG####`, 389 publicados.
-- La aplicación local recibió 388 jugadores publicados después de reparar el puente. La diferencia pendiente incluye `CTR0381` (Oriol Casanovas), que requiere verificar su presencia en el catálogo local y en el mapa generado antes de migrar.
+- La aplicación local recibió 388 jugadores publicados después de reparar el puente. La comparación de los 389 IDs remotos con el puente generado confirma que **el único remoto excluido es `CTR0381` (Oriol Casanovas)**. El generador `scripts/generate-likidhub-preview-id-bridge.mjs` exige expresamente 388 correspondencias y excluye `JUG0381`: no debe inventarse la equivalencia de este registro sin analizar el informe de conciliación y su identidad.
 - Referencias FK al ID de jugadores: `app_private.player_assessments`, `player_club_affiliations`, `player_club_consents`, `player_participation_metrics`, `player_private_contacts`, `player_profile_photos`, `player_profiles`, `player_seasons`, `public.catalog_participants`.
 - Ninguna de esas claves externas tiene `ON UPDATE CASCADE`; actualmente son `NO ACTION` y no diferibles. Un `UPDATE catalog_players SET id=...` aislado fallaría.
 - Otras referencias que hay que auditar: `app_private.player_club_consent_events`, `public.pilot_assessments` (apunta a `pilot_players`), funciones de importación y consulta, políticas RLS, objetos de Storage, claves de fotos, JSON de `data/staging`, noticias y convocatorias.
