@@ -49,3 +49,13 @@ order by 1;
 ```
 
 Este documento no es autorización para cambiar IDs en producción sin copia validada y prueba del procedimiento.
+
+## Nuevos resultados verificables (consultas 06/11/2026)
+
+- Proyección numérica de los 389 `CTR####` a `JUG####`: **389 destinos distintos, 0 colisiones** dentro de `catalog_players`. Esto no valida por sí solo la identidad del jugador excluido del puente.
+- `app_private.player_profile_photos`: **103 registros**, todos con `player_id` que comienza por `CTR`.
+- `storage.objects`: **874 objetos** con un código `CTR####` en el nombre bajo el bucket `catalog-media-private`. La actualización de referencias SQL debe ir acompañada de una estrategia de traslado/copia de objetos y verificación de hashes/rutas, en otra fase reversible; no se logra solo con SQL sobre la tabla de jugadores.
+- `app_private.player_club_consent_events`: **0 eventos** en el momento de la consulta (pero el procedimiento debe seguir contemplando referencias futuras).
+- La auditoría automática de lectura previa está en `scripts/preflight-migracion-ids-ctr-jug.sql`; no contiene escrituras.
+
+**Bloqueo activo:** no ejecutar la migración hasta confirmar copia restaurable que incluya Storage y resolver la correspondencia de `CTR0381`. La rama de compatibilidad actualmente preserva la funcionalidad de los 388 jugadores conciliados.
