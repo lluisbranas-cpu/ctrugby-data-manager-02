@@ -6,7 +6,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
-import { catalogAccess, catalogConfigured, sameOrigin } from "@/lib/catalog";
+import { catalogAccess, catalogConfigured, localAdminAccess, sameOrigin } from "@/lib/catalog";
 import {
   applyManualSelectionCallups,
   manualSelectionCallupFromBody,
@@ -42,18 +42,24 @@ const federationFallbacks: Federation[] = [
 const federationsFilePath = () => path.join(process.cwd(), "data", "staging", "federations.json");
 
 async function accessState(request: NextRequest) {
-  if (!catalogConfigured()) return { configured: false, admin: false, canWrite: true };
+  if (!catalogConfigured()) {
+    const admin = localAdminAccess(request);
+    return { configured: false, admin, canWrite: admin };
+  }
   const { admin } = await catalogAccess(request);
   return { configured: true, admin, canWrite: admin };
 }
 
 async function playerReferences(request: NextRequest) {
   const localPlayers = await readLocalPlayers();
-  if (!catalogConfigured()) return localPlayers;
-  const { db } = await catalogAccess(request);
-  const catalogPlayers = await db.from("catalog_players").select("id,first_name,last_name").order("last_name").order("first_name");
-  if (catalogPlayers.error) return localPlayers;
-  const byId = new Map(localPlayers.map((player) => [player.id, player]));
+  if (localAdminAccess(request)) return localPlayers;
+  if (!catalogConfigured()) throw new Error("El catálogo no está configurado.");
+  const { db, admin } = await catalogAccess(request);
+  let query = db.from("catalog_players").select("id,first_name,last_name").order("last_name").order("first_name");
+  if (!admin) query = query.eq("published", true);
+  const catalogPlayers = await query;
+  if (catalogPlayers.error) throw new Error("No se han podido comprobar los jugadores publicados.");
+  const byId = new Map((admin ? localPlayers : []).map((player) => [player.id, player]));
   for (const player of catalogPlayers.data ?? []) byId.set(player.id, player);
   return [...byId.values()].sort((a, b) => fullName(a).localeCompare(fullName(b), "es") || a.id.localeCompare(b.id, "es"));
 }
@@ -67,11 +73,14 @@ function mergeFederations(items: Federation[]) {
 async function federationReferences(request: NextRequest) {
   const raw = await readFile(federationsFilePath(), "utf8").catch(() => "[]");
   const local = (JSON.parse(raw) as Federation[]).filter((federation) => federation.id && federation.name);
-  if (!catalogConfigured()) return mergeFederations(local);
-  const { db } = await catalogAccess(request);
-  const catalogFederations = await db.from("catalog_federations").select("id,name,scope,country,territory,active,website,published,version").order("name");
-  if (catalogFederations.error) return mergeFederations(local);
-  return mergeFederations([...(catalogFederations.data ?? []) as Federation[], ...local]);
+  if (localAdminAccess(request)) return mergeFederations(local);
+  if (!catalogConfigured()) throw new Error("El catálogo no está configurado.");
+  const { db, admin } = await catalogAccess(request);
+  let query = db.from("catalog_federations").select("id,name,scope,country,territory,active,website,published,version").order("name");
+  if (!admin) query = query.eq("published", true);
+  const catalogFederations = await query;
+  if (catalogFederations.error) throw new Error("No se han podido comprobar las federaciones publicadas.");
+  return mergeFederations([...(catalogFederations.data ?? []) as Federation[], ...(admin ? local : [])]);
 }
 
 async function saveLocalFederations(records: Federation[]) {

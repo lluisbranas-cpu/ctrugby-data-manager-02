@@ -4,7 +4,7 @@ import { access, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promise
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
-import { catalogServiceClient, catalogAccess, sameOrigin } from "@/lib/catalog";
+import { catalogClient, catalogServiceClient, catalogAccess, sameOrigin } from "@/lib/catalog";
 import { canonicalLikidHubPlayerId } from "@/lib/likidhub-jug-ctr-bridge.generated";
 import { likidHubPreviewReadOnly, previewLikidHubLatestSeasonPhotoUrl, previewLikidHubMediaUrl, previewLikidHubSeasonPhotoUrl } from "@/lib/likidhub-preview";
 
@@ -68,21 +68,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
   if (!/^JUG\d{4}$/.test(id)) return new NextResponse(null, { status: 404 });
   try {
-    const { db, admin } = reviewAccess || publicTeamPhoto ? { db: catalogServiceClient(), admin: false } : await catalogAccess(request);
-    if (process.env.NODE_ENV === "production" && !admin && !reviewAccess && !publicTeamPhoto) {
-      // Consultation access may read portraits belonging to published profiles.
-      const player = await db.from("catalog_players").select("id,published").eq("id", id).maybeSingle();
-      if (player.error || !player.data?.published) return new NextResponse(null, { status: 403 });
+    const { db, admin } = reviewAccess ? { db: catalogServiceClient(), admin: false } : await catalogAccess(request);
+    if (publicTeamPhoto || (!admin && !reviewAccess)) {
+      const publicationDb = publicTeamPhoto ? catalogClient() : db;
+      const player = await publicationDb.from("catalog_players").select("id").eq("id", id).eq("published", true).maybeSingle();
+      if (player.error || !player.data?.id) return new NextResponse(null, { status: 403 });
     }
+    const mediaDb = publicTeamPhoto ? catalogServiceClient() : db;
     const season = new URL(request.url).searchParams.get("season");
     if (process.env.NODE_ENV === "production") {
       const photo = validSeason(season)
-        ? await db.schema("app_private").from("player_season_photos").select("storage_key").eq("player_id", id).eq("season_year", Number(season)).maybeSingle()
-        : await db.schema("app_private").from("player_season_photos").select("storage_key").eq("player_id", id).eq("is_primary", true).maybeSingle();
-      const fallback = photo.data?.storage_key ? null : await db.schema("app_private").from("player_profile_photos").select("storage_key").eq("player_id", id).maybeSingle();
+        ? await mediaDb.schema("app_private").from("player_season_photos").select("storage_key").eq("player_id", id).eq("season_year", Number(season)).maybeSingle()
+        : await mediaDb.schema("app_private").from("player_season_photos").select("storage_key").eq("player_id", id).eq("is_primary", true).maybeSingle();
+      const fallback = photo.data?.storage_key ? null : await mediaDb.schema("app_private").from("player_profile_photos").select("storage_key").eq("player_id", id).maybeSingle();
       const storageKey = photo.data?.storage_key ?? fallback?.data?.storage_key;
       if (storageKey) {
-        const stored = await db.storage.from("catalog-media-private").download(storageKey);
+        const stored = await mediaDb.storage.from("catalog-media-private").download(storageKey);
         if (!stored.error && stored.data) {
           return new NextResponse(await displayPortrait(Buffer.from(await stored.data.arrayBuffer()), request), { headers: { "Content-Type": stored.data.type || "image/png", "Cache-Control": publicTeamPhoto ? "public, max-age=300" : "private, no-store" } });
         }
