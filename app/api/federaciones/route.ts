@@ -26,9 +26,11 @@ type MilestoneParticipant = { id: string; player_id: string | null };
 const normalize = (value: string | null | undefined) => String(value ?? "")
   .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-ES").trim();
 
+// A territorial federation may exist in any country. A club belongs to it only when
+// both its country and region match; national federations include every club in country.
 const belongsToFederation = (club: Club, federation: Federation) => federation.scope === "Nacional"
   ? normalize(club.country) === normalize(federation.country)
-  : normalize(club.country) === "espana" && normalize(club.region) === normalize(federation.territory);
+  : normalize(club.country) === normalize(federation.country) && normalize(club.region) === normalize(federation.territory);
 
 const yearsFromSeasonLabel = (record: { season_label?: string | null }) => [...new Set(String(record.season_label ?? "").match(/20\d{2}/g) ?? [])].map(Number);
 
