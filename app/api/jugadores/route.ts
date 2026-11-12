@@ -242,7 +242,18 @@ async function localMilestoneSummaryByPlayer() {
     return { milestones, milestoneParticipants, milestonesByPlayer, selectedFederationsByPlayer, selectedFederationCountsByPlayer, professionalClubsByPlayer, professionalClubRecordsByPlayer };
   } catch (error) {
     console.error("Failed to load featured player milestones", error);
-    throw error;
+    // A malformed or temporarily unavailable complementary file must not hide
+    // the whole directory. The catalog remains usable and the related badges
+    // can be recovered once that file is fixed.
+    return {
+      milestones: [] as SheetMilestone[],
+      milestoneParticipants: [] as SheetMilestoneParticipant[],
+      milestonesByPlayer: new Map<string, number>(),
+      selectedFederationsByPlayer: new Map<string, Set<string>>(),
+      selectedFederationCountsByPlayer: new Map<string, Map<string, number>>(),
+      professionalClubsByPlayer: new Map<string, Set<string>>(),
+      professionalClubRecordsByPlayer: new Map<string, ProfessionalClubRecord[]>(),
+    };
   }
 }
 
