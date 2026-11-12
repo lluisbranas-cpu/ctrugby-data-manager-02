@@ -20,10 +20,10 @@ export async function sharedLikidHubDirectory() {
     db.from("catalog_players").select("id,first_name,last_name,published,version").eq("published", true).order("id").range(0, 9999),
     db.schema("app_private").from("player_profiles").select("player_id,category,birth_year"),
     db.schema("app_private").from("player_seasons").select("player_id,season_year,club_id,legacy_club_name,position_text,weight_kg,height_cm"),
-    db.from("catalog_clubs").select("id,name,country,city,region,province,latitude,maps_url,active").order("name"),
+    db.from("catalog_clubs").select("id,name,country,city,region,province,latitude,maps_url,active").eq("published", true).order("name"),
     db.schema("app_private").from("player_participation_metrics").select("player_id,participation_count"),
-    db.from("catalog_milestones").select("participant_id"),
-    db.from("catalog_participants").select("id,player_id"),
+    db.from("catalog_milestones").select("participant_id").eq("published", true),
+    db.from("catalog_participants").select("id,player_id").eq("published", true),
   ]);
 
   for (const result of [playersResult, profilesResult, seasonsResult, clubsResult, metricsResult, milestonesResult, participantsResult]) {
