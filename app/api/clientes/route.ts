@@ -13,10 +13,16 @@ function databaseError(code: string) {
 export async function GET(request: NextRequest) {
   try {
     if (!catalogConfigured()) return reply({ error: "Base de datos no conectada." }, 503);
-    const { db, admin } = await catalogAccess(request);
-    if (!admin) return reply({ error: "Inicia sesión como administrador para gestionar clientes." }, 403);
+    const { db, admin, authenticated } = await catalogAccess(request);
+    if (!authenticated) return reply({ error: "Inicia sesión para consultar los clientes." }, 403);
     if (likidHubPreviewReadOnly()) return reply(await previewLikidHubClients());
-    const [types, clients] = await Promise.all([db.from("catalog_client_types").select("*").order("name"), db.from("catalog_clients").select("*").order("name")]);
+    const clientColumns = admin
+      ? "*"
+      : "id,name,type_id,primary_color,secondary_color,accent_color,surname_color,typography,logo";
+    const [types, clients] = await Promise.all([
+      db.from("catalog_client_types").select(admin ? "*" : "id,name").order("name"),
+      db.from("catalog_clients").select(clientColumns).order("name"),
+    ]);
     const error = types.error || clients.error;
     if (error) return reply({ error: databaseError(error.code) }, 503);
     return reply({ types: types.data, clients: clients.data });
