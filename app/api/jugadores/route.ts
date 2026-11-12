@@ -318,13 +318,14 @@ export async function GET(request: NextRequest) {
       return reply({ players: visible.data ?? [] });
     }
     if (admin && !publicView && !localAdminAccess(request)) {
-      const [summary, sheet, photoRows, clubLocations, metricsRaw, milestoneSummary, playerNews] = await Promise.all([
+      const [summary, sheet, photoRows, clubLocations, metricRows, milestoneRows, participantRows, playerNews] = await Promise.all([
         db.rpc("admin_player_catalog_with_history"),
         db.rpc("admin_player_sheet_data"),
         db.schema("app_private").from("player_profile_photos").select("player_id,storage_key"),
         db.from("catalog_clubs").select("id,city,region,province,country,latitude,longitude,maps_url,active"),
-        readCampusMetricsJson(),
-        localMilestoneSummaryByPlayer(),
+        db.schema("app_private").from("player_participation_metrics").select("player_id,participation_count"),
+        db.from("catalog_milestones").select("id,participant_id,scope,category,season_label,club_text,position_text"),
+        db.from("catalog_participants").select("id,player_id"),
         readPlayerNews(),
       ]);
       if (summary.error) return reply({ error: "No se han podido leer los datos privados de jugadores." }, 503);
@@ -338,7 +339,26 @@ export async function GET(request: NextRequest) {
       Object.assign(photos, await localPreparedPhotos());
       const sheetData = sheet.error ? null : sheet.data as { seasons?: SheetSeason[]; clubs?: SheetClub[] } | null;
       const locations = new Map((clubLocations.data ?? []).map((club) => [club.id, club]));
-      const participationByPlayer = new Map((JSON.parse(metricsRaw) as SheetMetric[]).map((metric) => [metric.player_id, metric.participation_count]));
+      const participationByPlayer = new Map((metricRows.data ?? []).map((metric) => [metric.player_id, metric.participation_count]));
+      const milestones = (milestoneRows.data ?? []) as SheetMilestone[];
+      const milestoneParticipants = (participantRows.data ?? []) as SheetMilestoneParticipant[];
+      const playerByParticipant = new Map(milestoneParticipants.filter((participant) => participant.player_id).map((participant) => [participant.id, participant.player_id!]));
+      const milestonesByPlayer = new Map<string, number>();
+      const selectedFederationsByPlayer = new Map<string, Set<string>>();
+      const selectedFederationCountsByPlayer = new Map<string, Map<string, number>>();
+      for (const milestone of milestones) {
+        const playerId = playerByParticipant.get(milestone.participant_id);
+        if (!playerId) continue;
+        milestonesByPlayer.set(playerId, (milestonesByPlayer.get(playerId) ?? 0) + 1);
+        const federationId = selectionFederations[milestone.scope];
+        if (!federationId) continue;
+        const selected = selectedFederationsByPlayer.get(playerId) ?? new Set<string>();
+        selected.add(federationId);
+        selectedFederationsByPlayer.set(playerId, selected);
+        const counts = selectedFederationCountsByPlayer.get(playerId) ?? new Map<string, number>();
+        counts.set(federationId, (counts.get(federationId) ?? 0) + 1);
+        selectedFederationCountsByPlayer.set(playerId, counts);
+      }
       const newsByPlayer = new Map<string, number>();
       for (const news of playerNews.filter((item) => item.published && item.type === "noticia")) newsByPlayer.set(news.player_id, (newsByPlayer.get(news.player_id) ?? 0) + 1);
       return reply({
@@ -346,13 +366,13 @@ export async function GET(request: NextRequest) {
         players: (summary.data as AdminPlayer[]).map((player) => ({
           id: player.id, first_name: player.first_name, last_name: player.last_name, published: player.published, version: player.version,
           profile: { category: player.category, birth_year: player.birth_year }, season_count: player.season_count, linked_season_count: player.linked_season_count, club_history_count: player.club_history_count,
-          participation_count: participationByPlayer.get(player.id) ?? 0, news_count: newsByPlayer.get(player.id) ?? 0, milestone_count: milestoneSummary.milestonesByPlayer.get(player.id) ?? 0,
-          selected_federation_ids: selectedFederationIds(milestoneSummary.selectedFederationsByPlayer, player.id),
-          selected_federation_counts: selectedFederationCounts(milestoneSummary.selectedFederationCountsByPlayer, player.id),
-          professional_clubs: professionalClubs(milestoneSummary.professionalClubsByPlayer, player.id),
-          professional_club_records: professionalClubRecords(milestoneSummary.professionalClubRecordsByPlayer, player.id),
+          participation_count: participationByPlayer.get(player.id) ?? 0, news_count: newsByPlayer.get(player.id) ?? 0, milestone_count: milestonesByPlayer.get(player.id) ?? 0,
+          selected_federation_ids: selectedFederationIds(selectedFederationsByPlayer, player.id),
+          selected_federation_counts: selectedFederationCounts(selectedFederationCountsByPlayer, player.id),
+          professional_clubs: [],
+          professional_club_records: [],
         })),
-        seasons: mergeMilestoneTrajectory(sheetData?.seasons ?? [], milestoneSummary.milestones, milestoneSummary.milestoneParticipants, sheetData?.clubs ?? []),
+        seasons: mergeMilestoneTrajectory(sheetData?.seasons ?? [], milestones, milestoneParticipants, sheetData?.clubs ?? []),
         clubs: (sheetData?.clubs ?? []).map((club) => ({ ...club, city: locations.get(club.id)?.city ?? club.city ?? null, region: locations.get(club.id)?.region ?? club.region ?? null, province: locations.get(club.id)?.province ?? club.province ?? null, country: locations.get(club.id)?.country ?? club.country ?? null, latitude: locations.get(club.id)?.latitude ?? club.latitude ?? null, longitude: locations.get(club.id)?.longitude ?? club.longitude ?? null, maps_url: locations.get(club.id)?.maps_url ?? club.maps_url ?? null, active: locations.get(club.id)?.active ?? club.active ?? true })),
         photos,
       });
