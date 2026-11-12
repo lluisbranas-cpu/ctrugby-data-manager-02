@@ -17,8 +17,7 @@ import { mergeMilestoneTrajectory } from "@/lib/milestone-trajectory";
 import { applyManualSelectionCallups, readManualSelectionCallups, selectionFederationIds, type SelectionRecord } from "@/lib/manual-selection-callups";
 import { readProfessionalCategories, type ProfessionalClubMilestone } from "@/lib/professional-club-milestones";
 import { readPlayerNews } from "@/lib/player-news";
-import { likidHubPreviewReadOnly } from "@/lib/likidhub-preview";
-import { likidHubPreviewPlayersResponse } from "@/lib/likidhub-preview-api";
+import { sharedLikidHubDirectory } from "@/lib/shared-likidhub-directory";
 import { canonicalLikidHubPlayerId } from "@/lib/likidhub-jug-ctr-bridge.generated";
 
 export const runtime = "nodejs";
@@ -274,10 +273,6 @@ async function localPlayerDeletionLinks(playerId: string) {
 }
 
 export async function GET(request: NextRequest) {
-  if (likidHubPreviewReadOnly()) {
-    try { return await likidHubPreviewPlayersResponse(); }
-    catch { return reply({ error: "No se pudo leer el directorio LikidHub." }, 503); }
-  }
   const consultationDenied = await requireConsultation(request);
   if (consultationDenied) return consultationDenied;
 
@@ -285,6 +280,8 @@ export async function GET(request: NextRequest) {
   try {
     const { db, admin } = await catalogAccess(request);
     const publicView = request.nextUrl.searchParams.get("view") === "public";
+    // Public and explicitly public views always use Supabase, never the local staging files.
+    if (!admin || publicView) return reply(await sharedLikidHubDirectory());
     const historyId = request.nextUrl.searchParams.get("history");
     if (historyId) {
       if (!admin) return reply({ error: "Acceso de administrador requerido." }, 403);
@@ -306,7 +303,7 @@ export async function GET(request: NextRequest) {
       if (visible.error) return reply({ error: "No se ha podido cargar la navegación de jugadores." }, 503);
       return reply({ players: visible.data ?? [] });
     }
-    if (admin && !publicView && !localAdminAccess(request)) {
+    if (admin && !publicView) {
       const [summary, sheet, photoRows, clubLocations, metricsRaw, milestoneSummary, playerNews] = await Promise.all([
         db.rpc("admin_player_catalog_with_history"),
         db.rpc("admin_player_sheet_data"),
@@ -324,7 +321,6 @@ export async function GET(request: NextRequest) {
           if (signed.data?.signedUrl) photos[photo.player_id] = signed.data.signedUrl;
         }));
       }
-      Object.assign(photos, await localPreparedPhotos());
       const sheetData = sheet.error ? null : sheet.data as { seasons?: SheetSeason[]; clubs?: SheetClub[] } | null;
       const locations = new Map((clubLocations.data ?? []).map((club) => [club.id, club]));
       const participationByPlayer = new Map((JSON.parse(metricsRaw) as SheetMetric[]).map((metric) => [metric.player_id, metric.participation_count]));
@@ -470,7 +466,6 @@ export async function POST(request: NextRequest) {
         const saved = await db.rpc("admin_replace_player_trajectory", { p_player_id: databaseId(id), p_seasons: [season] });
         if (saved.error) return reply({ id, error: saved.error.message || "Jugador creado, pero no se ha podido guardar la temporada inicial." }, 503);
       }
-      await saveLocalDirectoryPlayer({ id, first_name, last_name, category, birth_year, published: submitted.published !== false, version: 1 });
       if (usesRemoteReviewStorage()) {
         const data = await loadLocalPlayerReviewData(id);
         const bucket = process.env.CTRUGBY_REVIEW_BUCKET || "catalog-media-private";
