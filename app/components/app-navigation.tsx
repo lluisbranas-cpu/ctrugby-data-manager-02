@@ -23,7 +23,7 @@ export function AppNavigation() {
   };
   return <nav className="app-navigation" aria-label="Navegación rápida">
     <button type="button" onClick={() => router.back()} aria-label="Volver a la pantalla anterior"><span aria-hidden="true">←</span></button>
-    <Link href="/jugadores" aria-label="Ir a Inicio"><span aria-hidden="true">⌂</span></Link>
+    <Link href="/" aria-label="Ir al selector de deportes" title="Inicio"><span aria-hidden="true">⌂</span></Link>
     {access.admin ? <><Link className="app-navigation-admin" href="/catalogos" aria-label="Administración activa" title="Administración activa"><span aria-hidden="true">●</span><b>Admin</b></Link><button type="button" className="app-navigation-logout" onClick={() => void logout()} disabled={busy} aria-label="Salir de administración y pasar a modo público" title="Pasar a modo público">X</button></> : <><Link className={access.authenticated ? "app-navigation-private" : undefined} href="/login" aria-label={access.authenticated ? "Acceso privado activo" : "Abrir acceso privado"} title={access.authenticated ? "Acceso privado activo" : "Acceso privado"}><span aria-hidden="true">{access.authenticated ? "●" : "🔒"}</span></Link>{(access.authenticated || access.guest) && <><span className="text-xs font-bold">{access.guest ? "Público" : "Privado"}</span><button type="button" className="app-navigation-logout" onClick={() => void logout()} aria-label="Cerrar sesión" title="Cerrar sesión">X</button></>}</>}
     {error && <span role="alert" className="text-xs text-red-700">{error}</span>}
   </nav>;
