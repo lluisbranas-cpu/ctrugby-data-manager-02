@@ -18,6 +18,7 @@ export function ClientPreviewProvider({ children, development }: { children: Rea
   const pathname = usePathname();
   const router = useRouter();
   const [admin, setAdmin] = useState(false);
+  const [privateAccess, setPrivateAccess] = useState(false);
   const [clients, setClients] = useState<PreviewClient[]>(previewExamples);
   const [selectedId, setSelectedId] = useState("");
   const [notice, setNotice] = useState("");
@@ -26,7 +27,7 @@ export function ClientPreviewProvider({ children, development }: { children: Rea
   const routeClient = routeScope && routeScope !== "likid" ? clients.find(client => previewClientSlug(client) === routeScope) : null;
   const selectedExample = previewExamples.find(client => client.id === selectedId);
   const selected = routeScope ? routeClient ?? null : clients.find(client => client.id === selectedId) ?? (selectedExample ? clients.find(client => client.name.trim().toLocaleLowerCase("es") === selectedExample.name.trim().toLocaleLowerCase("es")) : null) ?? null;
-  const available = !hidden && (development || admin);
+  const available = !hidden && (development || privateAccess);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,7 +38,8 @@ export function ClientPreviewProvider({ children, development }: { children: Rea
         const access = await response.json();
         if (cancelled) return;
         setAdmin(Boolean(access.admin));
-        if (!access.admin) { setClients(previewExamples); return; }
+        setPrivateAccess(Boolean(access.authenticated));
+        if (!access.authenticated) { setClients(previewExamples); return; }
         const result = await fetch("/api/clientes", { cache: "no-store" });
         const data = await result.json();
         if (cancelled) return;
@@ -47,7 +49,7 @@ export function ClientPreviewProvider({ children, development }: { children: Rea
         setClients([...registered, ...previewExamples.filter(example => !registered.some(client => client.name.trim().toLocaleLowerCase("es") === example.name.trim().toLocaleLowerCase("es")))]);
         setNotice("");
       } catch {
-        if (!cancelled) { setAdmin(false); setClients(previewExamples); setNotice("Opciones de prueba disponibles; no se ha podido conectar con los clientes."); }
+        if (!cancelled) { setAdmin(false); setPrivateAccess(false); setClients(previewExamples); setNotice("Opciones de prueba disponibles; no se ha podido conectar con los clientes."); }
       }
     }
     const refresh = () => { void load(); };
