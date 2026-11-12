@@ -1366,3 +1366,6 @@ body {
 .clubs-likid .club-directory-head,.clubs-likid .club-directory-sticky+ul>li>button{grid-template-columns:52px 64px minmax(0,1fr) 104px!important}
 .player-directory-list .player-directory-columns{grid-template-columns:40px minmax(150px,1fr) minmax(120px,.6fr) 32px 32px 38px 42px 82px 28px}
 @media(max-width:640px){.player-directory-list .player-directory-columns{grid-template-columns:40px minmax(180px,1fr) 42px 42px 48px 46px 72px 34px}}
+
+.federation-profile-players .player-directory-columns{grid-template-columns:40px minmax(180px,1.25fr) minmax(150px,.7fr) 40px 40px 46px}
+@media(max-width:640px){.federation-profile-players .player-directory-columns{grid-template-columns:40px minmax(180px,1fr) 42px 42px 48px 46px}}
