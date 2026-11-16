@@ -42,6 +42,7 @@ export function PlayerTrajectory({ id, seasons, birthYear, admin, clubs, profess
     });
     return result;
   }, [rows]);
+  const hasHiddenTrajectory = grouped.length > 3;
   const primaryPhotoYear = useMemo(() => {
     const explicitlySelected = rows.find((season) => season.season_photo_primary && season.season_photo_url);
     if (explicitlySelected) return explicitlySelected.season_year;
@@ -218,7 +219,7 @@ export function PlayerTrajectory({ id, seasons, birthYear, admin, clubs, profess
     {pendingPhoto && <SeasonPhotoEditor file={pendingPhoto.file} season={label(pendingPhoto.year)} onClose={() => setPendingPhoto(null)} onSave={(prepared) => uploadSeasonPhoto(pendingPhoto.year, pendingPhoto.file, prepared)} />}
     <div className={styles.heading}><h2><span className="trajectory-title-icon">{trajectoryIcon}</span>TRAYECTORIA</h2></div>
     {grouped.length ? <ul className="trajectory-highlights">{grouped.slice(0, 3).map((group) => <li key={`${group.name}-${group.years[0]}`}><div className="trajectory-period"><b>{groupLabel(group.years)}</b><small className={styles.categoryDetails}>{categoryDetails(group.years)}</small></div><span className={`trajectory-star${primaryPhotoYear === group.season.season_year ? " current" : ""}`}>★</span>{group.season.season_photo_url ? <img className="trajectory-player-photo" src={group.season.season_photo_url} alt={`Foto de ${groupLabel(group.years)}`} /> : <span className="trajectory-player-photo trajectory-player-photo-empty" aria-label="Foto de temporada pendiente" />}<span className="trajectory-club"><>{group.season.club_id && clubShieldUrl(group.season.club_id) ? <img src={clubShieldUrl(group.season.club_id)!} alt="" /> : null}</>{group.season.club_id ? <Link href={`/clubs/${group.season.club_id}`}>{group.name}</Link> : <b>{group.name}</b>}{rugbyPositionLabel(group.season.position_text) && <small>{rugbyPositionLabel(group.season.position_text)}</small>}</span><span className="trajectory-arrow">{arrow}</span></li>)}</ul> : <p>Sin temporadas registradas.</p>}
-    {rows.length > 0 && <section className="trajectory-complete"><button type="button" onClick={() => setShowFull((current) => !current)}>{showFull ? "Ocultar trayectoria completa" : "Ver trayectoria completa"}{arrow}</button>{showFull && <ul>{[...rows].sort((a, b) => b.season_year - a.season_year).map((season) => <li key={season.season_year} className={admin ? styles.editableRow : undefined}>
+    {hasHiddenTrajectory && <section className="trajectory-complete"><button type="button" onClick={() => setShowFull((current) => !current)}>{showFull ? "Ocultar trayectoria completa" : "Ver trayectoria completa"}{arrow}</button>{showFull && <ul>{[...rows].sort((a, b) => b.season_year - a.season_year).map((season) => <li key={season.season_year} className={admin ? styles.editableRow : undefined}>
       <b>{label(season.season_year)}</b><small className={styles.categoryDetails}>{categoryDetails([season.season_year])}</small>
       {season.season_photo_url ? <img className="trajectory-season-photo" src={season.season_photo_url} alt={`Foto de ${label(season.season_year)}`} /> : <i className="trajectory-season-photo-placeholder" />}
       {season.club_id && clubShieldUrl(season.club_id) ? <img className="trajectory-club-shield" src={clubShieldUrl(season.club_id)!} alt="" /> : <i className="trajectory-club-shield-placeholder" />}

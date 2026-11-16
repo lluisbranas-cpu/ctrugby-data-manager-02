@@ -1,4 +1,4 @@
--- Player identifiers are sport-scoped. Rugby uses RUG####.
+-- Player identifiers are sport-scoped. Rugby uses JUG####.
 -- Upgrade each foreign key first so updating the primary key cascades to all
 -- private and public player data (trajectory, access, contacts, news, etc.).
 do $$
@@ -23,7 +23,7 @@ begin
   end loop;
 
   update public.catalog_players
-  set id = 'RUG' || substring(id from 4)
+  set id = 'JUG' || substring(id from 4)
   where id ~ '^CTR[0-9]{4}$';
 end;
 $$;
@@ -37,7 +37,7 @@ begin
   if not public.app_is_admin() then
     raise exception 'Acceso de administrador requerido.' using errcode = '42501';
   end if;
-  if p_player_id !~ '^RUG[0-9]{4}$' or not exists (select 1 from public.catalog_players where id = p_player_id) then
+  if p_player_id !~ '^JUG[0-9]{4}$' or not exists (select 1 from public.catalog_players where id = p_player_id) then
     raise exception 'Jugador no válido.' using errcode = '22023';
   end if;
   if jsonb_typeof(p_seasons) <> 'array' then

@@ -19,6 +19,7 @@ const regionalFlagFiles: Record<string, string> = {
 };
 
 export function regionalFlagUrl(territory: string) {
-  const file = regionalFlagFiles[territory];
+  const aliases: Record<string, string> = { "Illes Balears": "Balears", "Comunidad Valenciana": "Com. Valenciana", "País Vasco": "Euskadi", "Comunidad de Madrid": "Madrid", "Región de Murcia": "Murcia", "Comunidad Foral de Navarra": "Navarra" };
+  const file = regionalFlagFiles[aliases[territory] ?? territory];
   return file ? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=80` : null;
 }

@@ -8,8 +8,11 @@
 .client-preview-pill button{width:24px;height:24px;flex:none;border:0;border-radius:50%;background:#edf1f5;color:#243b53;cursor:pointer;font-size:18px}
 .client-preview-caption{display:flex;flex-wrap:wrap;gap:6px;font-size:10px;line-height:1.3;color:inherit}
 .client-preview-caption a,.client-preview-manage{color:inherit;text-decoration:underline;font-size:10px;line-height:1.3}
-.client-preview-slot{position:relative;z-index:30;flex:none}
+.client-preview-slot{position:sticky;top:0;z-index:10010;flex:none}
 .client-preview-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px clamp(16px,4vw,48px);border-bottom:1px solid #dce3ea;background:#f0f4f8;color:#243b53;font:12px Arial,sans-serif}
+body:has(.client-preview-slot) .catalog-topbar{top:56px}
+body:has(.client-preview-slot) .cabrera-web>header{top:56px!important}
+body:has(.client-preview-slot) .cabrera-web{padding-top:14rem!important}
 .client-preview-toolbar-title{font-size:11px;font-weight:700;color:#60758a}
 .client-preview-toolbar .client-preview-control{max-width:none;flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px}
 .client-preview-toolbar .client-preview-caption{color:#52677d}
@@ -25,7 +28,7 @@ html[data-client-preview] .directory-app :is(.text-red-600,.text-red-700,.text-r
 html[data-client-preview] .directory-app :is(.bg-red-600,.bg-red-700){background:var(--preview-accent)!important;color:var(--preview-on-accent)!important}
 html[data-client-preview] .directory-app :is(.border-red-500,.border-red-600){border-color:var(--preview-accent)!important}
 html[data-client-preview] .catalog-topbar .manager-menu>summary,html[data-client-preview] .catalog-topbar .manager-access-link{color:var(--preview-on-primary)!important;border-color:var(--preview-on-primary)!important}
-@media(max-width:700px){.client-preview-control{max-width:210px}.client-preview-pill{min-height:36px;padding:3px 8px}.client-preview-pill select{max-width:160px;font-size:11px}.client-preview-label{font-size:8px}.client-preview-toolbar-title{display:none}.client-preview-toolbar{padding:8px 16px}.client-preview-toolbar .client-preview-control{gap:8px}.client-preview-manage{display:none}html[data-client-preview] .catalog-brand::after{display:none!important}}
+@media(max-width:700px){body:has(.client-preview-slot) .catalog-topbar,body:has(.client-preview-slot) .cabrera-web>header{top:52px!important}body:has(.client-preview-slot) .cabrera-web{padding-top:8rem!important}.client-preview-control{max-width:210px}.client-preview-pill{min-height:36px;padding:3px 8px}.client-preview-pill select{max-width:160px;font-size:11px}.client-preview-label{font-size:8px}.client-preview-toolbar-title{display:none}.client-preview-toolbar{padding:8px 16px}.client-preview-toolbar .client-preview-control{gap:8px}.client-preview-manage{display:none}html[data-client-preview] .catalog-brand::after{display:none!important}}
 @media print{.client-preview-slot,.client-preview-control{display:none!important}}
 
 html[data-client-preview] :is(.selected-player-name strong,[data-client-surname]){color:var(--preview-surname)!important}
@@ -36,3 +39,10 @@ html[data-client-preview] :is(.players-directory-eyebrow i,.ctrugby-marker,.play
 /* La segunda parte de los títulos comparte el color de apellidos del cliente. */
 html[data-client-preview] :is(.directory-cover-copy h1 strong:not(.ctrugby-title),.player-profile-cover-copy h1 strong,.club-profile-cover h1 strong,#home-title>span){color:var(--preview-surname)!important}
 html[data-client-preview] .directory-cover h1 .ctrugby-title::after,html[data-client-preview] .players-directory-cover h1 strong::after{color:var(--preview-surname)!important}
+
+/* CTRugby conserva su cabecera institucional clara en la vista de cliente. */
+html[data-client-preview="ctrugby"] .catalog-topbar{background:#fff!important;color:#1b4980!important;border-bottom-color:#d5e0ec!important;box-shadow:0 3px 14px rgba(14,42,75,.12)!important}
+html[data-client-preview="ctrugby"] .catalog-brand,html[data-client-preview="ctrugby"] .catalog-brand::after{color:#1b4980!important}
+html[data-client-preview="ctrugby"] .catalog-topbar .manager-menu>summary,html[data-client-preview="ctrugby"] .catalog-topbar .manager-access-link{border-color:#1b4980!important;background:#fff!important;color:#1b4980!important}
+html[data-client-preview="ctrugby"] .catalog-topbar .manager-menu>summary:hover,html[data-client-preview="ctrugby"] .catalog-topbar .manager-access-link:hover{background:#eaf2f9!important;color:#1b4980!important}
+html[data-client-preview="ctrugby"] .catalog-brand:focus-visible{outline-color:#1b4980!important}

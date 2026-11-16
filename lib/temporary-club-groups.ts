@@ -1,16 +1,20 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 export type TemporaryClubGroup = { id: string; club_id?: string; name: string; season: string; category: string; club_ids: string[]; version: number };
 const target = () => path.join(process.cwd(), "data/staging/temporary-club-groups.json");
 export async function readTemporaryClubGroups(): Promise<TemporaryClubGroup[]> {
-  try { return (JSON.parse(await readFile(target(), "utf8")) as TemporaryClubGroup[]).map(row => ({ ...row, season: row.season.replace(/^(\d{2})(\d{2})\/(?:\d{2})?(\d{2})$/, "$2/$3") })); }
+  const remote = await readOperationalDocument<unknown>("club-group", "temporary-groups").catch(() => null);
+  const rows = Array.isArray(remote?.payload) ? remote.payload as TemporaryClubGroup[] : (() => null)();
+  try { return (rows ?? JSON.parse(await readFile(target(), "utf8")) as TemporaryClubGroup[]).map(row => ({ ...row, season: row.season.replace(/^(\d{2})(\d{2})\/(?:\d{2})?(\d{2})$/, "$2/$3") })); }
   catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return []; throw error; }
 }
 let pending: Promise<unknown> = Promise.resolve();
 export function changeTemporaryClubGroups(change: (rows: TemporaryClubGroup[]) => TemporaryClubGroup[] | Promise<TemporaryClubGroup[]>) {
   const operation = pending.then(async () => {
     const rows = await change(await readTemporaryClubGroups());
+    await upsertOperationalDocument("club-group", "temporary-groups", rows);
     await mkdir(path.dirname(target()), { recursive: true });
     const temporary = `${target()}.${randomUUID()}.tmp`;
     await writeFile(temporary, JSON.stringify(rows, null, 2) + "\n", "utf8");

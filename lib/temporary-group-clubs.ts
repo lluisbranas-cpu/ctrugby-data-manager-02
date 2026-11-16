@@ -5,15 +5,18 @@ import { readTemporaryClubGroups, type TemporaryClubGroup } from "./temporary-cl
 import { readSeasonCategories } from "./player-season-categories";
 import { groupMembershipMatches, type ClubGroupMembership } from "../app/lib/club-group-membership";
 import type { ClubDirectoryRecord } from "./club-directory-overrides";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 export type GroupClub = ClubDirectoryRecord & { group_key: string; is_temporary_group: true };
 const file = () => path.join(process.cwd(), "data/staging/temporary-group-clubs.json");
 const key = (name: string) => name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("es").replace(/\s+/g, " ");
 export async function readGroupClubs(): Promise<GroupClub[]> {
+  const remote = await readOperationalDocument<unknown>("club-group", "temporary-clubs").catch(() => null);
+  if (Array.isArray(remote?.payload)) return remote.payload as GroupClub[];
   try { return JSON.parse(await readFile(file(), "utf8")); } catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return []; throw error; }
 }
 let pending: Promise<unknown> = Promise.resolve();
 async function update(change: (clubs: GroupClub[]) => GroupClub[]) {
-  const work = pending.then(async () => { const clubs = change(await readGroupClubs()); await mkdir(path.dirname(file()), { recursive: true }); const temp = file() + "." + randomUUID() + ".tmp"; await writeFile(temp, JSON.stringify(clubs, null, 2) + "\n"); await rename(temp, file()); return clubs; });
+  const work = pending.then(async () => { const clubs = change(await readGroupClubs()); await upsertOperationalDocument("club-group", "temporary-clubs", clubs); await mkdir(path.dirname(file()), { recursive: true }); const temp = file() + "." + randomUUID() + ".tmp"; await writeFile(temp, JSON.stringify(clubs, null, 2) + "\n"); await rename(temp, file()); return clubs; });
   pending = work.catch(() => undefined); return work;
 }
 export async function ensureGroupClubs(groups: TemporaryClubGroup[]) {

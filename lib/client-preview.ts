@@ -3,15 +3,14 @@ import type { Customer } from "./client-types";
 export type PreviewClient = {
   id: string; name: string; category: string; logo: string;
   primary: string; secondary: string; accent: string; surname?: string; typography: string;
-  href?: string; demo: boolean;
+  href?: string; scope?: string; demo: boolean;
 };
 
-export const previewExamples: PreviewClient[] = [
-  { id: "demo-laietans", name: "Rugby Laietans", category: "Agrupación temporal", logo: "", primary: "#262626", secondary: "#fafafa", accent: "#525252", typography: "", href: "/clubs/rugby-laietans", demo: true },
-  { id: "demo-ctrugby", name: "Likid", category: "Plataforma", logo: "/likid-logo-inverse.png", primary: "#1b4980", secondary: "#ffffff", accent: "#dc2626", typography: "", href: "/jugadores", demo: true },
-  { id: "demo-cabrera", name: "Rugby Cabrera", category: "Club", logo: "/club-shields/ESP0022.png", primary: "#101d42", secondary: "#ffffff", accent: "#e42636", typography: "", href: "/clubs/ESP0022/equipos", demo: true },
-  { id: "demo-badalona", name: "Rugby Badalona", category: "Club", logo: "/club-shields/ESP0023.png", primary: "#173858", secondary: "#ffffff", accent: "#48a6cd", typography: "", href: "/clubs/ESP0023/equipos", demo: true },
-  { id: "demo-alella", name: "Rugby Alella", category: "Club", logo: "/club-shields/ESP0010.png", primary: "#173d2a", secondary: "#ffffff", accent: "#e6bf12", typography: "", href: "/clubs/ESP0010/equipos", demo: true },
+// The only client-facing view. Its portal reads Rugby Cabrera's ESP0022
+// roster, seasons and categories, matching the published team site.
+export const clientViews: PreviewClient[] = [
+  { id: "ctrugby", name: "CTRugby", category: "Campus", logo: "/ctrugby-logo-contrast.webp", primary: "#1b4980", secondary: "#ffffff", accent: "#dc2626", typography: "", scope: "ctrugby", demo: false },
+  { id: "rugby-cabrera", name: "Rugby Cabrera", category: "Club", logo: "/club-shields/ESP0022.png", primary: "#101d42", secondary: "#ffffff", accent: "#e42636", typography: "", href: "/rugby/ESP022/web/home", scope: "ESP022", demo: false },
 ];
 const safeColor = (value: string, fallback: string) => /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
 export function customerPreview(client: Customer, category: string): PreviewClient {

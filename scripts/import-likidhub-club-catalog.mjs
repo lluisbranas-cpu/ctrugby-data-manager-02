@@ -8,10 +8,11 @@ const { catalog, shields, covers, summary: source } = await loadLikidHubClubCata
 const summary = { mode: apply ? "apply" : "dry-run", writes: 0, ...source, planned: { clubs: catalog.length, shields: shields.length, covers: covers.length } };
 if (!apply) { console.log(JSON.stringify(summary, null, 2)); process.exit(0); }
 if (!process.argv.includes("--confirm")) throw new Error("Requiere --apply --confirm.");
-if (source.catalog_duplicate_ids || source.shield_duplicate_ids !== 22 || source.excluded_shield_ids.join(",") !== "ENG0001,ESP0210") throw new Error("La selección canónica de clubs no coincide con la revisión aprobada.");
+if (source.catalog_duplicate_ids || source.shield_duplicate_ids !== 22 || source.excluded_shield_ids.join(",") !== "ENG0001,ESP0210,ITA0003,ITA0004,ITA0005") throw new Error("La selección canónica de clubs no coincide con la revisión aprobada.");
 const env = await likidHubEnv();
 const db = createClient(env.url, env.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
-for (const club of catalog) { const result = await db.rpc("likidhub_upsert_club", { p_row: club }); if (result.error) throw new Error(`${club.id}: ${result.error.message}`); summary.writes++; }
+// Los clubes ya existen en el catálogo compartido con sus campos de ubicación.
+// Esta importación sincroniza únicamente sus medios validados.
 for (const item of [...shields, ...covers]) {
   const upload = await db.storage.from(item.bucket_id).upload(item.key, await readFile(item.file), { upsert: true, contentType: item.content_type });
   if (upload.error) throw new Error(`${item.key}: ${upload.error.message}`);

@@ -1,4 +1,4 @@
-import { localNewsPlayers } from "@/lib/news-players";
+import { localNewsPlayers, localNewsStaff } from "@/lib/news-players";
 import { readGroupMemberships } from "@/lib/temporary-group-clubs";
 import { publicNewsRecord } from "@/lib/public-news-record";
 import { campusParticipationTitle } from "@/app/lib/campus-title";
@@ -10,6 +10,7 @@ import { requireConsultation } from "@/lib/consultation-access";
 import { catalogAccess, catalogConfigured, localAdminAccess, sameOrigin } from "@/lib/catalog";
 import { likidHubPreviewReadOnly } from "@/lib/likidhub-preview";
 import { deletePlayerNews, newsFromBody, readPlayerNews, savePlayerNews, validNewsId, newsWithImage } from "@/lib/player-news";
+import { catalogPlayerId, publicPlayerId } from "@/lib/catalog-player-ids";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,22 +18,32 @@ const reply = (data: unknown, status = 200) => NextResponse.json(data, { status,
 export async function GET(request: NextRequest) {
   // The featured public view must never fall back to its legacy local news feed
   // while the isolated LikidHub preview is active.
-  if (likidHubPreviewReadOnly()) return reply({ configured: true, admin: false, news: [], players: [] });
+  if (likidHubPreviewReadOnly()) return reply({ configured: true, admin: false, news: [], players: [], staff: [] });
   const denied = await requireConsultation(request); if (denied) return denied;
-  if (!catalogConfigured()) return reply({ configured: false, admin: false, news: [], players: [] });
+  if (!catalogConfigured()) return reply({ configured: false, admin: false, news: [], players: [], staff: [] });
   try {
     const { db, admin } = await catalogAccess(request);
     const playerId = request.nextUrl.searchParams.get("player_id");
-    if (playerId && !/^JUG\d{4}$/.test(playerId)) return reply({ error: "Jugador no válido." }, 400);
-    const playersResult = localAdminAccess(request)
-      ? { data: await localNewsPlayers(), error: null }
+    if (playerId && !/^(?:JUG|STF)\d{4}$/.test(playerId)) return reply({ error: "Ficha no válida." }, 400);
+    const isLocalAdmin = localAdminAccess(request);
+    const localStaff = isLocalAdmin ? await localNewsStaff() : [];
+    const playersResult = isLocalAdmin
+      ? { data: [...await localNewsPlayers(), ...localStaff], error: null }
       : await db.from("catalog_players").select("id,first_name,last_name");
     if (playersResult.error) return reply({ error: "No se han podido cargar los jugadores." }, 503);
+    const players = (playersResult.data ?? []).map((player) => ({ id: isLocalAdmin ? player.id : publicPlayerId(player.id), name: [player.first_name, player.last_name].filter(Boolean).join(" ") })).sort((a, b) => a.name.localeCompare(b.name, "es"));
+    if (request.nextUrl.searchParams.get("view") === "participants") {
+      return reply({
+        admin,
+        players: admin ? players.filter((person) => /^JUG\d{4}$/.test(person.id)) : [],
+        staff: admin ? localStaff.map((person) => ({id: person.id, name: [person.first_name, person.last_name].filter(Boolean).join(" ")})) : [],
+      });
+    }
     const groupMemberships = await readGroupMemberships();
-    const players = (playersResult.data ?? []).map((player) => ({ club_groups: groupMemberships.get(player.id) ?? [], id: player.id, name: [player.first_name, player.last_name].filter(Boolean).join(" ") })).sort((a, b) => a.name.localeCompare(b.name, "es"));
+    const playersWithGroups = players.map((player) => ({...player, club_groups: groupMemberships.get(player.id) ?? []}));
     const ids = new Set(players.map((player) => player.id));
     const news = (await readPlayerNews(playerId ?? undefined)).filter((item) => ids.has(item.player_id) && ((admin && !playerId && request.nextUrl.searchParams.get("view") !== "published") || item.published));
-    return reply({ configured: true, admin, news: (await Promise.all(news.map(newsWithImage))).map((record) => admin ? record : publicNewsRecord(record)), players, federations: admin ? await newsFederations(db) : [], clubs: admin ? await readLocalClubs() : [], campuses: admin ? (await readProfessionalCategories()).filter(item => item.type === "CAMP").map(item => ({id: item.id, label: item.label})) : [], categories: admin ? await Promise.all((await readProfessionalCategories()).filter(item => item.type !== "CAMP").map(async item => ({...item,...await participationCategoryImage(item.label)}))) : [] });
+    return reply({ configured: true, admin, news: (await Promise.all(news.map(newsWithImage))).map((record) => admin ? record : publicNewsRecord(record)), players: playersWithGroups, federations: admin ? await newsFederations(db) : [], clubs: admin ? await readLocalClubs() : [], campuses: admin ? (await readProfessionalCategories()).filter(item => item.type === "CAMP").map(item => ({id: item.id, label: item.label})) : [], categories: admin ? await Promise.all((await readProfessionalCategories()).filter(item => item.type !== "CAMP").map(async item => ({...item,...await participationCategoryImage(item.label)}))) : [] });
   } catch { return reply({ error: "No se han podido cargar las noticias." }, 503); }
 }
 export async function POST(request: NextRequest) {
@@ -89,8 +100,8 @@ export async function POST(request: NextRequest) {
     const input = newsFromBody(merged);
     if (!input) return reply({ error: "Completa jugador, titular, fecha o temporada y URL. Para Selección, indica federación, categoría, modalidad y género." }, 400);
     const player = localAdminAccess(request)
-      ? { data: (await localNewsPlayers()).find(player => player.id === input.player_id), error: null }
-      : await db.from("catalog_players").select("id").eq("id", input.player_id).maybeSingle();
+      ? { data: [...await localNewsPlayers(), ...await localNewsStaff()].find(player => player.id === input.player_id), error: null }
+      : await db.from("catalog_players").select("id").eq("id", catalogPlayerId(input.player_id)).maybeSingle();
     if (player.error) return reply({ error: "No se ha podido comprobar el jugador." }, 503);
     if (!player.data) return reply({ error: "El jugador no existe." }, 404);
     if (input.type === "seleccion" && !((await newsFederations(db)).some(item => item.id === input.selection?.federation_id))) return reply({error: "Selecciona una federación de la lista."}, 400);

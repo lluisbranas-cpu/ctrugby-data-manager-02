@@ -4,6 +4,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { catalogAccess, catalogConfigured, sameOrigin } from "@/lib/catalog";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,11 +18,14 @@ const nullable = (value: unknown, maximum: number) => clean(value, maximum) || n
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function readMessages() {
+  const remote = await readOperationalDocument<unknown>("contact", "messages").catch(() => null);
+  if (Array.isArray(remote?.payload)) return remote.payload as ContactMessage[];
   const raw = await readFile(filePath(), "utf8").catch(() => "[]");
   return JSON.parse(raw) as ContactMessage[];
 }
 
 async function saveMessages(messages: ContactMessage[]) {
+  await upsertOperationalDocument("contact", "messages", messages);
   const target = filePath();
   await mkdir(path.dirname(target), { recursive: true });
   const temporary = `${target}.${randomUUID()}.tmp`;
@@ -44,6 +48,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const denied = await requireConsultation(request); if (denied) return denied;
   if (!sameOrigin(request)) return reply({ error: "Origen no permitido." }, 403);
+  if (!catalogConfigured()) return reply({ error: "Catálogo no disponible." }, 503);
   try {
     const body = await request.json() as Record<string, unknown>;
     const replyTo = nullable(body.reply_to, 254);

@@ -2,6 +2,7 @@ import { readPlayerNews } from "./player-news";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 
 type Callup = { id?: string; federation_id: string; scope?: string | null; category?: string | null; format?: string | null; season_label?: string | null; club_text?: string | null };
 export function callupLinkKey(item: Callup) {
@@ -11,7 +12,8 @@ export function callupLinkKey(item: Callup) {
 export const legacyCallupLinkKey = (item: Callup) => callupLinkKey({...item, id: undefined});
 export async function readMilestoneSourceUrls() {
   const filename = path.join(process.cwd(), "data", "staging", "milestone-sources.json");
-  const records = JSON.parse(await readFile(filename, "utf8")) as {milestone_id: string; source_url?: string | null}[];
+  const remote = await readOperationalDocument<unknown>("hito", "sources").catch(() => null);
+  const records = Array.isArray(remote?.payload) ? remote.payload as {milestone_id: string; source_url?: string | null}[] : JSON.parse(await readFile(filename, "utf8")) as {milestone_id: string; source_url?: string | null}[];
   return new Map([...records.map((item) => [item.milestone_id, validSourceUrl(item.source_url)] as const), ...(await readPlayerNews()).filter(item => item.type === "seleccion" && item.published).map(item => [item.id, validSourceUrl(item.url)] as const)]);
 }
 export function validSourceUrl(value: unknown): string | null {
@@ -20,6 +22,8 @@ export function validSourceUrl(value: unknown): string | null {
 }
 const file = (playerId: string) => path.join(process.cwd(), "data", "staging", "player-callup-links", playerId + ".json");
 export async function readCallupLinks(playerId: string): Promise<Record<string, string>> {
+  const remote = await readOperationalDocument<unknown>("player-callup", playerId).catch(() => null);
+  if (remote?.payload && typeof remote.payload === "object" && !Array.isArray(remote.payload)) return remote.payload as Record<string, string>;
   try { return JSON.parse(await readFile(file(playerId), "utf8")); }
   catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return {}; throw error; }
 }
@@ -28,6 +32,7 @@ export async function saveCallupLink(playerId: string, key: string, url: string)
   const operation = (writes.get(playerId) || Promise.resolve()).catch(() => {}).then(async () => {
     const links = await readCallupLinks(playerId);
     links[key] = url;
+    await upsertOperationalDocument("player-callup", playerId, links);
     const destination = file(playerId);
     await mkdir(path.dirname(destination), {recursive: true});
     const temporary = destination + "." + randomUUID() + ".tmp";

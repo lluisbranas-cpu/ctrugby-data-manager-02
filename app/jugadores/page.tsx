@@ -10,13 +10,15 @@ import { clubShieldUrl } from "@/app/lib/club-shields";
 import { federationShieldUrl } from "@/app/lib/federation-shields";
 import { rugbyPositionLabel } from "@/app/lib/rugby-positions";
 import { ManagerMenu } from "@/app/components/manager-menu";
+import { useClientPreview } from "@/app/components/client-preview";
 import { FederationDirectoryCoverActions } from "@/app/components/federation-directory-cover-actions";
 import { Newspaper } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { countryFlagCode } from "@/app/lib/country-flag";
 
-type Profile = { category: string | null; birth_year: number | null };
-type Player = { club_groups?: ClubGroupMembership[]; id: string; first_name: string; last_name: string | null; published: boolean; version: number; profile?: Profile | null; season_count?: number; linked_season_count?: number; club_history_count?: number; participation_count?: number; milestone_count?: number; selected_federation_ids?: string[]; news_count?: number };
+type Profile = { category: string | null; birth_year: number | null; nationality_country?: string | null; secondary_nationality_country?: string | null };
+type Player = { club_groups?: ClubGroupMembership[]; id: string; first_name: string; last_name: string | null; nickname?: string | null; published: boolean; version: number; profile?: Profile | null; season_count?: number; linked_season_count?: number; club_history_count?: number; participation_count?: number; milestone_count?: number; selected_federation_ids?: string[]; news_count?: number };
 type PlayerSeason = { player_id: string; season_year: number; club_id: string | null; legacy_club_name: string | null; position_text: string | null; weight_kg: number | null; height_cm: number | null };
 type ClubRef = { id: string; name: string; country: string | null; city?: string | null; region?: string | null; province?: string | null; latitude?: number | null; longitude?: number | null; maps_url?: string | null; active?: boolean | null };
 type State = { configured: boolean; admin: boolean; source?: string; players: Player[]; seasons?: PlayerSeason[]; clubs?: ClubRef[]; photos?: Record<string, string> };
@@ -33,7 +35,10 @@ const matchesPlayerId = (playerId: string, query: string) => {
 };
 export default function PlayersPage() {
   const pathname = usePathname();
-  const isLikid = /^\/rugby\/likid(?:\/|$)/.test(pathname);
+  const { selected: selectedClient } = useClientPreview();
+  const showParticipation = selectedClient?.category.trim().toLocaleLowerCase("es-ES") === "campus";
+  // PART. depende del tipo de cliente, no de la ruta con la que se abrió la vista.
+  const isLikid = !showParticipation;
   const sportLabel = pathname.startsWith("/rugby/") ? "Rugby" : "Rugby";
   const [state, setState] = useState<State | null>(null);
   const [notice, setNotice] = useState("");
@@ -42,7 +47,7 @@ export default function PlayersPage() {
   const [gender, setGender] = useState<"all" | "M" | "F">("all");
   const [scope] = useState<DirectoryScope>("all");
   const [publicationFilter, setPublicationFilter] = useState<"all" | "published" | "hidden">("all");
-  const [sort, setSort] = useState<{ key: "participation" | "player" | "club" | "national" | "regional" | "milestones" | "news" | "status"; direction: 1 | -1 }>({ key: "player", direction: 1 });
+  const [sort, setSort] = useState<{ key: "participation" | "player" | "origin" | "club" | "national" | "regional" | "milestones" | "news" | "status"; direction: 1 | -1 }>({ key: "player", direction: 1 });
   const [, setBusy] = useState(false);
   const [historyPlayer, setHistoryPlayer] = useState<Player | null>(null);
   const [history, setHistory] = useState<ClubHistory[] | null>(null);
@@ -109,7 +114,7 @@ export default function PlayersPage() {
     return { player, seasons, clubs, currentClub, currentClubName, positionText: currentSeason?.position_text ?? null };
   }).filter(({ player, clubs }) => {
     const text = query.trim().toLocaleLowerCase("es-ES");
-    const searchable = [...groupSearchNames(player.club_groups, edition), player.id, fullName(player), player.profile?.category ?? "", ...(seasonsByPlayer.get(player.id) ?? []).map((season) => season.legacy_club_name ?? ""), ...clubs.map((club) => `${club.name} ${club.country ?? ""}`)].join(" ").toLocaleLowerCase("es-ES");
+    const searchable = [...groupSearchNames(player.club_groups, edition), player.id, fullName(player), player.nickname ?? "", player.profile?.category ?? "", ...(seasonsByPlayer.get(player.id) ?? []).map((season) => season.legacy_club_name ?? ""), ...clubs.map((club) => `${club.name} ${club.country ?? ""}`)].join(" ").toLocaleLowerCase("es-ES");
     const normalizedText = normalizeSearchText(text);
     return !text || searchable.includes(text) || matchesPlayerId(player.id, text) || Boolean(normalizedText) && normalizeSearchText(searchable).includes(normalizedText);
   }).filter(({ player, seasons }) => {
@@ -117,14 +122,54 @@ export default function PlayersPage() {
     const publication = publicationFilter === "all" || (publicationFilter === "published" ? player.published : !player.published);
     return publication && inScope && (edition === "all" || seasons.some((season) => String(season.season_year) === edition)) && (gender === "all" || player.profile?.category === gender);
   }).sort((a, b) => {
-    const sortValue = (row: typeof a) => sort.key === "participation" ? row.player.participation_count ?? 0 : sort.key === "club" ? row.currentClubName ?? "" : sort.key === "national" ? Number(row.player.selected_federation_ids?.some((id) => id.startsWith("FN"))) : sort.key === "regional" ? Number(row.player.selected_federation_ids?.some((id) => id.startsWith("FT"))) : sort.key === "milestones" ? row.player.milestone_count ?? 0 : sort.key === "news" ? row.player.news_count ?? 0 : sort.key === "status" ? row.player.published ? "Publicado" : "Pendiente" : fullName(row.player);
+    const sortValue = (row: typeof a) => sort.key === "participation" ? row.player.participation_count ?? 0 : sort.key === "origin" ? row.player.profile?.nationality_country ?? "" : sort.key === "club" ? row.currentClubName ?? "" : sort.key === "national" ? Number(row.player.selected_federation_ids?.some((id) => id.startsWith("FN"))) : sort.key === "regional" ? Number(row.player.selected_federation_ids?.some((id) => id.startsWith("FT"))) : sort.key === "milestones" ? row.player.milestone_count ?? 0 : sort.key === "news" ? row.player.news_count ?? 0 : sort.key === "status" ? row.player.published ? "Publicado" : "Pendiente" : fullName(row.player);
     const aValue = sortValue(a); const bValue = sortValue(b);
     const comparison = typeof aValue === "number" && typeof bValue === "number" ? aValue - bValue : String(aValue).localeCompare(String(bValue), "es");
     return comparison * sort.direction;
   }), [clubsById, edition, gender, isLikid, publicationFilter, query, scope, seasonsByPlayer, sort, state?.players]);
-  const order = (key: typeof sort.key) => setSort((current) => ({ key, direction: current.key === key ? current.direction * -1 as 1 | -1 : key === "player" || key === "club" ? 1 : -1 }));
+  const order = (key: typeof sort.key) => setSort((current) => ({ key, direction: current.key === key ? current.direction * -1 as 1 | -1 : key === "player" || key === "origin" || key === "club" ? 1 : -1 }));
   const sortMark = (key: typeof sort.key) => sort.key !== key ? "↕" : sort.direction === 1 ? "↑" : "↓";
   const rows = playerRows;
+  useEffect(() => {
+    // The nationality flag is part of every player directory. Keeping it in the
+    // DOM order prevents the Club header and shield from drifting apart.
+    const section = document.querySelector(".player-directory-list");
+    const heading = section?.querySelector(".federation-profile-players-columns");
+    if (!section || !heading) return;
+    heading.querySelector(".player-origin-heading")?.remove();
+    const originHeading = document.createElement("button");
+    originHeading.type = "button";
+    originHeading.className = "player-directory-sort player-origin-heading";
+    originHeading.innerHTML = `<span>NACIONALIDAD</span><small aria-hidden="true">${sortMark("origin")}</small>`;
+    originHeading.onclick = () => order("origin");
+    heading.insertBefore(originHeading, heading.children[isLikid ? 2 : 3] ?? null);
+    section.querySelectorAll(".player-origin-flag").forEach((element) => element.remove());
+    section.querySelectorAll("ul > li").forEach((element, index) => {
+      const player = rows[index]?.player;
+      const countries = [...new Set([player?.profile?.nationality_country, player?.profile?.secondary_nationality_country].filter((country): country is string => Boolean(country)))];
+      const country = countries[0] ?? null;
+      const flag = country ? countryFlagCode(country) : null;
+      const origin = document.createElement("span");
+      origin.dataset.playerOrigin = "";
+      origin.className = "player-origin-flag";
+      origin.title = countries.length ? `Nacionalidad: ${countries.join(" · ")}` : "Nacionalidad pendiente";
+      origin.setAttribute("aria-label", origin.title);
+      if (flag) origin.innerHTML = `<img src="https://flagcdn.com/w40/${flag}.png" alt="Bandera de ${country}" />`;
+      else origin.textContent = "—";
+      origin.replaceChildren();
+      for (const nationality of countries) {
+        const nationalityFlag = countryFlagCode(nationality);
+        if (!nationalityFlag) continue;
+        const image = document.createElement("img");
+        image.src = `https://flagcdn.com/w40/${nationalityFlag}.png`;
+        image.alt = `Bandera de ${nationality}`;
+        origin.append(image);
+      }
+      if (!origin.childElementCount) origin.textContent = "—";
+      const clubCell = element.querySelector(".player-directory-club-cell");
+      element.insertBefore(origin, clubCell);
+    });
+  }, [isLikid, rows, sort]);
   const scopeCounts = useMemo(() => ({
     all: state?.players.length ?? 0,
     ctrugby: state?.players.filter((player) => (player.participation_count ?? 0) > 0).length ?? 0,

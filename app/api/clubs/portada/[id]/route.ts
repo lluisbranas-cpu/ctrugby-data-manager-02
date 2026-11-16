@@ -4,6 +4,9 @@ import path from "node:path";
 import sharp from "sharp";
 import { NextRequest, NextResponse } from "next/server";
 import { catalogAccess, sameOrigin } from "@/lib/catalog";
+import { catalogServiceClient } from "@/lib/catalog";
+import { operationalMediaBucket } from "@/lib/operational-store";
+import { createHash } from "node:crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,9 +25,19 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   const rawId = (await context.params).id;
   const id = validId(rawId.toLowerCase() === "directorio" ? "directorio" : rawId.toUpperCase());
   if (!id) return new NextResponse(null, { status: 404 });
-  if (request.nextUrl.searchParams.get("meta") === "1") { try { await access(coverPath(id)); return reply({ exists: true }); } catch { return reply({ exists: false }); } }
+  if (request.nextUrl.searchParams.get("meta") === "1") {
+    try { await access(coverPath(id)); return reply({ exists: true }); }
+    catch {
+      const remote = await catalogServiceClient().storage.from(operationalMediaBucket).createSignedUrl(`club-covers/${id}.webp`, 60);
+      return reply({ exists: Boolean(remote.data?.signedUrl) });
+    }
+  }
   try { return new NextResponse(await readFile(coverPath(id)), { headers: { "Content-Type": "image/webp", "Cache-Control": "no-store" } }); }
-  catch { try { return new NextResponse(await readFile(fallbackPath), { headers: { "Content-Type": "image/png", "Cache-Control": "no-store" } }); } catch { return new NextResponse(null, { status: 404 }); } }
+  catch {
+    const remote = await catalogServiceClient().storage.from(operationalMediaBucket).createSignedUrl(`club-covers/${id}.webp`, 60);
+    if (remote.data?.signedUrl) return NextResponse.redirect(remote.data.signedUrl);
+    try { return new NextResponse(await readFile(fallbackPath), { headers: { "Content-Type": "image/png", "Cache-Control": "no-store" } }); } catch { return new NextResponse(null, { status: 404 }); }
+  }
 }
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -60,6 +73,23 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
     await Promise.all([mkdir(coversRoot, { recursive: true }), mkdir(originalsRoot, { recursive: true })]);
     await Promise.all([writeFile(coverPath(id), prepared), writeFile(path.join(originalsRoot, `${id}.${extension}`), bytes)]);
+    const db = catalogServiceClient();
+    const objectKey = `club-covers/${id}.webp`;
+    const upload = await db.storage.from(operationalMediaBucket).upload(objectKey, prepared, { upsert: true, contentType: "image/webp" });
+    if (upload.error) return reply({ error: "No se ha podido guardar la portada remota." }, 503);
+    const indexed = await db.rpc("likidhub_upsert_operational_media", {
+      p_row: {
+        entity_type: "club-cover",
+        entity_id: id,
+        variant: "cover",
+        bucket_id: operationalMediaBucket,
+        object_key: objectKey,
+        content_type: "image/webp",
+        byte_size: prepared.length,
+        source_sha256: createHash("sha256").update(prepared).digest("hex"),
+      },
+    });
+    if (indexed.error) return reply({ error: "No se ha podido indexar la portada remota." }, 503);
     return reply({ ok: true, url: `/api/clubs/portada/${id}` });
   } catch { return reply({ error: "No se ha podido guardar la portada." }, 400); }
 }
@@ -69,5 +99,12 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
   const rawId = (await context.params).id;
   const id = validId(rawId.toLowerCase() === "directorio" ? "directorio" : rawId.toUpperCase());
   if (!id) return reply({ error: "Club no válido." }, 404);
-  try { const { admin } = await catalogAccess(request); if (!admin) return reply({ error: "Acceso de administrador requerido." }, 403); await rm(coverPath(id), { force: true }); return reply({ ok: true }); } catch { return reply({ error: "No se ha podido borrar la imagen de cabecera." }, 400); }
+  try {
+    const { admin } = await catalogAccess(request);
+    if (!admin) return reply({ error: "Acceso de administrador requerido." }, 403);
+    await rm(coverPath(id), { force: true });
+    const remote = await catalogServiceClient().storage.from(operationalMediaBucket).remove([`club-covers/${id}.webp`]);
+    if (remote.error) return reply({ error: "No se ha podido borrar la portada remota." }, 503);
+    return reply({ ok: true });
+  } catch { return reply({ error: "No se ha podido borrar la imagen de cabecera." }, 400); }
 }

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { ClientType, Customer } from "@/lib/client-types";
-import { contrastText, customerPreview, previewExamples, type PreviewClient } from "@/lib/client-preview";
+import { contrastText, clientViews, customerPreview, type PreviewClient } from "@/lib/client-preview";
 import "./client-preview.css";
 import { isSportPage, previewClientSlug, scopedSportHref, sportScope, unscopedSportPath } from "@/lib/sport-routes";
 
@@ -14,19 +14,22 @@ type PreviewState = { available: boolean; clients: PreviewClient[]; selected: Pr
 const PreviewContext = createContext<PreviewState>({ available: false, clients: [], selected: null, select: () => {}, admin: false, notice: "" });
 const variables = ["--preview-surname", "--preview-primary", "--preview-secondary", "--preview-accent", "--preview-on-primary", "--preview-on-accent", "--preview-logo", "--preview-name", "--preview-font"];
 
+export function useClientPreview() {
+  return useContext(PreviewContext);
+}
+
 export function ClientPreviewProvider({ children, development }: { children: ReactNode; development: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const [admin, setAdmin] = useState(false);
   const [privateAccess, setPrivateAccess] = useState(false);
-  const [clients, setClients] = useState<PreviewClient[]>(previewExamples);
+  const [clients, setClients] = useState<PreviewClient[]>(clientViews);
   const [selectedId, setSelectedId] = useState("");
   const [notice, setNotice] = useState("");
   const hidden = ["/login", "/acceso", "/invitado", "/invitado/confirmar", "/recuperar", "/restablecer", "/restablecer-local"].includes(pathname) || pathname.startsWith("/revision-jugador/") || pathname.startsWith("/r/");
   const routeScope = sportScope(pathname);
-  const routeClient = routeScope && routeScope !== "likid" ? clients.find(client => previewClientSlug(client) === routeScope) : null;
-  const selectedExample = previewExamples.find(client => client.id === selectedId);
-  const selected = routeScope ? routeClient ?? null : clients.find(client => client.id === selectedId) ?? (selectedExample ? clients.find(client => client.name.trim().toLocaleLowerCase("es") === selectedExample.name.trim().toLocaleLowerCase("es")) : null) ?? null;
+  const routeClient = routeScope && routeScope !== "likid" ? clients.find(client => (client.scope ?? previewClientSlug(client)) === routeScope) : null;
+  const selected = routeScope ? routeClient ?? null : clients.find(client => client.id === selectedId) ?? null;
   const available = !hidden && (development || privateAccess);
 
   useEffect(() => {
@@ -39,17 +42,17 @@ export function ClientPreviewProvider({ children, development }: { children: Rea
         if (cancelled) return;
         setAdmin(Boolean(access.admin));
         setPrivateAccess(Boolean(access.authenticated));
-        if (!access.authenticated) { setClients(previewExamples); return; }
+        if (!access.authenticated) { setClients(clientViews); return; }
         const result = await fetch("/api/clientes", { cache: "no-store" });
         const data = await result.json();
         if (cancelled) return;
-        if (!result.ok) { setClients(previewExamples); setNotice("Clientes pendientes de activar. Puedes usar las opciones de prueba."); return; }
-        const types = new Map<string, string>((data.types as ClientType[]).map(type => [type.id, type.name]));
-        const registered = (data.clients as Customer[]).map(client => customerPreview(client, types.get(client.type_id) ?? "Cliente"));
-        setClients([...registered, ...previewExamples.filter(example => !registered.some(client => client.name.trim().toLocaleLowerCase("es") === example.name.trim().toLocaleLowerCase("es")))]);
+        if (!result.ok) { setClients(clientViews); setNotice("Clientes pendientes de activar."); return; }
+        const types = new Map<string, string>((data.types as ClientType[]).map((type) => [type.id, type.name]));
+        const registered = (data.clients as Customer[]).map((client) => customerPreview(client, types.get(client.type_id) ?? "Cliente"));
+        setClients([...registered, ...clientViews.filter((view) => !registered.some((client) => client.name.trim().toLocaleLowerCase("es") === view.name.trim().toLocaleLowerCase("es")))]);
         setNotice("");
       } catch {
-        if (!cancelled) { setAdmin(false); setPrivateAccess(false); setClients(previewExamples); setNotice("Opciones de prueba disponibles; no se ha podido conectar con los clientes."); }
+        if (!cancelled) { setAdmin(false); setPrivateAccess(false); setClients(clientViews); setNotice("No se han podido cargar los clientes registrados."); }
       }
     }
     const refresh = () => { void load(); };
@@ -67,6 +70,7 @@ export function ClientPreviewProvider({ children, development }: { children: Rea
 
   useEffect(() => {
     const root = document.documentElement;
+    root.dataset.participationColumns = selected?.category.trim().toLocaleLowerCase("es-ES") === "campus" ? "campus" : "hidden";
     if (available && selected) {
       root.dataset.clientPreview = selected.id;
       root.style.setProperty("--preview-primary", selected.primary);
@@ -80,6 +84,7 @@ export function ClientPreviewProvider({ children, development }: { children: Rea
       root.style.setProperty("--preview-font", selected.typography || "var(--font-geist-sans), Arial, sans-serif");
     }
     return () => {
+      delete root.dataset.participationColumns;
       delete root.dataset.clientPreview;
       variables.forEach(variable => root.style.removeProperty(variable));
     };
@@ -104,7 +109,7 @@ export function ClientPreviewProvider({ children, development }: { children: Rea
     const client = clients.find(item => item.id === id);
     const current = unscopedSportPath(pathname);
     const section = isSportPage(current) ? current : "/jugadores";
-    const destination = scopedSportHref(section, "", client ? previewClientSlug(client) : "likid");
+    const destination = client?.href ?? scopedSportHref(section, "", client ? (client.scope ?? previewClientSlug(client)) : "likid");
     if (pathname !== destination) router.push(destination + window.location.search + window.location.hash);
     try { if (id) sessionStorage.setItem(storageKey, id); else sessionStorage.removeItem(storageKey); } catch { /* Preview still works without storage. */ }
   }
@@ -121,9 +126,7 @@ function ClientPreviewToolbar() {
     container.className = "client-preview-slot";
     let mounted = false;
     const position = () => {
-      const header = document.querySelector("main > header");
-      if (!header) return;
-      if (header.nextElementSibling !== container) header.insertAdjacentElement("afterend", container);
+      if (document.body.firstElementChild !== container) document.body.prepend(container);
       if (!mounted) { mounted = true; setTarget(container); }
     };
     const observer = new MutationObserver(position);
@@ -137,21 +140,18 @@ function ClientPreviewToolbar() {
 
 export function ClientPreviewSelector() {
   const pathname = usePathname();
-  const { available, clients, selected, select, admin, notice } = useContext(PreviewContext);
+  const { available, clients, selected, select, notice } = useContext(PreviewContext);
   if (!available) return null;
   return <div className="client-preview-control">
-    <div className="client-preview-pill" title={notice || "Previsualizar la identidad visual de un cliente"}>
+    <div className="client-preview-pill" title={notice || "Vista de cliente"}>
       {selected?.logo ? <img src={selected.logo} alt="" width={22} height={22} /> : <span aria-hidden="true">◉</span>}
       <label><span className="client-preview-label">Clientes</span><select aria-label="Vista previa de cliente" value={selected?.id ?? ""} onChange={event => select(event.target.value)}>
         <option value="">Vista general · LIKID</option>
-        {clients.some(client => !client.demo) && <optgroup label="Clientes registrados">{clients.filter(client => !client.demo).map(client => <option value={client.id} key={client.id}>{client.name} · {client.category}</option>)}</optgroup>}
-        <optgroup label="Opciones de prueba">{clients.filter(client => client.demo).map(client => <option value={client.id} key={client.id}>{client.name}</option>)}</optgroup>
+        {clients.map(client => <option value={client.id} key={client.id}>{client.name} · {client.category}</option>)}
       </select></label>
       {selected && <button type="button" aria-label="Salir de la vista previa" title="Volver a la vista general" onClick={() => select("")}>×</button>}
     </div>
-    {selected && <div className="client-preview-caption" role="status"><span>Vista previa visual{selected.demo ? " · prueba" : ""}</span>{selected.href && <Link href={scopedSportHref(selected.href, pathname)}>Abrir portal ↗</Link>}</div>}
-    {!selected && notice && <span className="client-preview-caption" role="status">Opciones de prueba</span>}
-    {admin && <Link className="client-preview-manage" href="/clientes" title="Gestionar clientes">Gestionar clientes</Link>}
+    {selected && <div className="client-preview-caption" role="status"><span>Vista de cliente</span>{selected.href && <Link href={scopedSportHref(selected.href, pathname)}>Abrir portal ↗</Link>}</div>}
   </div>;
 }
 

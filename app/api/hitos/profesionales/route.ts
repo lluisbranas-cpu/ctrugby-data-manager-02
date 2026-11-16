@@ -4,7 +4,7 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 import { requireConsultation } from "@/lib/consultation-access";
 import { catalogAccess, catalogConfigured, sameOrigin } from "@/lib/catalog";
-import { detectedCampusEditions, readCampusParticipationMetrics } from "@/lib/campus-participations";
+import { detectedCampusEditions, readCampusParticipationMetrics, readCampusPlayersByCampus } from "@/lib/campus-participations";
 import { professionalCategoryFromBody, readLocalClubs, readLocalPlayers, readProfessionalCategories, readProfessionalClubMilestones, saveProfessionalCategories, shapeProfessionalClubRecord } from "@/lib/professional-club-milestones";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
   const denied = await requireConsultation(request); if (denied) return denied;
   try {
     const admin = catalogConfigured() ? (await catalogAccess(request)).admin : false;
-    const [players, clubs, records, categories, campusMetrics] = await Promise.all([readLocalPlayers(), readLocalClubs(), readProfessionalClubMilestones(admin), readProfessionalCategories(), readCampusParticipationMetrics(admin)]);
+    const [players, clubs, records, categories, campusMetrics, campusPlayers] = await Promise.all([readLocalPlayers(), readLocalClubs(), readProfessionalClubMilestones(admin), readProfessionalCategories(), readCampusParticipationMetrics(admin), readCampusPlayersByCampus(admin)]);
     const names = new Map(players.map(player => [player.id, [player.first_name, player.last_name].filter(Boolean).join(" ")]));
-    const campusEditions = detectedCampusEditions(campusMetrics, categories.filter((category) => category.type === "CAMP"));
-    return reply({configured: catalogConfigured(), admin, canWrite: admin, records: records.map(record => ({...shapeProfessionalClubRecord(record,clubs),player_name: names.get(record.player_id) || record.player_name})), players: players.map(player=>({id:player.id,name:names.get(player.id)||player.id})), clubs, categories: await Promise.all(categories.map(async category => ({...category,shield_version: await stat(path.join(process.cwd(),"public/professional-category-shields",category.id+".png")).then(file=>file.mtimeMs).catch(()=>null)}))), campusEditions});
+    const campusCategories = categories.filter((category) => category.type === "CAMP");
+    const campusEditions = detectedCampusEditions(campusMetrics, campusCategories);
+    return reply({configured: catalogConfigured(), admin, canWrite: admin, records: records.map(record => ({...shapeProfessionalClubRecord(record,clubs),player_name: names.get(record.player_id) || record.player_name})), players: players.map(player=>({id:player.id,name:names.get(player.id)||player.id})), clubs, categories: await Promise.all(categories.map(async category => ({...category,player_count: category.type === "CAMP" ? campusPlayers.get(category.id)?.size ?? 0 : undefined,shield_version: await stat(path.join(process.cwd(),"public/professional-category-shields",category.id+".png")).then(file=>file.mtimeMs).catch(()=>null)}))), campusEditions});
   } catch {return reply({error: "No se han podido cargar las participaciones."},503);}
 }
 export async function POST(request: NextRequest) {

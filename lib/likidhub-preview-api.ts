@@ -1,5 +1,6 @@
 import "server-only";
 import { previewLikidHubClubs, previewLikidHubFeaturedSummaries, previewLikidHubParticipations, previewLikidHubPlayers } from "@/lib/likidhub-preview";
+import { readPlayerNickname } from "@/lib/player-nicknames";
 
 type PreviewPlayer = {
   id: string; first_name: string; last_name: string | null; published: boolean;
@@ -29,6 +30,7 @@ async function previewData() {
 
 export async function likidHubPreviewPlayersResponse() {
   const { players, participations, clubs, featured } = await previewData();
+  const nicknames = new Map(await Promise.all(players.map(async (player) => [player.id, await readPlayerNickname(player.id).catch(() => null)] as const)));
   const counts = new Map<string, number>();
   for (const row of participations) counts.set(row.player_id, (counts.get(row.player_id) ?? 0) + 1);
   const featuredByPlayer = new Map(featured.map((row) => [row.player_id, row]));
@@ -40,7 +42,7 @@ export async function likidHubPreviewPlayersResponse() {
       const summary = featuredByPlayer.get(player.id);
       const professionalClubRecords = summary?.professional_club_records ?? [];
       return {
-      id: player.id, first_name: player.first_name, last_name: player.last_name, published: player.published, version: 1,
+      id: player.id, first_name: player.first_name, last_name: player.last_name, nickname: nicknames.get(player.id) ?? null, published: player.published, version: 1,
       profile: { category: player.category, birth_year: player.birth_year },
       participation_count: counts.get(player.id) ?? 0, milestone_count: summary?.milestone_count ?? 0, news_count: 0,
       selected_federation_ids: summary?.selected_federation_ids ?? [], selected_federation_counts: summary?.selected_federation_counts ?? {},

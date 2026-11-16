@@ -1,7 +1,6 @@
 import "server-only";
 import { catalogServiceClient } from "@/lib/catalog";
 import { operationalMediaBucket } from "@/lib/operational-store";
-import { canonicalLikidHubPlayerId } from "@/lib/likidhub-jug-ctr-bridge.generated";
 
 export function likidHubPreviewReadOnly() {
   const value = process.env.LIKIDHUB_PREVIEW_READ_ONLY;
@@ -54,15 +53,15 @@ export async function previewLikidHubFeaturedSummaries(): Promise<LikidHubPrevie
 }
 
 export async function previewLikidHubPlayer(id: string) {
-  const canonicalId = canonicalLikidHubPlayerId(id);
-  if (!canonicalId) return null;
+  const canonicalId = id.trim().toUpperCase();
+  if (!/^JUG\d{4}$/.test(canonicalId)) return null;
   const result = await previewClient().rpc("likidhub_preview_player", { p_player_id: canonicalId });
   if (result.error) throw new Error(`No se pudo leer el jugador LikidHub: ${result.error.message}`);
   return result.data;
 }
 
 export async function previewLikidHubParticipations(id?: string) {
-  const canonicalId = id ? canonicalLikidHubPlayerId(id) : null;
+  const canonicalId = id?.trim().toUpperCase() ?? null;
   if (id && !canonicalId) return { available: false, rows: [], reason: "ID de jugador no conciliado" };
   const result = await previewClient().rpc("likidhub_preview_participations", { p_player_id: canonicalId });
   if (result.error) throw new Error(`No se pudieron leer las participaciones LikidHub: ${result.error.message}`);
@@ -70,8 +69,8 @@ export async function previewLikidHubParticipations(id?: string) {
 }
 
 export async function previewLikidHubSeasonPhoto(id: string, seasonYear: number) {
-  const canonicalId = canonicalLikidHubPlayerId(id);
-  if (!canonicalId) return null;
+  const canonicalId = id.trim().toUpperCase();
+  if (!/^JUG\d{4}$/.test(canonicalId)) return null;
   const result = await previewClient().rpc("likidhub_preview_player_season_photo", { p_player_id: canonicalId, p_season_year: seasonYear });
   if (result.error) throw new Error(`No se pudo leer la foto de temporada LikidHub: ${result.error.message}`);
   return result.data?.[0] ?? null;
@@ -107,8 +106,8 @@ export async function previewLikidHubSeasonPhotoUrl(id: string, seasonYear: numb
  * can never become a portrait fallback.
  */
 export async function previewLikidHubLatestSeasonPhotoUrl(id: string, expiresIn = 300) {
-  const canonicalId = canonicalLikidHubPlayerId(id);
-  if (!canonicalId) return null;
+  const canonicalId = id.trim().toUpperCase();
+  if (!/^JUG\d{4}$/.test(canonicalId)) return null;
   const prefix = `player-season-photos/${canonicalId}`;
   const listed = await previewClient().storage.from(operationalMediaBucket).list(prefix, { limit: 100, sortBy: { column: "name", order: "desc" } });
   if (listed.error) throw new Error(`No se pudieron listar las fotos de temporada LikidHub: ${listed.error.message}`);

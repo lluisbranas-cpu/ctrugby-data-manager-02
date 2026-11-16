@@ -4,6 +4,9 @@ import path from "node:path";
 import sharp from "sharp";
 import { NextRequest, NextResponse } from "next/server";
 import { catalogAccess, sameOrigin } from "@/lib/catalog";
+import { catalogServiceClient } from "@/lib/catalog";
+import { operationalMediaBucket } from "@/lib/operational-store";
+import { createHash } from "node:crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +30,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   try {
     return new NextResponse(await readFile(shieldPath(id)), { headers: { "Content-Type": "image/webp", "Cache-Control": "private, no-store" } });
   } catch {
+    const remote = await catalogServiceClient().storage.from(operationalMediaBucket).createSignedUrl(`staff-shields/${id}.webp`, 60);
+    if (remote.data?.signedUrl) return NextResponse.redirect(remote.data.signedUrl);
     return new NextResponse(null, { status: 404 });
   }
 }
@@ -58,6 +63,11 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       writeFile(shieldPath(id), prepared),
       writeFile(path.join(originalsRoot, `${id}.${metadata.format === "jpeg" ? "jpg" : metadata.format}`), bytes),
     ]);
+    const db = catalogServiceClient();
+    const upload = await db.storage.from(operationalMediaBucket).upload(`staff-shields/${id}.webp`, prepared, { upsert: true, contentType: "image/webp" });
+    if (upload.error) return reply({ error: "No se ha podido guardar el escudo remoto." }, 503);
+    const indexed = await db.rpc("likidhub_upsert_operational_media", { p_row: { entity_type: "staff-shield", entity_id: id, variant: "shield", bucket_id: operationalMediaBucket, object_key: `staff-shields/${id}.webp`, content_type: "image/webp", byte_size: prepared.length, source_sha256: createHash("sha256").update(prepared).digest("hex") } });
+    if (indexed.error) return reply({ error: "No se ha podido indexar el escudo remoto." }, 503);
     return reply({ ok: true, url: `/api/staff/escudo/${id}` });
   } catch {
     return reply({ error: "No se ha podido guardar el escudo asociado." }, 400);
@@ -71,6 +81,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
   if (!await canWrite(request)) return reply({ error: "Acceso de administrador requerido." }, 403);
   try {
     await rm(shieldPath(id), { force: true });
+    await catalogServiceClient().storage.from(operationalMediaBucket).remove([`staff-shields/${id}.webp`]);
     return reply({ ok: true });
   } catch {
     return reply({ error: "No se ha podido eliminar el escudo asociado." }, 400);

@@ -28,7 +28,7 @@ create table if not exists public.catalog_clubs (
 );
 
 create table if not exists public.catalog_players (
-  id text primary key check (id ~ '^CTR[0-9]{4}$'),
+  id text primary key check (id ~ '^JUG[0-9]{4}$'),
   first_name text not null check (length(trim(first_name)) between 1 and 100),
   last_name text,
   published boolean not null default false,

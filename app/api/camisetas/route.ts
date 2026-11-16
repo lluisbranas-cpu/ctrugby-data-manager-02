@@ -3,7 +3,9 @@ import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
-import { catalogAccess, sameOrigin } from "@/lib/catalog";
+import { catalogAccess, catalogServiceClient, sameOrigin } from "@/lib/catalog";
+import { operationalMediaBucket, readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
+import { createHash } from "node:crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,9 +17,18 @@ const manifestPath = path.join(process.cwd(), "data", "staging", "jerseys", "man
 const reply = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
 
 type Manifest = Record<string, string[]>;
-async function readManifest(): Promise<Manifest> { try { return JSON.parse(await readFile(manifestPath, "utf8")) as Manifest; } catch { return {}; } }
-async function saveManifest(manifest: Manifest) { await mkdir(path.dirname(manifestPath), { recursive: true }); await writeFile(manifestPath, JSON.stringify(manifest, null, 2)); }
-const photos = (id: string, manifest: Manifest) => (manifest[id] ?? []).map((file) => `/jerseys/${id}/${file}`);
+async function readManifest(): Promise<Manifest> {
+  const remote = await readOperationalDocument<unknown>("jersey", "manifest").catch(() => null);
+  if (remote?.payload && typeof remote.payload === "object" && !Array.isArray(remote.payload)) return remote.payload as Manifest;
+  try { return JSON.parse(await readFile(manifestPath, "utf8")) as Manifest; } catch { return {}; }
+}
+async function saveManifest(manifest: Manifest) {
+  await upsertOperationalDocument("jersey", "manifest", manifest);
+  await mkdir(path.dirname(manifestPath), { recursive: true });
+  await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+}
+const imageUrl = (id: string, file: string) => `/api/camisetas?id=${encodeURIComponent(id)}&file=${encodeURIComponent(file)}`;
+const photos = (id: string, manifest: Manifest) => (manifest[id] ?? []).map((file) => imageUrl(id, file));
 
 export async function GET(request: NextRequest) {
   const consultationDenied = await requireConsultation(request);
@@ -25,7 +36,17 @@ export async function GET(request: NextRequest) {
 
   const id = validId(request.nextUrl.searchParams.get("id")?.toUpperCase() ?? "");
   if (!id) return reply({ error: "Entidad no válida." }, 400);
-  return reply({ photos: photos(id, await readManifest()) });
+  const manifest = await readManifest();
+  const file = request.nextUrl.searchParams.get("file") ?? "";
+  if (!file) return reply({ photos: photos(id, manifest) });
+  if (!/^[a-f0-9-]{36}\.(?:png|jpg|webp)$/.test(file) || !(manifest[id] ?? []).includes(file)) return new NextResponse(null, { status: 404 });
+  try {
+    const contentType = file.endsWith(".png") ? "image/png" : file.endsWith(".webp") ? "image/webp" : "image/jpeg";
+    return new NextResponse(await readFile(path.join(publicRoot, id, file)), { headers: { "Content-Type": contentType, "Cache-Control": "private, no-store" } });
+  } catch {
+    const remote = await catalogServiceClient().storage.from(operationalMediaBucket).createSignedUrl(`jerseys/${id}/${file}`, 60);
+    return remote.data?.signedUrl ? NextResponse.redirect(remote.data.signedUrl) : new NextResponse(null, { status: 404 });
+  }
 }
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) return reply({ error: "Origen no permitido." }, 403);
@@ -44,6 +65,13 @@ export async function POST(request: NextRequest) {
       size = Math.floor(size * .82); if (size < 100 && prepared.length > 900_000) return reply({ error: "No se ha podido reducir la copia de la camiseta a 900 KB." }, 413);
     }
     await Promise.all([writeFile(path.join(target, filename), prepared), writeFile(path.join(originals, filename), bytes)]);
+    const db = catalogServiceClient();
+    const objectKey = `jerseys/${id}/${filename}`;
+    const contentType = extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : "image/jpeg";
+    const upload = await db.storage.from(operationalMediaBucket).upload(objectKey, prepared, { upsert: true, contentType });
+    if (upload.error) return reply({ error: "No se ha podido guardar la camiseta remota." }, 503);
+    const indexed = await db.rpc("likidhub_upsert_operational_media", { p_row: { entity_type: "jersey", entity_id: id, variant: filename, bucket_id: operationalMediaBucket, object_key: objectKey, content_type: contentType, byte_size: prepared.length, source_sha256: createHash("sha256").update(prepared).digest("hex") } });
+    if (indexed.error) return reply({ error: "No se ha podido indexar la camiseta remota." }, 503);
     const manifest = await readManifest(); manifest[id] = [...(manifest[id] ?? []), filename]; await saveManifest(manifest);
     return reply({ photos: photos(id, manifest) });
   } catch { return reply({ error: "No se ha podido guardar la camiseta." }, 400); }
@@ -57,6 +85,11 @@ export async function DELETE(request: NextRequest) {
     const manifest = await readManifest(); if (!(manifest[id] ?? []).includes(file)) return reply({ error: "La imagen no forma parte de esta galería." }, 404);
     manifest[id] = manifest[id].filter((entry) => entry !== file); if (!manifest[id].length) delete manifest[id]; await saveManifest(manifest);
     await unlink(path.join(publicRoot, id, file)).catch(() => undefined);
+    const db = catalogServiceClient();
+    const removed = await db.storage.from(operationalMediaBucket).remove([`jerseys/${id}/${file}`]);
+    if (removed.error) return reply({ error: "No se ha podido borrar la camiseta remota." }, 503);
+    const unindexed = await db.schema("app_private").from("operational_media").delete().eq("entity_type", "jersey").eq("entity_id", id).eq("variant", file);
+    if (unindexed.error) return reply({ error: "No se ha podido actualizar el índice remoto." }, 503);
     return reply({ photos: photos(id, manifest) });
   } catch { return reply({ error: "No se ha podido eliminar la camiseta." }, 400); }
 }

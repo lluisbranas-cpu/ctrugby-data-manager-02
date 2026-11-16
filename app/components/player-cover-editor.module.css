@@ -8,9 +8,11 @@
 .previewWrap { display: grid; place-items: center; margin-bottom: 16px; padding: 12px; border: 1px solid #dce3e7; border-radius: 8px; background: linear-gradient(90deg,#fff 0%,#ffffffee 44%,#ffffffa8 72%,#ffffff40 100%), #edf2f5; }
 .preview { display: block; width: min(320px, 100%); height: auto; aspect-ratio: 4 / 5; }
 .controls { border: 0; padding: 0; margin: 16px 0; display: grid; gap: 12px; min-width: 0; }
-.controls label { display: grid; grid-template-columns: 82px minmax(0, 1fr); align-items: center; font-size: 14px; gap: 12px; }
-.controls input[type=range] { width: 100%; accent-color: #15803d; }
+.controls label { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; font-size: 14px; gap: 12px; }
+.controls label>span { font-weight: 800; }
+.controls input[type=range] { display: block; width: 100%; min-width: 0; height: 22px; margin: 0; accent-color: #15803d; cursor: pointer; }
 .controls .checkbox { display: flex; gap: 8px; }
+.controls .center { justify-self: end; width: max-content; }
 .checkbox input { accent-color: #15803d; }
 .notice, .error { font-size: 13px; line-height: 1.5; margin: 12px 0; }
 .error { color: #b91c1c; }

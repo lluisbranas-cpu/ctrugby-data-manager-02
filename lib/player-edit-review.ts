@@ -330,7 +330,7 @@ async function applyReviewChanges(token: PlayerEditToken, payload: Record<string
   const now = new Date().toISOString();
   const stored = await db.from("catalog_players").select("id").eq("id", token.player_id).maybeSingle();
   if (stored.error) throw new Error("No se ha podido comprobar el jugador.");
-  const databaseId = stored.data?.id ?? token.player_id.replace(/^JUG/, "CTR");
+  const databaseId = stored.data?.id ?? token.player_id;
   const name = await db.from("catalog_players").update({ first_name: firstName, last_name: text(player.last_name, 160), updated_at: now }).eq("id", databaseId);
   if (name.error) throw new Error("No se ha podido actualizar el nombre del jugador.");
   const profile = await db.schema("app_private").from("player_profiles").upsert({

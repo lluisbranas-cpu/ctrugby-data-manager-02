@@ -33,7 +33,7 @@ type Season = { player_id?:string; season_year:number; registration_number?:stri
 type Metric = { player_id:string; participation_count:number; participation_years:string[]; participation_campus?:Record<string,string>; participation_campuses?:Record<string,string>; participation_registration_numbers?:Record<string,string>; participation_email_enabled?:boolean; participation_pending_year?:boolean };
 type Milestone = { id: string; participant_id:string; scope:string; category:string; season_label:string; club_text:string|null; position_text:string|null };
 type Participant = { id:string; player_id:string|null };
-type PlayerData = {birth_date?:string|null; nickname?:string|null; first_name:string; last_name:string|null; club_id:string|null; position_text:string|null; weight_kg:number|null; height_cm:number|null; category:string|null; birth_year:number|null; instagram:string|null; dni:string|null; allergies:string|null; dietary_conditions:string|null; medications:string|null };
+type PlayerData = {birth_date?:string|null; nickname?:string|null; first_name:string; last_name:string|null; club_id:string|null; position_text:string|null; weight_kg:number|null; height_cm:number|null; category:string|null; birth_year:number|null; nationality_country:string|null; secondary_nationality_country?:string|null; instagram:string|null; dni:string|null; allergies:string|null; dietary_conditions:string|null; medications:string|null };
 type PlayerContacts = { player_email:string|null; player_phone_e164:string|null; tutor1_name:string|null; tutor1_email:string|null; tutor1_phone_e164:string|null; tutor2_name:string|null; tutor2_email:string|null; tutor2_phone_e164:string|null; updated_at?:string|null };
 type ContactKind = "player" | "tutor1" | "tutor2";
 const federationIds = selectionFederationIds;
@@ -117,15 +117,17 @@ const asPlayerData = (value: unknown): PlayerData | null => {
   if (!birth) return null;
   const birth_year = birth.birth_year;
   const instagram = data.instagram === null || data.instagram === "" || data.instagram === undefined ? null : typeof data.instagram === "string" ? data.instagram.trim() : undefined;
+  const nationality_country = data.nationality_country === null || data.nationality_country === "" || data.nationality_country === undefined ? null : cleanContactText(data.nationality_country);
+  const secondary_nationality_country = data.secondary_nationality_country === null || data.secondary_nationality_country === "" || data.secondary_nationality_country === undefined ? null : cleanContactText(data.secondary_nationality_country);
   const dni = cleanDni(data.dni);
   const allergies = cleanLongText(data.allergies);
   const dietary_conditions = cleanLongText(data.dietary_conditions);
   const medications = cleanLongText(data.medications);
-  if (!first_name || weight_kg === undefined || height_cm === undefined || birth_year === undefined || instagram === undefined || (data.club_id !== null && data.club_id !== undefined && typeof data.club_id !== "string") || (data.position_text !== null && data.position_text !== undefined && typeof data.position_text !== "string") || (data.category !== null && data.category !== undefined && typeof data.category !== "string")) return null;
+  if (!first_name || weight_kg === undefined || height_cm === undefined || birth_year === undefined || instagram === undefined || nationality_country === undefined || secondary_nationality_country === undefined || (data.club_id !== null && data.club_id !== undefined && typeof data.club_id !== "string") || (data.position_text !== null && data.position_text !== undefined && typeof data.position_text !== "string") || (data.category !== null && data.category !== undefined && typeof data.category !== "string")) return null;
   const category = typeof data.category === "string" && data.category ? data.category : null;
   if (category !== null && !["M", "F"].includes(category)) return null;
   if (instagram !== null && !/^@[^@\s]+$/.test(instagram)) return null;
-  return { birth_date: birth.birth_date, nickname, first_name, last_name, club_id: typeof data.club_id === "string" && data.club_id ? data.club_id : null, position_text: typeof data.position_text === "string" && data.position_text.trim() ? data.position_text.trim() : null, weight_kg, height_cm, category, birth_year, instagram, dni, allergies, dietary_conditions, medications };
+  return { birth_date: birth.birth_date, nickname, first_name, last_name, club_id: typeof data.club_id === "string" && data.club_id ? data.club_id : null, position_text: typeof data.position_text === "string" && data.position_text.trim() ? data.position_text.trim() : null, weight_kg, height_cm, category, birth_year, nationality_country, secondary_nationality_country, instagram, dni, allergies, dietary_conditions, medications };
 };
 async function updateLocalPlayerName(id: string, first_name: string, last_name: string | null) {
   try {
@@ -171,25 +173,26 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{id:strin
 
   const id=(await params).id.toUpperCase(); if(!validId(id)) return reply({error:"Jugador no válido."},400); if(!catalogConfigured()) return reply({configured:false},503);
   try {
+    const databaseId = id;
     const {db,admin}=await catalogAccess(request);
     const localAdmin = localAdminAccess(request);
     const privateAccessTask = admin ? Promise.resolve(true) : privatePlayerAccess(request, id);
     const base=path.join(process.cwd(),"data","staging");
     const [found,privateAccess,privateProfile,playersRaw,metricsRaw,milestonesRaw,participantsRaw,clubsRaw,playerSeasonsRaw,clubsResult,campusCategories,profileOverride,profileResult,trajectoryResult,manualSelectionCallups,callupLinks,localFederationsRaw,sourceUrls,publication,categories,competitionCategories]=await Promise.all([
-      db.from("catalog_players").select("id,first_name,last_name,published,version").eq("id",id).maybeSingle(),
+      db.from("catalog_players").select("id,first_name,last_name,published,version").eq("id",databaseId).maybeSingle(),
       privateAccessTask,
       privateAccessTask.then((allowed) => allowed && !admin ? db.rpc("app_player_private_profile", { p_player_id: id }) : null),
       readFile(path.join(base,"players.json"),"utf8"), readCampusMetricsJson(), readFile(path.join(base,"milestones.json"),"utf8"), readFile(path.join(base,"milestone-participants.json"),"utf8"), readFile(path.join(base,"clubs.json"),"utf8"), readFile(path.join(base,"player-seasons.json"),"utf8"), db.from("catalog_clubs").select("id,name"),
       readProfessionalCategories(),
       readPlayerProfileOverride(id),
-      admin ? db.schema("app_private").from("player_profiles").select("category,birth_year,instagram,dni,allergies,dietary_conditions,medications").eq("player_id", id).maybeSingle() : Promise.resolve({ data: null, error: null }),
+      db.schema("app_private").from("player_profiles").select("category,birth_year,nationality_country,secondary_nationality_country,instagram,dni,allergies,dietary_conditions,medications").eq("player_id", databaseId).maybeSingle(),
       db.rpc("player_trajectory_public",{p_player_id:id}),
       readManualSelectionCallups(), readCallupLinks(id),
       readFile(path.join(base, "federations.json"), "utf8").catch(() => "[]"), readMilestoneSourceUrls(),
       readHitoPublication(), readSeasonCategories(id), readCompetitionCategories(id),
     ]);
     const staged=(JSON.parse(playersRaw) as Player[]).find(player=>player.id===id);
-    const player = found.data ?? (localAdmin && staged ? { id: staged.id, first_name: staged.first_name, last_name: staged.last_name, published: true, version: 1 } : null);
+    const player = found.data ? { ...found.data, id } : (localAdmin && staged ? { id: staged.id, first_name: staged.first_name, last_name: staged.last_name, published: true, version: 1 } : null);
     if(found.error||!player) return reply({error:"Jugador no encontrado."},404);
     if (privateProfile?.error) return reply({ error: "No se han podido cargar los datos privados de la ficha." }, 503);
     if(trajectoryResult.error) return reply({error:"No se ha podido leer la trayectoria del jugador. Comprueba la migración de trayectorias."},503);
@@ -238,12 +241,12 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{id:strin
     const selections=applyManualSelectionCallups(selectionRecords, manualSelectionCallups).filter(selection=>selection.player_id===id && isHitoPublished(publication, selection.id)).map(selection=>({ ...selection, participant_id: selection.id, source_key: callupLinkKey(selection), source_url: validSourceUrl(callupLinks[callupLinkKey(selection)]) || validSourceUrl(callupLinks[legacyCallupLinkKey(selection)]) || sourceUrls.get(selection.id) || null, federation_website: federationWebsites.get(selection.federation_id) || null }));
     const professionalCategories = campusCategories;
     const professional_club_records = trajectoryProfessionalClubs(seasonsWithPhotos, allClubs, professionalCategories);
-    return reply({configured:true,admin,career:await readPlayerCareer(id),staff_options:admin ? await readStaffOptions() : [],private_access:privateAccess,event_sizes:(admin || privateAccess) ? await readPlayerEventSizes(id) : null,player:{...player,nickname:await readPlayerNickname(id),category:profile?.category??staged?.category??null,birth_year:profile?.birth_year??staged?.birth_year??null,birth_date:privateAccess ? profileOverride?.birth_date??null : null,instagram:profile?.instagram??null,dni:admin ? profile?.dni ?? staged?.dni ?? null : null,allergies:privateAccess ? profile?.allergies??null : null,dietary_conditions:privateAccess ? profile?.dietary_conditions??null : null,medications:privateAccess ? profile?.medications??null : null},current_season:seasonsWithPhotos[0]??null,seasons:seasonsWithPhotos,professional_category_references:professionalCategories,professional_categories:professionalCategories.filter(category=>category.type!=="CAMP").map(category=>category.label),clubs:admin?(clubsResult.data??[]):[],contacts:admin?contacts:null,billing:admin?await readPlayerBilling(id):null,private_consents:admin ? await readPlayerPrivateConsents(id) : null,participation:metric??{participation_count:0,participation_years:[]},campuses:campusCategories.filter((category)=>category.type==="CAMP").map(category=>({id:category.id,label:category.label,siglas:category.siglas??null})),selections,professional_club_records});
+    return reply({configured:true,admin,career:await readPlayerCareer(id),staff_options:admin ? await readStaffOptions() : [],private_access:privateAccess,event_sizes:(admin || privateAccess) ? await readPlayerEventSizes(id) : null,player:{...player,nickname:await readPlayerNickname(id),category:profile?.category??staged?.category??null,birth_year:profile?.birth_year??staged?.birth_year??null,birth_date:privateAccess ? profileOverride?.birth_date??null : null,nationality_country:profile?.nationality_country ?? null,secondary_nationality_country:profile?.secondary_nationality_country ?? null,instagram:profile?.instagram??null,dni:admin ? profile?.dni ?? staged?.dni ?? null : null,allergies:privateAccess ? profile?.allergies??null : null,dietary_conditions:privateAccess ? profile?.dietary_conditions??null : null,medications:privateAccess ? profile?.medications??null : null},current_season:seasonsWithPhotos[0]??null,seasons:seasonsWithPhotos,professional_category_references:professionalCategories,professional_categories:professionalCategories.filter(category=>category.type!=="CAMP").map(category=>category.label),clubs:admin?(clubsResult.data??[]):[],contacts:admin?contacts:null,billing:admin?await readPlayerBilling(id):null,private_consents:admin ? await readPlayerPrivateConsents(id) : null,participation:metric??{participation_count:0,participation_years:[]},campuses:campusCategories.filter((category)=>category.type==="CAMP").map(category=>({id:category.id,label:category.label,siglas:category.siglas??null})),selections,professional_club_records});
   } catch { return reply({error:"No se ha podido cargar la ficha del jugador."},503); }
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{id:string}> }) {
-  const id=(await params).id.toUpperCase(); if(!validId(id)) return reply({error:"Jugador no válido."},400); if(!sameOrigin(request)) return reply({error:"Origen no permitido."},403); if(!catalogConfigured()) return reply({error:"El catálogo todavía no está conectado."},503);
+  const id=(await params).id.toUpperCase(); if(!validId(id)) return reply({error:"Jugador no válido."},400); if(!sameOrigin(request)) return reply({error:"Origen no permitido."},403); if(!catalogConfigured()) return reply({error:"El catálogo todavía no está conectado."},503); const databaseId = id;
   try {
     const {db,admin}=await catalogAccess(request); if(!admin) return reply({error:"Acceso de administrador requerido."},403);
     const localAdmin = localAdminAccess(request);
@@ -273,15 +276,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{i
       const profile = {...storedProfile, dni: cleanDni(input.dni), instagram, allergies: cleanLongText(input.allergies), medications: cleanLongText(input.medications)};
       const existingContacts = await readLocalPlayerContacts(id);
       const contacts = {...blankContacts(), ...existingContacts, player_email: contactInput.player_email, player_phone_e164: contactInput.player_phone_e164};
-      if (!localAdmin) {
-        const savedProfile = await db.schema("app_private").from("player_profiles").upsert({player_id:id, dni:profile.dni, instagram:profile.instagram, allergies:profile.allergies, medications:profile.medications, updated_at:new Date().toISOString()});
-        if (savedProfile.error) return reply({error:"No se han podido guardar los datos privados."},503);
-        const savedContacts = await db.rpc("admin_upsert_player_private_contacts", {p_player_id:id, p_player_email:contacts.player_email, p_player_phone_e164:contacts.player_phone_e164, p_tutor1_name:contacts.tutor1_name, p_tutor1_email:contacts.tutor1_email, p_tutor1_phone_e164:contacts.tutor1_phone_e164, p_tutor2_name:contacts.tutor2_name, p_tutor2_email:contacts.tutor2_email, p_tutor2_phone_e164:contacts.tutor2_phone_e164});
-        if (savedContacts.error) return reply({error:"No se han podido guardar los contactos privados."},503);
-      }
+      const savedProfile = await db.schema("app_private").from("player_profiles").upsert({player_id:id, dni:profile.dni, instagram:profile.instagram, allergies:profile.allergies, medications:profile.medications, updated_at:new Date().toISOString()});
+      if (savedProfile.error) return reply({error:"No se han podido guardar los datos privados."},503);
+      const savedContacts = await db.rpc("admin_upsert_player_private_contacts", {p_player_id:id, p_player_email:contacts.player_email, p_player_phone_e164:contacts.player_phone_e164, p_tutor1_name:contacts.tutor1_name, p_tutor1_email:contacts.tutor1_email, p_tutor1_phone_e164:contacts.tutor1_phone_e164, p_tutor2_name:contacts.tutor2_name, p_tutor2_email:contacts.tutor2_email, p_tutor2_phone_e164:contacts.tutor2_phone_e164});
+      if (savedContacts.error) return reply({error:"No se han podido guardar los contactos privados."},503);
       await savePlayerProfileOverride(id,profile);
-      const savedContacts = await saveLocalPlayerContacts(id,contacts);
-      return reply({ok:true,private_player_data:{dni:profile.dni,instagram:profile.instagram,allergies:profile.allergies,medications:profile.medications},contacts:savedContacts});
+      const localContacts = await saveLocalPlayerContacts(id,contacts);
+      return reply({ok:true,private_player_data:{dni:profile.dni,instagram:profile.instagram,allergies:profile.allergies,medications:profile.medications},contacts:localContacts});
     }
     if (body.privateConsent !== undefined) { const consent = body.privateConsent as { kind?: unknown; value?: unknown }; if (!consent || !["food", "medical", "technical"].includes(String(consent.kind)) || typeof consent.value !== "boolean") return reply({error:"La autorización no es válida."},400); const current = await readPlayerPrivateConsents(id); const kind = consent.kind as "food" | "medical" | "technical"; return reply({ok:true,private_consents:await savePlayerPrivateConsents(id, { ...current, [kind]: consent.value })}); }
     if (body.eventSizes !== undefined) {
@@ -357,15 +358,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{i
       const allClubs = [...localClubs, ...(clubsResult.data ?? []).filter((club) => !localClubs.some((localClub) => localClub.id === club.id))];
       const clubs = new Map(allClubs.map(club=>[club.id,club.name]));
       if (playerData.club_id && !clubs.has(playerData.club_id)) return reply({error:"El club seleccionado no existe."},400);
-      if (!localAdmin) {
-        const existingPlayers = await db.from("catalog_players").select("id,first_name,last_name");
-        if (existingPlayers.error) return reply({error:"No se ha podido comprobar el nombre del jugador."},503);
-        const submittedName = normalizePersonName(playerData.first_name, playerData.last_name);
-        const duplicatePlayer = (existingPlayers.data ?? []).find((player) => player.id !== id && normalizePersonName(player.first_name, player.last_name) === submittedName);
-        if (duplicatePlayer) return reply({error:`Ya existe un jugador con ese nombre (${duplicatePlayer.id}). Revisa la ficha existente antes de cambiarlo.`},409);
-        const nameUpdate = await db.from("catalog_players").update({ first_name: playerData.first_name, last_name: playerData.last_name, updated_at: new Date().toISOString() }).eq("id", id).select("id");
-        if (nameUpdate.error) return reply({error:nameUpdate.error.message || "No se ha podido guardar el nombre del jugador."},503);
-      }
+      const existingPlayers = await db.from("catalog_players").select("id,first_name,last_name");
+      if (existingPlayers.error) return reply({error:"No se ha podido comprobar el nombre del jugador."},503);
+      const submittedName = normalizePersonName(playerData.first_name, playerData.last_name);
+      const duplicatePlayer = (existingPlayers.data ?? []).find((player) => player.id !== id && normalizePersonName(player.first_name, player.last_name) === submittedName);
+      if (duplicatePlayer) return reply({error:`Ya existe un jugador con ese nombre (${duplicatePlayer.id}). Revisa la ficha existente antes de cambiarlo.`},409);
+      const nameUpdate = await db.from("catalog_players").update({ first_name: playerData.first_name, last_name: playerData.last_name, updated_at: new Date().toISOString() }).eq("id", id).select("id");
+      if (nameUpdate.error) return reply({error:nameUpdate.error.message || "No se ha podido guardar el nombre del jugador."},503);
       await updateLocalPlayerName(id, playerData.first_name, playerData.last_name);
       const rawSeasons: (Season | null)[] = ((trajectoryResult.data ?? []) as unknown[]).map(asSeason);
       if (rawSeasons.some((season)=>!season)) return reply({error:"La trayectoria actual no tiene un formato válido."},400);
@@ -378,8 +377,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{i
       if (!seasons.length && (playerData.club_id || playerData.position_text || playerData.height_cm !== null || playerData.weight_kg !== null)) {
         seasons.push({player_id:id,season_year:currentRugbySeasonYear(),club_id:nextCareer.retired ? null : playerData.club_id,legacy_club_name:null,position_text:playerData.position_text,height_cm:playerData.height_cm,weight_kg:playerData.weight_kg});
       }
-      const profilePayload = { player_id: id, category: playerData.category, birth_year: playerData.birth_year, instagram: playerData.instagram, dni: playerData.dni, allergies: playerData.allergies, dietary_conditions: playerData.dietary_conditions, medications: playerData.medications, updated_at: new Date().toISOString() };
-      const savedProfile = localAdmin ? {data:profilePayload,error:null} : await db.schema("app_private").from("player_profiles").upsert(profilePayload).select("category,birth_year,instagram,dni,allergies,dietary_conditions,medications").maybeSingle();
+      const profilePayload = { player_id: databaseId, category: playerData.category, birth_year: playerData.birth_year, nationality_country: playerData.nationality_country, secondary_nationality_country: playerData.secondary_nationality_country, instagram: playerData.instagram, dni: playerData.dni, allergies: playerData.allergies, dietary_conditions: playerData.dietary_conditions, medications: playerData.medications, updated_at: new Date().toISOString() };
+      // El administrador local usa la cuenta de servicio, por lo que los datos
+      // personales editados deben llegar igualmente al catálogo compartido.
+      // Antes se simulaba este guardado solo en data/staging y la nacionalidad
+      // desaparecía al volver a cargar la ficha o el listado.
+      const savedProfile = await db.schema("app_private").from("player_profiles").upsert(profilePayload).select("category,birth_year,nationality_country,secondary_nationality_country,instagram,dni,allergies,dietary_conditions,medications").maybeSingle();
       if (savedProfile.error || !savedProfile.data) return reply({error:savedProfile.error?.message || "No se ha podido guardar el perfil privado del jugador."},503);
       const profile = {...savedProfile.data,birth_date:playerData.birth_date};
       await savePlayerProfileOverride(id, profile);
@@ -388,7 +391,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{i
       if(found.error||!found.data) return reply({error:"No se ha podido recargar la ficha del jugador."},503);
       const categories = await readSeasonCategories(id);
     const competitionCategories = await readCompetitionCategories(id);
-      if (!seasons.length) { await savePlayerCareer(id, nextCareer); return reply({ok:true,career:nextCareer,player:{...found.data,nickname:await readPlayerNickname(id),category:profile.category,birth_year:profile.birth_year,birth_date:profile.birth_date,instagram:profile.instagram,dni:profile.dni,allergies:profile.allergies,dietary_conditions:profile.dietary_conditions,medications:profile.medications},current_season:null,seasons:[]}); }
+      if (!seasons.length) { await savePlayerCareer(id, nextCareer); return reply({ok:true,career:nextCareer,player:{...found.data,nickname:await readPlayerNickname(id),category:profile.category,birth_year:profile.birth_year,birth_date:profile.birth_date,nationality_country:profile.nationality_country,secondary_nationality_country:profile.secondary_nationality_country,instagram:profile.instagram,dni:profile.dni,allergies:profile.allergies,dietary_conditions:profile.dietary_conditions,medications:profile.medications},current_season:null,seasons:[]}); }
       const latestYear = Math.max(...seasons.map((season)=>season.season_year));
       const clubYear = currentClubSeason(seasons)?.season_year ?? latestYear;
       const nextSeasons = seasons.map((season) => ({
@@ -396,21 +399,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{i
         ...(!nextCareer.retired && season.season_year === clubYear ? { club_id: playerData.club_id, legacy_club_name: playerData.club_id ? null : season.legacy_club_name } : {}),
         ...(season.season_year === latestYear ? { position_text: playerData.position_text, weight_kg: playerData.weight_kg, height_cm: playerData.height_cm } : {}),
       }));
-      if (localAdmin) await saveLocalPlayerSeasons(id, nextSeasons);
-      else {
-        const saved=await db.rpc("admin_replace_player_trajectory",{p_player_id:id,p_seasons:nextSeasons}); if(saved.error) return reply({error:saved.error.message||"No se han podido guardar los datos del jugador."},503);
-      }
+      const saved=await db.rpc("admin_replace_player_trajectory",{p_player_id:id,p_seasons:nextSeasons}); if(saved.error) return reply({error:saved.error.message||"No se han podido guardar los datos del jugador."},503);
+      await saveLocalPlayerSeasons(id, nextSeasons);
       const resolved = resolveSeasons(nextSeasons,clubs).map((season) => ({ ...season, playing_category: categories[String(season.season_year)] || null, competition_category: competitionCategories[String(season.season_year)] || null }));
       await savePlayerCareer(id, nextCareer);
-      return reply({ok:true,career:nextCareer,player:{...found.data,nickname:await readPlayerNickname(id),category:profile.category,birth_year:profile.birth_year,birth_date:profile.birth_date,instagram:profile.instagram,dni:profile.dni,allergies:profile.allergies,dietary_conditions:profile.dietary_conditions,medications:profile.medications},current_season:resolved[0],seasons:resolved});
+      return reply({ok:true,career:nextCareer,player:{...found.data,nickname:await readPlayerNickname(id),category:profile.category,birth_year:profile.birth_year,birth_date:profile.birth_date,nationality_country:profile.nationality_country,secondary_nationality_country:profile.secondary_nationality_country,instagram:profile.instagram,dni:profile.dni,allergies:profile.allergies,dietary_conditions:profile.dietary_conditions,medications:profile.medications},current_season:resolved[0],seasons:resolved});
     }
     if (body.playerContacts !== undefined) {
       const contacts = asContacts(body.playerContacts); if (!contacts) return reply({error:"Los contactos privados no son válidos. Usa correos válidos y teléfonos internacionales tipo +34600111222."},400);
-      if (localAdmin && body.provisionAccess === undefined) {
-        const found = await findPlayer();
-        if (found.error || !found.data) return reply({error:"Jugador no encontrado."},404);
-        return reply({ok:true,contacts:await saveLocalPlayerContacts(id,contacts)});
-      }
       const saved = await db.rpc("admin_upsert_player_private_contacts", {
         p_player_id: id,
         p_player_email: contacts.player_email,
@@ -422,10 +418,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{i
         p_tutor2_email: contacts.tutor2_email,
         p_tutor2_phone_e164: contacts.tutor2_phone_e164,
       });
-      if (saved.error) {
-        const savedLocalContacts = await saveLocalPlayerContacts(id, contacts);
-        return reply({ok:true,contacts:savedLocalContacts});
-      }
+      if (saved.error) return reply({error:"No se han podido guardar los contactos privados."},503);
       const savedContacts = { ...blankContacts(), ...(Array.isArray(saved.data) ? saved.data[0] : saved.data) } as PlayerContacts;
       await saveLocalPlayerContacts(id, savedContacts);
       const accessKind = typeof body.provisionAccess === "string" && ["player", "tutor1", "tutor2"].includes(body.provisionAccess) ? body.provisionAccess as ContactKind : null;
@@ -472,10 +465,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{i
     const parsed = submitted.map(asSeason);
     if (parsed.some((season) => !season) || new Set(parsed.map((season) => season!.season_year)).size !== parsed.length) return reply({ error: "Cada temporada debe ser única y válida." }, 400);
     const seasons = parsed as Season[];
-    if (!localAdmin) {
-      const saved = await db.rpc("admin_replace_player_trajectory", { p_player_id: id, p_seasons: seasons });
-      if (saved.error) return reply({ error: saved.error.message || "No se ha podido guardar la trayectoria." }, 503);
-    }
+    const saved = await db.rpc("admin_replace_player_trajectory", { p_player_id: id, p_seasons: seasons });
+    if (saved.error) return reply({ error: saved.error.message || "No se ha podido guardar la trayectoria." }, 503);
     if (body.seasons !== undefined) {
       const submittedYears = new Set(seasons.map((season) => season.season_year));
       for (const season of existing) if (!submittedYears.has(season.season_year)) deletedYears.add(season.season_year);

@@ -17,14 +17,15 @@ import { mergeMilestoneTrajectory } from "@/lib/milestone-trajectory";
 import { applyManualSelectionCallups, readManualSelectionCallups, selectionFederationIds, type SelectionRecord } from "@/lib/manual-selection-callups";
 import { readProfessionalCategories, type ProfessionalClubMilestone } from "@/lib/professional-club-milestones";
 import { readPlayerNews } from "@/lib/player-news";
+import { readPlayerNickname } from "@/lib/player-nicknames";
 import { likidHubPreviewReadOnly } from "@/lib/likidhub-preview";
 import { likidHubPreviewPlayersResponse } from "@/lib/likidhub-preview-api";
-import { canonicalLikidHubPlayerId } from "@/lib/likidhub-jug-ctr-bridge.generated";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type Player = { id: string; first_name: string; last_name: string | null; published: boolean; version: number };
+type Player = { id: string; first_name: string; last_name: string | null; nickname?: string | null; published: boolean; version: number };
+type PlayerNationality = { player_id: string; nationality_country: string | null; secondary_nationality_country: string | null };
 type AdminPlayer = Player & { category: string | null; birth_year: number | null; season_count: number; linked_season_count: number; club_history_count: number };
 type SheetSeason = { player_id: string; season_year: number; registration_number?: string | null; club_id: string | null; legacy_club_name: string | null; position_text: string | null; weight_kg: number | null; height_cm: number | null };
 type SheetClub = { id: string; name: string; country: string | null; city?: string | null; region?: string | null; province?: string | null; latitude?: number | null; longitude?: number | null; maps_url?: string | null; active?: boolean | null };
@@ -130,6 +131,12 @@ async function localPlayerProfilesById() {
   }
 }
 
+async function playerNationalitiesById() {
+  const result = await catalogServiceClient().schema("app_private").from("player_profiles").select("player_id,nationality_country,secondary_nationality_country");
+  if (result.error) return new Map<string, PlayerNationality>();
+  return new Map((result.data as PlayerNationality[] ?? []).map((profile) => [profile.player_id, profile]));
+}
+
 // Keep newly created players in the directory used by consultation access too.
 async function saveLocalDirectoryPlayer(player: SheetPlayer) {
   const target = path.join(process.cwd(), "data", "staging", "players.json");
@@ -149,9 +156,14 @@ async function saveLocalDirectoryPlayer(player: SheetPlayer) {
 
 async function localPlayers() {
   try {
-    const playersRaw = await readFile(path.join(process.cwd(), "data", "staging", "players.json"), "utf8");
+    const base = path.join(process.cwd(), "data", "staging");
+    const [playersRaw, deletionsRaw] = await Promise.all([
+      readFile(path.join(base, "players.json"), "utf8"),
+      readFile(path.join(base, "player-deletions.json"), "utf8").catch((error: NodeJS.ErrnoException) => error.code === "ENOENT" ? "[]" : Promise.reject(error)),
+    ]);
+    const deletedIds = new Set((JSON.parse(deletionsRaw) as unknown[]).filter((id): id is string => typeof id === "string" && /^JUG\d{4}$/.test(id)));
     return (JSON.parse(playersRaw) as SheetPlayer[])
-      .filter((player) => /^JUG\d{4}$/.test(player.id) && player.first_name?.trim())
+      .filter((player) => /^JUG\d{4}$/.test(player.id) && !deletedIds.has(player.id) && player.first_name?.trim())
       .map((player) => ({
         id: player.id,
         first_name: player.first_name!.trim(),
@@ -265,6 +277,10 @@ const professionalClubs = (professionalClubsByPlayer: Map<string, Set<string>>, 
   [...(professionalClubsByPlayer.get(playerId) ?? new Set<string>())].sort((a, b) => a.localeCompare(b, "es"));
 const professionalClubRecords = (professionalClubRecordsByPlayer: Map<string, ProfessionalClubRecord[]>, playerId: string) =>
   [...(professionalClubRecordsByPlayer.get(playerId) ?? [])].sort((a, b) => a.club_name.localeCompare(b.club_name, "es"));
+const withPlayerNicknames = async <T extends { id: string }>(players: T[]) => {
+  const nicknames = await Promise.all(players.map((player) => readPlayerNickname(player.id).catch(() => null)));
+  return players.map((player, index) => ({ ...player, nickname: nicknames[index] }));
+};
 
 async function localPlayerDeletionLinks(playerId: string) {
   try {
@@ -317,6 +333,7 @@ export async function GET(request: NextRequest) {
       if (visible.error) return reply({ error: "No se ha podido cargar la navegación de jugadores." }, 503);
       return reply({ players: visible.data ?? [] });
     }
+    const nationalityByPlayerId = await playerNationalitiesById();
     if (admin && !publicView && !localAdminAccess(request)) {
       const [summary, sheet, photoRows, clubLocations, metricRows, milestoneRows, participantRows, playerNews] = await Promise.all([
         db.rpc("admin_player_catalog_with_history"),
@@ -363,15 +380,15 @@ export async function GET(request: NextRequest) {
       for (const news of playerNews.filter((item) => item.published && item.type === "noticia")) newsByPlayer.set(news.player_id, (newsByPlayer.get(news.player_id) ?? 0) + 1);
       return reply({
         configured: true, admin: true,
-        players: (summary.data as AdminPlayer[]).map((player) => ({
+        players: await withPlayerNicknames((summary.data as AdminPlayer[]).map((player) => ({
           id: player.id, first_name: player.first_name, last_name: player.last_name, published: player.published, version: player.version,
-          profile: { category: player.category, birth_year: player.birth_year }, season_count: player.season_count, linked_season_count: player.linked_season_count, club_history_count: player.club_history_count,
+          profile: { category: player.category, birth_year: player.birth_year, nationality_country: nationalityByPlayerId.get(player.id)?.nationality_country ?? null, secondary_nationality_country: nationalityByPlayerId.get(player.id)?.secondary_nationality_country ?? null }, season_count: player.season_count, linked_season_count: player.linked_season_count, club_history_count: player.club_history_count,
           participation_count: participationByPlayer.get(player.id) ?? 0, news_count: newsByPlayer.get(player.id) ?? 0, milestone_count: milestonesByPlayer.get(player.id) ?? 0,
           selected_federation_ids: selectedFederationIds(selectedFederationsByPlayer, player.id),
           selected_federation_counts: selectedFederationCounts(selectedFederationCountsByPlayer, player.id),
           professional_clubs: [],
           professional_club_records: [],
-        })),
+        }))),
         seasons: mergeMilestoneTrajectory(sheetData?.seasons ?? [], milestones, milestoneParticipants, sheetData?.clubs ?? []),
         clubs: (sheetData?.clubs ?? []).map((club) => ({ ...club, city: locations.get(club.id)?.city ?? club.city ?? null, region: locations.get(club.id)?.region ?? club.region ?? null, province: locations.get(club.id)?.province ?? club.province ?? null, country: locations.get(club.id)?.country ?? club.country ?? null, latitude: locations.get(club.id)?.latitude ?? club.latitude ?? null, longitude: locations.get(club.id)?.longitude ?? club.longitude ?? null, maps_url: locations.get(club.id)?.maps_url ?? club.maps_url ?? null, active: locations.get(club.id)?.active ?? club.active ?? true })),
         photos,
@@ -389,13 +406,8 @@ export async function GET(request: NextRequest) {
     if (!admin || publicView) {
       const visible = await db.from("catalog_players").select("id").eq("published", true).range(0, 9999);
       if (visible.error) return reply({ error: "No se han podido comprobar los jugadores publicados." }, 503);
-      // Supabase keeps CTR IDs while the local directory and its related records use JUG IDs.
-      // Match through the verified bridge instead of assuming the numeric suffix is enough.
       const visibleIds = new Set((visible.data ?? []).map((player) => player.id));
-      players = localDirectory.filter((player) => {
-        const catalogId = canonicalLikidHubPlayerId(player.id);
-        return catalogId !== null && visibleIds.has(catalogId);
-      }).map((player) => ({ ...player, published: true }));
+      players = localDirectory.filter((player) => visibleIds.has(player.id)).map((player) => ({ ...player, published: true }));
     }
     const newsByPlayer = new Map<string, number>();
     for (const news of playerNews.filter((item) => item.published && item.type === "noticia")) newsByPlayer.set(news.player_id, (newsByPlayer.get(news.player_id) ?? 0) + 1);
@@ -406,9 +418,9 @@ export async function GET(request: NextRequest) {
     return reply({
       configured: true,
       admin,
-      players: publicPlayers.map((player) => ({
+      players: await withPlayerNicknames(publicPlayers.map((player) => ({
         ...player,
-        profile: localProfiles.get(player.id) ?? { category: null, birth_year: null },
+        profile: { ...(localProfiles.get(player.id) ?? { category: null, birth_year: null }), nationality_country: nationalityByPlayerId.get(player.id)?.nationality_country ?? null, secondary_nationality_country: nationalityByPlayerId.get(player.id)?.secondary_nationality_country ?? null },
         participation_count: participationByPlayer.get(player.id) ?? 0,
         news_count: newsByPlayer.get(player.id) ?? 0,
         milestone_count: milestoneSummary.milestonesByPlayer.get(player.id) ?? 0,
@@ -416,7 +428,7 @@ export async function GET(request: NextRequest) {
         selected_federation_counts: selectedFederationCounts(milestoneSummary.selectedFederationCountsByPlayer, player.id),
         professional_clubs: professionalClubs(milestoneSummary.professionalClubsByPlayer, player.id),
         professional_club_records: professionalClubRecords(milestoneSummary.professionalClubRecordsByPlayer, player.id),
-      })),
+      }))),
       seasons: request.nextUrl.searchParams.get("trajectory") === "summary" ? await trajectorySummarySeasons(seasons) : seasons,
       clubs: sheetData.clubs,
       // Keep the local portrait index available to public directory views too.
@@ -471,9 +483,7 @@ export async function POST(request: NextRequest) {
         const club = await db.from("catalog_clubs").select("id").eq("id", season.club_id).maybeSingle();
         if (club.error || !club.data) return reply({ error: "El club seleccionado no existe." }, 400);
       }
-      // The connected database keeps its original CTR primary keys. Public IDs stay JUG.
-      const databaseId = (value: string) => (existingPlayers.data ?? []).some(player => /^CTR\d{4}$/.test(player.id)) ? value.replace(/^JUG/, "CTR") : value;
-      let created = await db.from("catalog_players").insert({ id: databaseId(id), first_name, last_name, published: submitted.published !== false }).select("id").maybeSingle();
+      let created = await db.from("catalog_players").insert({ id, first_name, last_name, published: submitted.published !== false }).select("id").maybeSingle();
       // Another administrator may have saved after the ID was calculated.
       for (let attempt = 0; submitted.auto_id && created.error?.code === "23505" && attempt < 3; attempt += 1) {
         const currentIds = await db.from("catalog_players").select("id");
@@ -481,7 +491,7 @@ export async function POST(request: NextRequest) {
         const availableId = nextId([...(currentIds.data ?? []), ...await localPlayers()]);
         if (!availableId) return reply({ error: "Se ha alcanzado el límite de IDs JUG de cuatro dígitos." }, 409);
         id = availableId;
-        created = await db.from("catalog_players").insert({ id: databaseId(id), first_name, last_name, published: submitted.published !== false }).select("id").maybeSingle();
+        created = await db.from("catalog_players").insert({ id, first_name, last_name, published: submitted.published !== false }).select("id").maybeSingle();
       }
       if (created.error) {
         const reason = created.error.code === "23505" ? "Ya existe un jugador con ese ID."
@@ -489,7 +499,7 @@ export async function POST(request: NextRequest) {
           : `No se ha podido crear el jugador: ${created.error.message} (${created.error.code || "sin codigo"}).`;
         return reply({ error: reason }, created.error.code === "23505" ? 409 : 503);
       }
-      const profile = await db.schema("app_private").from("player_profiles").upsert({ player_id: databaseId(id), category, birth_year, instagram, dni, updated_at: new Date().toISOString() });
+      const profile = await db.schema("app_private").from("player_profiles").upsert({ player_id: id, category, birth_year, instagram, dni, updated_at: new Date().toISOString() });
       if (profile.error) {
         if (profile.error.code === "PGRST106") {
           await savePlayerProfileOverride(id, { category, birth_year, instagram, dni, allergies: null, dietary_conditions: null, medications: null });
@@ -498,7 +508,7 @@ export async function POST(request: NextRequest) {
         }
       }
       if (season) {
-        const saved = await db.rpc("admin_replace_player_trajectory", { p_player_id: databaseId(id), p_seasons: [season] });
+        const saved = await db.rpc("admin_replace_player_trajectory", { p_player_id: id, p_seasons: [season] });
         if (saved.error) return reply({ id, error: saved.error.message || "Jugador creado, pero no se ha podido guardar la temporada inicial." }, 503);
       }
       await saveLocalDirectoryPlayer({ id, first_name, last_name, category, birth_year, published: submitted.published !== false, version: 1 });

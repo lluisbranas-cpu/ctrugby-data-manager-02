@@ -2,6 +2,7 @@
 import { parseBirthInput, formatBirthInput, formatBirthEditInput } from "@/lib/birth-date";
 import { PlayerEditBlock } from "@/app/components/player-edit-block";
 import { SearchablePicker } from "@/app/components/club-picker";
+import { CountryPicker } from "@/app/components/country-picker";
 import { normalizePhone, formatSpanishPhone } from "@/lib/phone-number";
 import type { PlayerEventSizes } from "@/lib/player-event-sizes";
 /* eslint-disable @next/next/no-img-element */
@@ -26,7 +27,7 @@ type ReviewState = {
   profile_photo_url: string | null;
   cover_photo_url: string | null;
   primary_photo_season: string | null;
-  player: { nickname?: string | null; club_id?: string | null; first_name: string; last_name: string | null; category: string | null; birth_year: number | null; birth_date?: string | null; dni: string | null; instagram: string | null; height_cm: number | null; weight_kg: number | null; allergies: string | null; dietary_conditions: string | null; medications: string | null };
+  player: { nickname?: string | null; club_id?: string | null; first_name: string; last_name: string | null; category: string | null; birth_year: number | null; birth_date?: string | null; nationality_country?: string | null; dni: string | null; instagram: string | null; height_cm: number | null; weight_kg: number | null; allergies: string | null; dietary_conditions: string | null; medications: string | null };
   clubs: { id: string; name: string }[];
   campus_types: { id: string; label: string; siglas: string | null }[];
   professional_categories: { id: string; label: string; siglas: string | null }[];
@@ -51,7 +52,7 @@ type SavedPayload = {
   event_sizes?: PlayerEventSizes;
   career?: {retired: boolean; staff_id: string | null};
   billing?: PlayerBilling;
-  player?: Partial<Record<"nickname" | "club_id" | "first_name" | "last_name" | "category" | "dni" | "instagram" | "position_text" | "allergies" | "dietary_conditions" | "medications", string | null>> & { birth_year?: number | null; birth_date?: string | null; height_cm?: number | null; weight_kg?: number | null };
+  player?: Partial<Record<"nickname" | "club_id" | "first_name" | "last_name" | "category" | "nationality_country" | "dni" | "instagram" | "position_text" | "allergies" | "dietary_conditions" | "medications", string | null>> & { birth_year?: number | null; birth_date?: string | null; height_cm?: number | null; weight_kg?: number | null };
   contacts?: Partial<Record<keyof typeof emptyContacts, string | null>>;
   seasons?: SeasonDraft[];
   participations?: ParticipationDraft[];
@@ -109,6 +110,7 @@ export default function EditPlayerPage() {
     last_name: "",
     category: "",
     birth_year: "",
+    nationality_country: "",
     dni: "",
     instagram: "",
     position_text: "",
@@ -150,6 +152,7 @@ export default function EditPlayerPage() {
           last_name: String(savedPlayer.last_name ?? data.player.last_name ?? ""),
           category: String(savedPlayer.category ?? data.player.category ?? ""),
           birth_year: formatBirthEditInput(savedPlayer.birth_date ?? data.player.birth_date, savedPlayer.birth_year ?? data.player.birth_year),
+          nationality_country: String(savedPlayer.nationality_country ?? data.player.nationality_country ?? ""),
           dni: String(savedPlayer.dni ?? data.player.dni ?? ""),
           instagram: String(savedPlayer.instagram ?? data.player.instagram ?? ""),
           position_text: String(savedPlayer.position_text ?? saved?.seasons?.find((season) => season.position_text)?.position_text ?? data.seasons.find((season) => season.position_text)?.position_text ?? ""),
@@ -387,6 +390,7 @@ export default function EditPlayerPage() {
           last_name: draft.last_name.trim() || null,
           category: draft.category || null,
           birth_year: birth.birth_year, birth_date: birth.birth_date,
+          nationality_country: draft.nationality_country.trim() || null,
           dni: draft.dni.trim().toUpperCase() || null,
           instagram: draft.instagram.trim() || null,
           position_text: draft.position_text.trim() || null,
@@ -608,6 +612,7 @@ export default function EditPlayerPage() {
           <label className={labelClass}>Ficha de staff<select className={fieldClass} value={career.staff_id ?? ""} onChange={event => setCareer(current => ({...current, staff_id: event.target.value || null}))}><option value="">Sin ficha vinculada</option>{state?.staff_options?.map(person => <option key={person.id} value={person.id}>{person.name} · {person.id}</option>)}</select></label>
           <label className={labelClass}>Genero<select className={fieldClass} value={draft.category} onChange={(event) => setValue("category", event.target.value)}><option value="">Sin indicar</option><option value="M">Masculino</option><option value="F">Femenino</option></select></label>
           <label className={labelClass}>Fecha o año de nacimiento<input type="text" inputMode="numeric" placeholder="AAAA o DD/MM/AAAA" maxLength={10} className={fieldClass} value={editingBlock === "block-0" ? draft.birth_year : formatBirthInput(parseBirthInput(draft.birth_year)?.birth_date, parseBirthInput(draft.birth_year)?.birth_year)} onChange={(event) => setValue("birth_year", event.target.value)} /></label>
+          <CountryPicker value={draft.nationality_country} onChange={(value) => setValue("nationality_country", value)} className={fieldClass} />
           <label className={labelClass}>DNI/NIE<input className={`${fieldClass} uppercase`} value={draft.dni} onChange={(event) => setValue("dni", event.target.value.toUpperCase())} /></label>
           <label className={labelClass}>Instagram<input className={fieldClass} value={draft.instagram} onChange={(event) => setValue("instagram", event.target.value)} placeholder="@usuario" /></label>
           <label className={labelClass}>Altura cm<input type="number" min="1" max="250" className={fieldClass} value={draft.height_cm} onChange={(event) => setValue("height_cm", event.target.value)} /></label>

@@ -8,6 +8,8 @@ import path from "node:path";
 import { newsDateLabel, newsDateSortKey } from "@/app/lib/news-date";
 import { randomUUID } from "node:crypto";
 import { selectionFromBody, type NewsSelection } from "./news-selection";
+import { catalogServiceClient } from "@/lib/catalog";
+import { operationalMediaBucket, readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 
 export type PlayerNews = { image_source?: "federation" | "custom"; participation?: NewsParticipation | null; selection?: NewsSelection | null; type: "noticia" | "seleccion" | "participacion"; id: string; player_id: string; date_or_season: string; title: string; url: string; published: boolean; image_updated_at?: string | null; image_url?: string; updated_at: string };
 export type NewsInput = Omit<PlayerNews, "type" | "id" | "updated_at" | "published" | "image_updated_at" | "image_url"> & { type?: "noticia" | "seleccion" | "participacion"; id?: string; published?: boolean };
@@ -24,7 +26,7 @@ export function newsFromBody(value: unknown): NewsInput | null {
   if (data.type === "seleccion" && !selection) return null;
   if (data.image_source !== undefined && data.image_source !== "federation" && data.image_source !== "custom") return null;
   if (data.published !== undefined && typeof data.published !== "boolean") return null;
-  if (typeof data.player_id !== "string" || !/^JUG\d{4}$/.test(data.player_id)) return null;
+  if (typeof data.player_id !== "string" || !/^(?:JUG|STF)\d{4}$/.test(data.player_id)) return null;
   if (data.id !== undefined && (typeof data.id !== "string" || !validNewsId(data.id))) return null;
   if (typeof data.title !== "string" || !data.title.trim() || data.title.length > 240) return null;
   if (typeof data.date_or_season !== "string" || data.date_or_season.length > 40) return null;
@@ -63,14 +65,20 @@ export async function readPlayerNews(playerId?: string): Promise<PlayerNews[]> {
   return structuredClone(playerId ? records.filter((record) => record.player_id === playerId) : records);
 }
 async function loadAllPlayerNews(): Promise<PlayerNews[]> {
+  const remote = await readOperationalDocument<unknown>("news", "player-news").catch(() => null);
   let files: string[];
-  try { files = await readdir(directory()); }
-  catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return []; throw error; }
-  const loaded = await Promise.all(files.filter((file) => file.endsWith(".json") && validNewsId(file.slice(0, -5))).map(async (file) => {
-    try { return JSON.parse(await readFile(path.join(directory(), file), "utf8")) as PlayerNews; }
-    catch (error) {if ((error as NodeJS.ErrnoException).code === "ENOENT") return null; throw error;}
-  }));
-  const records = loaded.filter((record): record is PlayerNews => record !== null);
+  let records: PlayerNews[];
+  if (Array.isArray(remote?.payload)) {
+    records = remote.payload.filter((record): record is PlayerNews => Boolean(record && typeof record === "object" && validNewsId((record as { id?: unknown }).id as string)));
+  } else {
+    try { files = await readdir(directory()); }
+    catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return []; throw error; }
+    const loaded = await Promise.all(files.filter((file) => file.endsWith(".json") && validNewsId(file.slice(0, -5))).map(async (file) => {
+      try { return JSON.parse(await readFile(path.join(directory(), file), "utf8")) as PlayerNews; }
+      catch (error) {if ((error as NodeJS.ErrnoException).code === "ENOENT") return null; throw error;}
+    }));
+    records = loaded.filter((record): record is PlayerNews => record !== null);
+  }
   const names = records.some(record => record.participation?.kind === "campus") ? await campusNames() : new Map<string, string>();
   return records.map(record => campusTitle(record, names)).map((record) => ({ ...record, type: record.type === "seleccion" ? "seleccion" as const : record.type === "participacion" ? "participacion" as const : "noticia" as const, date_or_season: newsDateLabel(record.date_or_season) ?? record.date_or_season, published: record.published === true })).sort((a, b) => newsDateSortKey(b.date_or_season).localeCompare(newsDateSortKey(a.date_or_season)) || a.title.localeCompare(b.title, "es"));
 }
@@ -84,8 +92,9 @@ export function deletePlayerNews(id: string): Promise<PlayerNews> {
   const operation = (newsWrites.get(id) ?? Promise.resolve()).catch(() => undefined).then(async () => {
     const record = (await readPlayerNews()).find(item => item.id === id);
     if (!record) throw new Error("El registro ya no existe. Recarga la tabla.");
+    await upsertOperationalDocument("news", "player-news", (await readPlayerNews()).filter(item => item.id !== id));
     await mkdir(deletedDirectory(), {recursive: true});
-    await rename(path.join(directory(), id + ".json"), path.join(deletedDirectory(), id + ".json"));
+    await rename(path.join(directory(), id + ".json"), path.join(deletedDirectory(), id + ".json")).catch(() => undefined);
     // Keep the original for recovery and to prevent imported sources reappearing.
     await rename(path.join(process.cwd(), "data", "staging", "player-news-images", id + ".webp"), path.join(deletedDirectory(), id + ".webp")).catch(() => undefined);
     return record;
@@ -121,6 +130,8 @@ async function writePlayerNews(input: NewsInput, imageUpdatedAt?: string): Promi
   const temporary = target + "." + randomUUID() + ".tmp";
   await writeFile(temporary, JSON.stringify(record, null, 2) + "\n", "utf8");
   await rename(temporary, target);
+  const current = await readPlayerNews();
+  await upsertOperationalDocument("news", "player-news", [record, ...current.filter((item) => item.id !== record.id)]);
   return record;
 }
 
@@ -138,5 +149,11 @@ export async function newsWithImage(record: PlayerNews): Promise<PlayerNews> {
     await access(filename);
     const updatedAt = record.image_updated_at ?? record.updated_at;
     return { ...record, image_source: "custom", image_updated_at: updatedAt, image_url: `/api/noticias/${record.id}/imagen?v=${encodeURIComponent(updatedAt)}` };
-  } catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return federationImage(); throw error; }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    const remote = await catalogServiceClient().storage.from(operationalMediaBucket).createSignedUrl(`news-images/${record.id}.webp`, 60);
+    if (!remote.data?.signedUrl) return federationImage();
+    const updatedAt = record.image_updated_at ?? record.updated_at;
+    return { ...record, image_source: "custom", image_updated_at: updatedAt, image_url: `/api/noticias/${record.id}/imagen?v=${encodeURIComponent(updatedAt)}` };
+  }
 }

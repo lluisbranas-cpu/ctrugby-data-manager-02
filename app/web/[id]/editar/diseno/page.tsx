@@ -1,0 +1,28 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { rugbyCabreraWebDefaults, type RugbyCabreraWebConfig } from "@/lib/web-page-config";
+
+export default function RugbyCabreraDesignEditor() {
+  const [config, setConfig] = useState<RugbyCabreraWebConfig>(rugbyCabreraWebDefaults);
+  const [notice, setNotice] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { void fetch("/api/web/ESP022/home?mode=editor", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => { if (data?.config) setConfig(data.config); }); }, []);
+  const setBrand = (key: keyof RugbyCabreraWebConfig["brand"], value: string) => setConfig(current => ({ ...current, brand: { ...current.brand, [key]: value } }));
+  const setMenu = (index: number, key: "label" | "href", value: string) => setConfig(current => ({ ...current, menu: current.menu.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item) }));
+  async function save() {
+    setSaving(true); setNotice("");
+    try { const response = await fetch("/api/web/ESP022/home", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ config }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setConfig(data.config); setNotice("Diseño y menús guardados como borrador."); }
+    catch (error) { setNotice(error instanceof Error ? error.message : "No se ha podido guardar."); }
+    finally { setSaving(false); }
+  }
+  async function publish() {
+    if (!window.confirm("¿Publicar también los colores, el logotipo y los menús?")) return;
+    setSaving(true); setNotice("");
+    try { const response = await fetch("/api/web/ESP022/home", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "publish" }) }); const data = await response.json(); if (!response.ok) throw new Error(data.error); setNotice("Diseño y menús publicados."); }
+    catch (error) { setNotice(error instanceof Error ? error.message : "No se ha podido publicar."); }
+    finally { setSaving(false); }
+  }
+  return <main className="min-h-screen bg-slate-100 p-5 text-slate-900 sm:p-8"><div className="mx-auto max-w-3xl space-y-5"><header className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black tracking-[.18em] text-red-700">RUGBY CABRERA · ADMINISTRACIÓN</p><h1 className="text-3xl font-black">Diseño, logo y menús</h1></div><Link href="/rugby/ESP022/web/home" className="rounded-lg border bg-white px-4 py-2 text-sm font-bold">Ver web pública ↗</Link></header>{notice && <p role="status" className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm">{notice}</p>}<section className="rounded-2xl bg-white p-5 shadow-sm"><h2 className="text-xl font-black">Identidad visual</h2><div className="mt-4 grid gap-4 sm:grid-cols-2"><label>Nombre del club<input value={config.brand.name} maxLength={80} onChange={event => setBrand("name", event.target.value)} className="mt-1 w-full rounded-lg border p-3 text-sm" /></label><label>Logo (URL o ruta)<input value={config.brand.logo} maxLength={500} onChange={event => setBrand("logo", event.target.value)} className="mt-1 w-full rounded-lg border p-3 text-sm" /></label><label>Color principal<div className="mt-1 flex gap-2"><input type="color" value={config.brand.primary} onChange={event => setBrand("primary", event.target.value)} className="h-11 w-14" /><input value={config.brand.primary} onChange={event => setBrand("primary", event.target.value)} className="min-w-0 flex-1 rounded-lg border p-3 text-sm" /></div></label><label>Color de acento<div className="mt-1 flex gap-2"><input type="color" value={config.brand.accent} onChange={event => setBrand("accent", event.target.value)} className="h-11 w-14" /><input value={config.brand.accent} onChange={event => setBrand("accent", event.target.value)} className="min-w-0 flex-1 rounded-lg border p-3 text-sm" /></div></label></div><div className="mt-5 flex items-center gap-3 rounded-lg p-4" style={{ background: config.brand.primary, color: "white" }}><img src={config.brand.logo} alt="Vista previa del logo" className="h-12 w-12 object-contain" /><strong>{config.brand.name}</strong><span className="ml-auto rounded px-3 py-2 text-sm font-bold" style={{ background: config.brand.accent }}>Botón</span></div></section><section className="rounded-2xl bg-white p-5 shadow-sm"><h2 className="text-xl font-black">Menú principal</h2><p className="mt-1 text-sm text-slate-600">Enlaces internos con #plantilla o #club; externos con https://.</p><div className="mt-4 space-y-3">{config.menu.map((item, index) => <div key={index} className="grid gap-2 sm:grid-cols-[1fr_2fr]"><input aria-label={`Texto del menú ${index + 1}`} value={item.label} maxLength={60} onChange={event => setMenu(index, "label", event.target.value)} className="rounded-lg border p-3 text-sm" /><input aria-label={`Enlace del menú ${index + 1}`} value={item.href} maxLength={500} onChange={event => setMenu(index, "href", event.target.value)} className="rounded-lg border p-3 text-sm" /></div>)}</div></section><footer className="flex flex-wrap justify-end gap-3"><Link href="/rugby/ESP022/web/home/editar" className="rounded-xl border bg-white px-5 py-3 font-black">Editar contenidos</Link><button type="button" disabled={saving} onClick={() => void save()} className="rounded-xl border bg-white px-5 py-3 font-black disabled:opacity-50">Guardar borrador</button><button type="button" disabled={saving} onClick={() => void publish()} className="rounded-xl bg-red-700 px-5 py-3 font-black text-white disabled:opacity-50">Publicar cambios</button></footer></div></main>;
+}

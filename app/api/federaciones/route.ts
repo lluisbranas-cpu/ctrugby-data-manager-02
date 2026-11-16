@@ -5,8 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile, readdir } from "node:fs/promises";
 import { federationShieldUrls } from "@/app/lib/federation-shields";
 import path from "node:path";
-import { catalogAccess, catalogConfigured } from "@/lib/catalog";
+import { catalogAccess, catalogConfigured, catalogServiceClient } from "@/lib/catalog";
+import { localPlayerIdsFromCatalog, publicPlayerId } from "@/lib/catalog-player-ids";
 import { worldRugbyAffiliation } from "@/app/lib/world-rugby";
+import { nonMemberFederation, regionalAssociationIdsForCountry, worldRugbyNonMemberFederations, type WorldRugbyAffiliation } from "@/lib/world-rugby-non-members";
+import { missingRegionalFederations } from "@/lib/missing-regional-federations";
 import { mergeMilestoneTrajectory } from "@/lib/milestone-trajectory";
 import { applyManualSelectionCallups, readManualSelectionCallups, selectionFederationIds, type SelectionRecord } from "@/lib/manual-selection-callups";
 import { readProfessionalClubMilestones, shapeProfessionalClubRecord, type ProfessionalClubMilestone } from "@/lib/professional-club-milestones";
@@ -14,14 +17,15 @@ import { readProfessionalClubMilestones, shapeProfessionalClubRecord, type Profe
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type Federation = { id: string; name: string; scope: string; territory: string; country: string; active: boolean; website: string | null; published?: boolean; version?: number };
+type Federation = { id: string; name: string; scope: string; territory: string; country: string; active: boolean; website: string | null; country_flag_url?: string | null; original_name?: string | null; spanish_name?: string | null; masculine_nickname?: string | null; feminine_nickname?: string | null; regional_membership_status?: "Pleno derecho" | "Asociado" | null; published?: boolean; version?: number; world_rugby_affiliation?: WorldRugbyAffiliation; regional_association_ids?: string[] };
 type FederationSport = { federation_id: string; catalog_sports: { name: string } | { name: string }[] | null };
 type Club = { id: string; name: string; country: string | null; region: string | null };
 type Season = { player_id: string; season_year: number; registration_number?: string | null; club_id: string | null; legacy_club_name: string | null; position_text: string | null; weight_kg: number | null; height_cm: number | null };
 type Player = { id: string; first_name: string; last_name: string | null; category: string | null };
 type PlayerMetric = { player_id: string; participation_count: number };
 type Milestone = { participant_id: string; scope: string; season_label?: string | null };
-type MilestoneParticipant = { id: string; player_id: string | null };
+type MilestoneParticipant = { id: string; player_id: string | null; staff_id?: string | null };
+type StaffProfile = { staff_id?: string | null; nationality_country?: string | null };
 
 const normalize = (value: string | null | undefined) => String(value ?? "")
   .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-ES").trim();
@@ -37,13 +41,14 @@ const yearsFromSeasonLabel = (record: { season_label?: string | null }) => [...n
 async function localMetrics(visiblePlayerIds?: ReadonlySet<string>, visibleClubIds?: ReadonlySet<string>) {
   try {
     const base = path.join(process.cwd(), "data", "staging");
-    const [clubsFile, seasonsFile, metricsFile, playersFile, milestonesFile, milestoneParticipantsFile, manualSelectionCallups, professionalClubMilestones] = await Promise.all([
+    const [clubsFile, seasonsFile, metricsFile, playersFile, milestonesFile, milestoneParticipantsFile, staffProfilesFile, manualSelectionCallups, professionalClubMilestones] = await Promise.all([
       readFile(path.join(base, "clubs.json"), "utf8"),
       readFile(path.join(base, "player-seasons.json"), "utf8"),
       readCampusMetricsJson(),
       readFile(path.join(base, "players.json"), "utf8"),
       readFile(path.join(base, "milestones.json"), "utf8"),
       readFile(path.join(base, "milestone-participants.json"), "utf8"),
+      readFile(path.join(base, "staff-ctrugby-profiles.json"), "utf8").catch(() => "[]"),
       readManualSelectionCallups(),
       readProfessionalClubMilestones(),
     ]);
@@ -51,14 +56,30 @@ async function localMetrics(visiblePlayerIds?: ReadonlySet<string>, visibleClubI
       .filter((club) => !visibleClubIds || visibleClubIds.has(club.id));
     const milestoneParticipants = JSON.parse(milestoneParticipantsFile) as MilestoneParticipant[];
     const milestones = JSON.parse(milestonesFile) as Milestone[];
+    const staffIdsByNationality = new Map<string, Set<string>>();
+    for (const profile of JSON.parse(staffProfilesFile) as StaffProfile[]) {
+      if (!profile.staff_id || !profile.nationality_country?.trim()) continue;
+      const country = normalize(profile.nationality_country);
+      const staffIds = staffIdsByNationality.get(country) ?? new Set<string>();
+      staffIds.add(profile.staff_id);
+      staffIdsByNationality.set(country, staffIds);
+    }
     const participantPlayers = new Map(milestoneParticipants.filter((participant) => participant.player_id).map((participant) => [participant.id, participant.player_id!]));
+    const participantStaff = new Map(milestoneParticipants.filter((participant) => participant.staff_id).map((participant) => [participant.id, participant.staff_id!]));
     const milestonesByPlayer = new Map<string, number>();
     const selectionRecords: SelectionRecord[] = [];
     const selectedFederationsByPlayer = new Map<string, Set<string>>();
     const selectedFederationYearsByPlayer = new Map<string, Map<string, Set<number>>>();
     const selectedPlayersByFederation = new Map<string, Set<string>>();
+    const selectedStaffByFederation = new Map<string, Set<string>>();
     for (const milestone of milestones) {
       const playerId = participantPlayers.get(milestone.participant_id);
+      const staffId = participantStaff.get(milestone.participant_id);
+      const staffFederationId = milestone.scope ? selectionFederationIds[milestone.scope] : null;
+      if (staffId) {
+        if (staffFederationId) (selectedStaffByFederation.get(staffFederationId) ?? selectedStaffByFederation.set(staffFederationId, new Set()).get(staffFederationId)!).add(staffId);
+        continue;
+      }
       if (!playerId || (visiblePlayerIds && !visiblePlayerIds.has(playerId))) continue;
       milestonesByPlayer.set(playerId, (milestonesByPlayer.get(playerId) ?? 0) + 1);
       const federationId = milestone.scope ? selectionFederationIds[milestone.scope] : null;
@@ -118,6 +139,8 @@ async function localMetrics(visiblePlayerIds?: ReadonlySet<string>, visibleClubI
       selections: selectedFederationsByPlayer,
       selectionYears: selectedFederationYearsByPlayer,
       selectionCounts: new Map([...selectedPlayersByFederation].map(([federationId, playerIds]) => [federationId, playerIds.size])),
+      staffSelectionCounts: new Map([...selectedStaffByFederation].map(([federationId, staffIds]) => [federationId, staffIds.size])),
+      staffIdsByNationality,
       selectionPlayerIds: selectedPlayersByFederation,
       professionalClubRecords: shapedProfessionalClubMilestones,
       professionalByPlayer,
@@ -134,18 +157,46 @@ export async function GET(request: NextRequest) {
   if (!catalogConfigured()) return NextResponse.json({ configured: false, federations: [] }, { status: 503 });
   try {
     const { db, admin } = await catalogAccess(request);
-    const [federationResult, clubResult, federationSportsResult, visiblePlayerResult] = await Promise.all([
-      db.from("catalog_federations").select("id,name,scope,territory,country,active,website,published,version").order("country").order("scope").order("name"),
+    const requestedPlayers = request.nextUrl.searchParams.get("players");
+    const [federationResult, clubResult, federationSportsResult, visiblePlayerResult, nationalityResult] = await Promise.all([
+      db.from("catalog_federations").select("id,name,scope,territory,country,active,website,country_flag_url,masculine_nickname,feminine_nickname,regional_association_ids,regional_membership_status,published,version").order("country").order("scope").order("name"),
       db.from("catalog_clubs").select("id,name,country,region"),
       db.from("catalog_federation_sports").select("federation_id,catalog_sports(name)"),
       db.from("catalog_players").select("id").eq("published", true).range(0, 9999),
+      requestedPlayers ? catalogServiceClient().schema("app_private").from("player_profiles").select("player_id,nationality_country").not("nationality_country", "is", null) : Promise.resolve({ data: [] as { player_id: string; nationality_country: string | null }[], error: null }),
     ]);
     if (federationResult.error) return NextResponse.json({ error: "No se han podido cargar las federaciones publicadas." }, { status: 503 });
     if (clubResult.error) return NextResponse.json({ error: "No se han podido cargar los clubs asociados." }, { status: 503 });
     if (visiblePlayerResult.error) return NextResponse.json({ error: "No se han podido comprobar los jugadores publicados." }, { status: 503 });
-    const visiblePlayerIds = new Set((visiblePlayerResult.data ?? []).map((player) => player.id));
+    const visiblePlayerIds = localPlayerIdsFromCatalog((visiblePlayerResult.data ?? []).map((player) => player.id));
     const visibleClubIds = new Set((clubResult.data ?? []).map((club) => club.id));
-    const federations = federationResult.data as Federation[];
+    const catalogFederations = federationResult.data as Federation[];
+    const catalogFederationIds = new Set(catalogFederations.map((federation) => federation.id));
+    const federations: Federation[] = [
+      ...catalogFederations.map((federation) => {
+        const nonMember = nonMemberFederation(federation.id);
+        return {
+          ...federation,
+          world_rugby_affiliation: nonMember ? "no_miembro" as const : worldRugbyAffiliation(federation.id, federation.scope),
+          regional_association_ids: nonMember?.regional_association_ids ?? regionalAssociationIdsForCountry(federation.country),
+        };
+      }),
+      ...worldRugbyNonMemberFederations
+        .filter((federation) => !catalogFederationIds.has(federation.id))
+        .map((federation) => ({
+          ...federation,
+          scope: "Nacional",
+          territory: federation.country,
+          active: federation.country !== "Bielorrusia" && federation.country !== "Rusia",
+          website: null,
+          published: true,
+          version: 0,
+          world_rugby_affiliation: "no_miembro" as const,
+        })),
+      ...missingRegionalFederations
+        .filter((federation) => !catalogFederationIds.has(federation.id))
+        .map((federation) => ({ ...federation, regional_association_ids: federation.regional_association_ids })),
+    ];
     const sportNamesByFederation = new Map<string, string[]>();
     for (const record of (federationSportsResult.data ?? []) as unknown as FederationSport[]) {
       const linked = record.catalog_sports;
@@ -157,10 +208,15 @@ export async function GET(request: NextRequest) {
     const local = await localMetrics(admin ? undefined : visiblePlayerIds, admin ? undefined : visibleClubIds);
     const shieldFiles = new Set(await readdir(path.join(process.cwd(), "public", "federation-shields")).catch(() => [] as string[]));
     const clubs = local?.clubs ?? clubResult.data as Club[];
+    const clubNamesById = new Map(clubs.map((club) => [club.id, club.name]));
     const associatedClubs = new Map(federations.map((federation) => [federation.id, clubs.filter((club) => belongsToFederation(club, federation))]));
     const playerCounts = new Map<string, number>();
     const participationCounts = new Map<string, number>();
     const ctrugbyClubCounts = new Map<string, number>();
+    const associatedPlayerIds = new Set<string>();
+    const nationalAssociatedPlayerIds = new Set<string>();
+    const territorialAssociatedPlayerIds = new Set<string>();
+    const worldRugbyAssociatedPlayerIds = new Set<string>();
 
     if (local) {
       for (const federation of federations) {
@@ -169,6 +225,16 @@ export async function GET(request: NextRequest) {
         for (const playerId of local.selectionPlayerIds.get(federation.id) ?? new Set<string>()) playerIds.add(playerId);
         const professionalClubIds = new Set(local.professionalClubRecords.filter((record) => record.club_id && clubIds.has(record.club_id)).map((record) => record.club_id!));
         for (const record of local.professionalClubRecords.filter((record) => record.club_id && clubIds.has(record.club_id))) playerIds.add(record.player_id);
+        for (const playerId of playerIds) {
+          associatedPlayerIds.add(playerId);
+          (federation.scope === "Nacional" ? nationalAssociatedPlayerIds : territorialAssociatedPlayerIds).add(playerId);
+          if (
+            federation.scope === "Nacional" &&
+            federation.world_rugby_affiliation === "miembro"
+          ) {
+            worldRugbyAssociatedPlayerIds.add(playerId);
+          }
+        }
         playerCounts.set(federation.id, playerIds.size);
         participationCounts.set(federation.id, [...playerIds].reduce((total, playerId) => total + (local.participations.get(playerId) ?? 0), 0));
         const participatingClubIds = new Set(local.seasons.filter((season) => season.season_year >= 2023 && season.club_id && clubIds.has(season.club_id) && (local.participations.get(season.player_id) ?? 0) > 0).map((season) => season.club_id!));
@@ -192,6 +258,16 @@ export async function GET(request: NextRequest) {
           for (const club of associatedClubs.get(federation.id) ?? []) {
             for (const playerId of playerIdsByClub.get(club.id) ?? []) playerIds.add(playerId);
           }
+          for (const playerId of playerIds) {
+            associatedPlayerIds.add(playerId);
+            (federation.scope === "Nacional" ? nationalAssociatedPlayerIds : territorialAssociatedPlayerIds).add(playerId);
+            if (
+              federation.scope === "Nacional" &&
+              federation.world_rugby_affiliation === "miembro"
+            ) {
+              worldRugbyAssociatedPlayerIds.add(playerId);
+            }
+          }
           playerCounts.set(federation.id, playerIds.size);
         }
       }
@@ -209,7 +285,11 @@ const countryMetrics = [...new Set(federations.map((federation) => federation.co
         ctrugby_club_count: local ? new Set([...local.seasons.filter((season) => season.season_year >= 2023 && season.club_id && clubIds.has(season.club_id) && (local.participations.get(season.player_id) ?? 0) > 0).map((season) => season.club_id!), ...local.professionalClubRecords.filter((record) => record.club_id && clubIds.has(record.club_id)).map((record) => record.club_id!)]).size : null,
       };
     });
-const requestedPlayers = request.nextUrl.searchParams.get("players");
+    if (nationalityResult.error) return NextResponse.json({ error: "No se han podido cargar las nacionalidades de los jugadores." }, { status: 503 });
+    const nationalitiesByPlayerId = new Map((nationalityResult.data ?? []).flatMap((profile) => {
+      const playerId = publicPlayerId(profile.player_id);
+      return profile.nationality_country ? [[playerId, profile.nationality_country] as const] : [];
+    }));
     const groupMemberships = requestedPlayers && local ? await readGroupMemberships(local.seasons) : new Map();
     const playerFederation = requestedPlayers ? federations.find((federation) => federation.id === requestedPlayers) : null;
     const territorialFederationByClubId = new Map<string, Federation>();
@@ -225,10 +305,12 @@ const requestedPlayers = request.nextUrl.searchParams.get("players");
         const player = local.players.get(playerId);
         const season = relevantSeasons.filter((item) => item.player_id === playerId).sort((a, b) => b.season_year - a.season_year)[0];
         const professionalRecord = relevantProfessionalRecords.filter((item) => item.player_id === playerId).sort((a, b) => String(b.season_label ?? "").localeCompare(String(a.season_label ?? ""), "es", { numeric: true }))[0];
+        const clubId = season?.club_id ?? professionalRecord?.club_id ?? null;
+        const clubName = season?.legacy_club_name ?? professionalRecord?.club_name ?? (clubId ? clubNamesById.get(clubId) ?? null : null);
         const territorialFederation = season?.club_id ? territorialFederationByClubId.get(season.club_id) : null;
         const selectedFederationIds = [...(local.selections.get(playerId) ?? new Set<string>())].sort((a, b) => Number(b.startsWith("FN")) - Number(a.startsWith("FN")));
         const selectedFederationYears = Object.fromEntries([...selectedFederationIds].map((federationId) => [federationId, [...(local.selectionYears.get(playerId)?.get(federationId) ?? new Set<number>())].sort()]));
-        return { club_groups: groupMemberships.get(playerId) ?? [], id: playerId, first_name: player?.first_name ?? "Jugador", last_name: player?.last_name ?? null, category: player?.category ?? null, position_text: season?.position_text ?? null, season_year: season?.season_year ?? null, club_id: season?.club_id ?? professionalRecord?.club_id ?? null, club_name: season?.legacy_club_name ?? professionalRecord?.club_name ?? null, federation_id: territorialFederation?.id ?? null, federation_name: territorialFederation?.name ?? null, participation_count: local.participations.get(playerId) ?? 0, milestone_count: local.milestones.get(playerId) ?? 0, professional_club_count: local.professionalByPlayer.get(playerId)?.length ?? 0, selected_federation_ids: selectedFederationIds, selected_federation_years: selectedFederationYears };
+        return { club_groups: groupMemberships.get(playerId) ?? [], id: playerId, first_name: player?.first_name ?? "Jugador", last_name: player?.last_name ?? null, category: player?.category ?? null, position_text: season?.position_text ?? null, season_year: season?.season_year ?? null, club_id: clubId, club_name: clubName, nationality_country: nationalitiesByPlayerId.get(playerId) ?? null, federation_id: territorialFederation?.id ?? null, federation_name: territorialFederation?.name ?? null, participation_count: local.participations.get(playerId) ?? 0, milestone_count: local.milestones.get(playerId) ?? 0, professional_club_count: local.professionalByPlayer.get(playerId)?.length ?? 0, selected_federation_ids: selectedFederationIds, selected_federation_years: selectedFederationYears };
       }).sort((a, b) => `${a.last_name ?? ""} ${a.first_name}`.localeCompare(`${b.last_name ?? ""} ${b.first_name}`, "es"));
     })() : [];
     const regions = new Set(federations.filter((federation) => federation.country === "España" && federation.scope === "Territorial").map((federation) => federation.territory)).size;
@@ -242,15 +324,21 @@ const requestedPlayers = request.nextUrl.searchParams.get("players");
         ...federation,
         sports: sportNamesByFederation.get(federation.id) ?? ["Rugby"],
         has_shield: shieldFiles.has(`${federation.id}.png`) || Boolean(federationShieldUrls[federation.id]),
-        world_rugby_affiliation: worldRugbyAffiliation(federation.id, federation.scope),
+        world_rugby_affiliation: federation.world_rugby_affiliation ?? worldRugbyAffiliation(federation.id, federation.scope),
+        regional_association_ids: federation.regional_association_ids ?? regionalAssociationIdsForCountry(federation.country),
         email: admin ? emails.get(federation.id) ?? null : null,
         club_count: associatedClubs.get(federation.id)?.length ?? 0,
         ctrugby_club_count: local ? ctrugbyClubCounts.get(federation.id) ?? 0 : null,
         player_count: local || admin ? playerCounts.get(federation.id) ?? 0 : null,
         participation_count: local ? participationCounts.get(federation.id) ?? 0 : null,
         selection_player_count: local ? local.selectionCounts.get(federation.id) ?? 0 : null,
+        staff_count: local ? local.staffIdsByNationality.get(normalize(federation.country))?.size ?? 0 : null,
       })),
       territoryStats: { regions, ctrugbyRegions, national, ctrugbyNational },
+      associated_player_count: local || admin ? associatedPlayerIds.size : null,
+      national_associated_player_count: local || admin ? nationalAssociatedPlayerIds.size : null,
+      territorial_associated_player_count: local || admin ? territorialAssociatedPlayerIds.size : null,
+      world_rugby_associated_player_count: local || admin ? worldRugbyAssociatedPlayerIds.size : null,
       countryMetrics,
       federationPlayers,
     }, { headers: { "Cache-Control": "private, no-store", Vary: "Cookie" } });

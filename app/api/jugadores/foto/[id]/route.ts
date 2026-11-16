@@ -5,8 +5,9 @@ import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import { catalogClient, catalogServiceClient, catalogAccess, sameOrigin } from "@/lib/catalog";
-import { canonicalLikidHubPlayerId } from "@/lib/likidhub-jug-ctr-bridge.generated";
 import { likidHubPreviewReadOnly, previewLikidHubLatestSeasonPhotoUrl, previewLikidHubMediaUrl, previewLikidHubSeasonPhotoUrl } from "@/lib/likidhub-preview";
+import { operationalMediaBucket } from "@/lib/operational-store";
+import { createHash } from "node:crypto";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,29 @@ const validSeason = (value: string | null | undefined) => Boolean(value && /^20\
 const seasonDirectory = (id: string) => path.join(process.cwd(), "data", "staging", "player-season-photos", id);
 const primaryPath = (id: string) => path.join(seasonDirectory(id), "primary.json");
 const reply = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
+const seasonObjectKey = (id: string, season: string) => `player-season-photos/${id}/${season}.png`;
+
+async function saveRemoteSeasonPhoto(id: string, season: string, image: Buffer, isPrimary = false) {
+  const db = catalogServiceClient();
+  const objectKey = seasonObjectKey(id, season);
+  const upload = await db.storage.from(operationalMediaBucket).upload(objectKey, image, { upsert: true, contentType: "image/png" });
+  if (upload.error) throw new Error("No se ha podido subir la foto remota.");
+  const photo = await db.rpc("likidhub_upsert_season_photo", { p_row: { player_id: id, season_year: Number(season), storage_key: objectKey, is_primary: isPrimary } });
+  if (photo.error) throw new Error("No se ha podido asociar la foto remota.");
+  const indexed = await db.rpc("likidhub_upsert_operational_media", {
+    p_row: {
+      entity_type: "season-photo",
+      entity_id: id,
+      variant: `season-${season}`,
+      bucket_id: operationalMediaBucket,
+      object_key: objectKey,
+      content_type: "image/png",
+      byte_size: image.length,
+      source_sha256: createHash("sha256").update(image).digest("hex"),
+    },
+  });
+  if (indexed.error) throw new Error("No se ha podido indexar la foto remota.");
+}
 
 function removeConnectedBackground(input: Buffer, width: number, height: number, removeGray = false) {
   const output = Buffer.from(input); const pixelCount = width * height; const visited = new Uint8Array(pixelCount); const stack: number[] = [];
@@ -45,8 +69,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params;
   if (likidHubPreviewReadOnly()) {
     const season = request.nextUrl.searchParams.get("season");
-    const playerId = canonicalLikidHubPlayerId(id);
-    if (!playerId || (season !== null && !validSeason(season))) return new NextResponse(null, { status: 404 });
+    const playerId = id.trim().toUpperCase();
+    if (!/^JUG\d{4}$/.test(playerId) || (season !== null && !validSeason(season))) return new NextResponse(null, { status: 404 });
     try {
       const signedUrl = season
         ? await previewLikidHubSeasonPhotoUrl(playerId, Number(season))
@@ -83,7 +107,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       const fallback = photo.data?.storage_key ? null : await mediaDb.schema("app_private").from("player_profile_photos").select("storage_key").eq("player_id", id).maybeSingle();
       const storageKey = photo.data?.storage_key ?? fallback?.data?.storage_key;
       if (storageKey) {
-        const stored = await mediaDb.storage.from("catalog-media-private").download(storageKey);
+        const bucket = photo.data?.storage_key ? operationalMediaBucket : "catalog-media-private";
+        const stored = await mediaDb.storage.from(bucket).download(storageKey);
         if (!stored.error && stored.data) {
           return new NextResponse(await displayPortrait(Buffer.from(await stored.data.arrayBuffer()), request), { headers: { "Content-Type": stored.data.type || "image/png", "Cache-Control": publicTeamPhoto ? "public, max-age=300" : "private, no-store" } });
         }
@@ -156,6 +181,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await writeFile(path.join(originals, `${season}-${Date.now()}.${extension}`), bytes);
     if (editedPortrait) {
       await writeFile(path.join(directory, `${season}.png`), editedPortrait);
+      await saveRemoteSeasonPhoto(id, season as string, editedPortrait);
       return reply({ ok: true, url: `/api/jugadores/foto/${id}?season=${season}&v=${Date.now()}` });
     }
     const normalized = await sharp(bytes, { limitInputPixels: 30_000_000 }).rotate().resize(1200, 1200, { fit: "inside", withoutEnlargement: true }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -164,6 +190,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const portrait = await (box ? sharp(cutout, { raw: { width: normalized.info.width, height: normalized.info.height, channels: 4 } }).extract(box) : sharp(cutout, { raw: { width: normalized.info.width, height: normalized.info.height, channels: 4 } })).resize(300, 300, { fit: "contain", background: { r: 226, g: 231, b: 234, alpha: 1 }, withoutEnlargement: true }).png().toBuffer();
     const prepared = await sharp({ create: { width: 300, height: 300, channels: 4, background: { r: 226, g: 231, b: 234, alpha: 1 } } }).composite([{ input: portrait }]).png({ compressionLevel: 9 }).toBuffer();
     await writeFile(path.join(directory, `${season}.png`), prepared);
+    await saveRemoteSeasonPhoto(id, season as string, prepared);
     return reply({ ok: true, url: `/api/jugadores/foto/${id}?season=${season}&v=${Date.now()}` });
   } catch { return reply({ error: "No se ha podido preparar y guardar la foto de la temporada." }, 400); }
 }
@@ -175,8 +202,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { admin } = await catalogAccess(request); if (!admin) return reply({ error: "Acceso de administrador requerido." }, 403);
     const { season } = await request.json() as { season?: string };
     if (!validSeason(season)) return reply({ error: "Temporada no válida." }, 400);
-    await access(path.join(seasonDirectory(id), `${season}.png`));
+    const db = catalogServiceClient();
+    let image: Buffer;
+    try {
+      image = await readFile(path.join(seasonDirectory(id), `${season}.png`));
+    } catch {
+      const remotePhoto = await db.schema("app_private").from("player_season_photos").select("storage_key").eq("player_id", id).eq("season_year", Number(season)).maybeSingle();
+      if (remotePhoto.error || !remotePhoto.data?.storage_key) return reply({ error: "Primero sube una foto para esa temporada." }, 400);
+      const remoteImage = await db.storage.from(operationalMediaBucket).download(remotePhoto.data.storage_key);
+      if (remoteImage.error || !remoteImage.data) return reply({ error: "No se ha podido recuperar la foto remota." }, 503);
+      image = Buffer.from(await remoteImage.data.arrayBuffer());
+    }
     await writeFile(primaryPath(id), JSON.stringify({ season }));
+    const cleared = await db.schema("app_private").from("player_season_photos").update({ is_primary: false }).eq("player_id", id);
+    if (cleared.error) return reply({ error: "No se ha podido actualizar la foto principal remota." }, 503);
+    await saveRemoteSeasonPhoto(id, season as string, image, true);
     return reply({ ok: true, season });
   } catch { return reply({ error: "Primero sube una foto para esa temporada." }, 400); }
 }
@@ -190,6 +230,13 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!admin) return reply({ error: "Acceso de administrador requerido." }, 403);
     const directory = seasonDirectory(id);
     await rm(path.join(directory, `${season}.png`), { force: true });
+    const db = catalogServiceClient();
+    const remote = await db.storage.from(operationalMediaBucket).remove([seasonObjectKey(id, season as string)]);
+    if (remote.error) return reply({ error: "No se ha podido borrar la foto remota." }, 503);
+    const unlinked = await db.schema("app_private").from("player_season_photos").delete().eq("player_id", id).eq("season_year", Number(season));
+    if (unlinked.error) return reply({ error: "No se ha podido desvincular la foto remota." }, 503);
+    const unindexed = await db.schema("app_private").from("operational_media").delete().eq("entity_type", "season-photo").eq("entity_id", id).eq("variant", `season-${season}`);
+    if (unindexed.error) return reply({ error: "No se ha podido actualizar el índice remoto." }, 503);
     const originals = path.join(directory, "originales");
     const originalFiles = await readdir(originals).catch(() => [] as string[]);
     await Promise.all(originalFiles.filter((name) => name.startsWith(`${season}-`)).map((name) => rm(path.join(originals, name), { force: true })));

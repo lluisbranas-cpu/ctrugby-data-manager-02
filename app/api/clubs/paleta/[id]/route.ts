@@ -3,16 +3,19 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { catalogAccess, sameOrigin } from "@/lib/catalog";
-import { defaultClubPalette, isClubPalette, type ClubPalette } from "@/app/lib/club-palette";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
+import { defaultClubPalette, isClubPalette, rugbyCabreraPalette, type ClubPalette } from "@/app/lib/club-palette";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const validId = (id: string) => /^[A-Z]{3}\d{4}$/.test(id) ? id : null;
 const palettesPath = path.join(process.cwd(), "data", "staging", "club-palettes.json");
-const initialPalettes: Record<string, ClubPalette> = { ESP0022: ["#07577c", "#2ea8d6", "#e8f3f7"] };
+const initialPalettes: Record<string, ClubPalette> = { ESP0022: rugbyCabreraPalette };
 
 async function palettes(): Promise<Record<string, ClubPalette>> {
+  const remote = await readOperationalDocument<Record<string, ClubPalette>>("club", "palettes");
+  if (remote) return Object.fromEntries(Object.entries(remote.payload).filter(([, value]) => isClubPalette(value))) as Record<string, ClubPalette>;
   try {
     const parsed: unknown = JSON.parse(await readFile(palettesPath, "utf8"));
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
@@ -43,6 +46,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     if (!isClubPalette(palette)) return reply({ error: "Indica tres colores hexadecimales válidos." }, 400);
     const current = await palettes();
     current[id] = palette;
+    await upsertOperationalDocument("club", "palettes", current);
     await mkdir(path.dirname(palettesPath), { recursive: true });
     await writeFile(palettesPath, `${JSON.stringify(current, null, 2)}\n`, "utf8");
     return reply({ ok: true, palette });

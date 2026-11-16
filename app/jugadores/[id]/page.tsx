@@ -9,14 +9,16 @@ import { summarizeProfessionalClubs } from "@/app/lib/professional-club-summary"
 import Image from "next/image";
 import Link from "@/app/components/sport-link";
 import { PlayerClubPermissions } from "@/app/components/player-club-permissions";
-import { Check, ChevronDown, LockKeyhole, Pencil, Save, X } from "lucide-react";
+import { Check, ChevronDown, LockKeyhole, Pencil, Save, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { useParams, useSearchParams } from "@/lib/sport-navigation";
+import { useParams, useRouter, useSearchParams } from "@/lib/sport-navigation";
 import { EntityPagination } from "@/app/components/entity-pagination";
 import { ManagerMenu } from "@/app/components/manager-menu";
 import { PlayerCoverActions } from "@/app/components/player-cover-actions";
 import { clubShieldUrl } from "@/app/lib/club-shields";
 import { federationShieldUrl } from "@/app/lib/federation-shields";
+import { countryFlagCode } from "@/app/lib/country-flag";
+import { CountryPicker } from "@/app/components/country-picker";
 import { rugbyPositionLabel } from "@/app/lib/rugby-positions";
 import { PlayerAssessments } from "@/app/player-assessments";
 import { PlayerTrajectory } from "./player-trajectory";
@@ -27,9 +29,11 @@ import { PlayerProfilePdfButton, PlayerProfilePrintButton } from "./player-profi
 
 import { PlayerEventSizesCard } from "./player-event-sizes";
 import type { PlayerEventSizes } from "@/lib/player-event-sizes";
+import { TitleSummary } from "@/app/titulos/title-summary";
 import { PrivateDataTable } from "./private-data-table";
 import { PlayerBillingCard } from "./player-billing";
 import type { PlayerBilling } from "@/lib/player-billing";
+import { getPlayerTitlesForPlayer, playerTitleLabel, playerTitleYear, type PlayerTitle } from "@/lib/player-titles";
 
 type Season = { season_year: number; club_id: string | null; club_name: string | null; legacy_club_name: string | null; position_text: string | null; weight_kg: number | null; height_cm: number | null; playing_category?: string | null; competition_category?: string | null };
 type Selection = { federation_id: string; scope: string; category: string | null; format?: string | null; season_label: string; club_text: string | null; position_text: string | null };
@@ -39,10 +43,11 @@ type CampusReference = { id: string; label: string; siglas: string | null };
 type ClubPalette = [string, string, string];
 type PlayerContacts = { player_email: string | null; player_phone_e164: string | null; tutor1_name: string | null; tutor1_email: string | null; tutor1_phone_e164: string | null; tutor2_name: string | null; tutor2_email: string | null; tutor2_phone_e164: string | null };
 type ContactKind = "player" | "tutor1" | "tutor2";
-type State = { event_sizes?: PlayerEventSizes | null; billing?: PlayerBilling | null; private_consents?: { food: boolean; medical: boolean; technical: boolean } | null; career?: { retired: boolean; staff_id: string | null; summary?: string; source_url?: string }; staff_options?: { id: string; name: string }[]; admin: boolean; private_access?: boolean; player: { nickname?: string | null; id: string; first_name: string; last_name: string | null; category: string | null; birth_year: number | null; birth_date?: string | null; instagram: string | null; dni: string | null; allergies: string | null; medications: string | null; published: boolean; version: number }; current_season: Season | null; seasons: Season[]; clubs: { id: string; name: string }[]; professional_categories?: string[]; professional_category_references?: {id: string; label: string; type?: string}[]; contacts: PlayerContacts | null; participation: { participation_count: number; participation_years: string[]; participation_campus?: Record<string, string>; participation_registration_numbers?: Record<string, string>; participation_pending_year?: boolean }; campuses?: CampusReference[]; selections: Selection[]; professional_club_records: ProfessionalClubRecord[] };
+type State = { event_sizes?: PlayerEventSizes | null; billing?: PlayerBilling | null; private_consents?: { food: boolean; medical: boolean; technical: boolean } | null; career?: { retired: boolean; staff_id: string | null; summary?: string; source_url?: string }; staff_options?: { id: string; name: string }[]; admin: boolean; private_access?: boolean; player: { nickname?: string | null; id: string; first_name: string; last_name: string | null; category: string | null; birth_year: number | null; birth_date?: string | null; nationality_country?: string | null; secondary_nationality_country?: string | null; instagram: string | null; dni: string | null; allergies: string | null; medications: string | null; published: boolean; version: number }; current_season: Season | null; seasons: Season[]; clubs: { id: string; name: string }[]; professional_categories?: string[]; professional_category_references?: {id: string; label: string; type?: string}[]; contacts: PlayerContacts | null; participation: { participation_count: number; participation_years: string[]; participation_campus?: Record<string, string>; participation_registration_numbers?: Record<string, string>; participation_pending_year?: boolean }; campuses?: CampusReference[]; selections: Selection[]; professional_club_records: ProfessionalClubRecord[] };
 type List = { players: { id: string; first_name: string; last_name: string | null }[] };
 const emptyContacts: PlayerContacts = { player_email: "", player_phone_e164: "", tutor1_name: "", tutor1_email: "", tutor1_phone_e164: "", tutor2_name: "", tutor2_email: "", tutor2_phone_e164: "" };
 const categoryShieldUrl = (id?: string | null) => id ? `/api/hitos/profesionales/categorias/${encodeURIComponent(id)}/escudo` : null;
+const normalizeTitleSearch = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-ES");
 
 
 function ProfessionalClubBadge({ record }: { record: ProfessionalClubRecord }) {
@@ -61,9 +66,14 @@ function ProfessionalClubBadge({ record }: { record: ProfessionalClubRecord }) {
 function HangingRugbyBoots() {
   return <img src="/rugby-boots-retired.png" alt="" className="h-full w-full object-contain" />;
 }
+function NationalityFlag({ country }: { country: string | null | undefined }) {
+  const code = countryFlagCode(country);
+  return code && country ? <img className="player-profile-nationality-flag" src={`https://flagcdn.com/w40/${code}.png`} alt={`Bandera de ${country}`} /> : null;
+}
 
 export default function PlayerProfilePage() {
   const { id: rawId } = useParams<{ id: string }>();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const pdfMode = searchParams.get("pdf") === "1";
@@ -73,6 +83,7 @@ export default function PlayerProfilePage() {
   const [failed, setFailed] = useState(false);
   const [coverVersion, setCoverVersion] = useState(0);
   const [missingCoverId, setMissingCoverId] = useState<string | null>(null);
+  const [deletingPlayer, setDeletingPlayer] = useState(false);
   const [showParticipationDetail, setShowParticipationDetail] = useState(false);
   const [editingParticipation, setEditingParticipation] = useState(false);
   const [participationDraft, setParticipationDraft] = useState<ParticipationEntry[]>([]);
@@ -84,7 +95,7 @@ export default function PlayerProfilePage() {
   const [editingPrivateData, setEditingPrivateData] = useState(false);
   const [privateVisible, setPrivateVisible] = useState(true);
   const [playerDataMessage, setPlayerDataMessage] = useState("");
-  const [playerDataDraft, setPlayerDataDraft] = useState({ nickname: "", first_name: "", last_name: "", club_id: "", club_query: "", staff_id: "", position_text: "", height_cm: "", weight_kg: "", category: "", birth_year: "", instagram: "", dni: "", allergies: "", medications: "" });
+  const [playerDataDraft, setPlayerDataDraft] = useState({ nickname: "", first_name: "", last_name: "", club_id: "", club_query: "", staff_id: "", position_text: "", height_cm: "", weight_kg: "", category: "", birth_year: "", nationality_country: "", secondary_nationality_country: "", instagram: "", dni: "", allergies: "", medications: "" });
   const [savingPlayerData, setSavingPlayerData] = useState(false);
   const [playerDataError, setPlayerDataError] = useState("");
   const [editingContacts, setEditingContacts] = useState<"player" | "tutor2" | null>(null);
@@ -92,6 +103,9 @@ export default function PlayerProfilePage() {
   const [savingContacts, setSavingContacts] = useState(false);
   const [savingTechnicalConsent, setSavingTechnicalConsent] = useState(false);
   const [contactsMessage, setContactsMessage] = useState("");
+  const [titleSearchState, setTitleSearchState] = useState({ playerId: "", query: "" });
+  const [loadedTitles, setLoadedTitles] = useState<{ playerId: string; titles: PlayerTitle[] } | null>(null);
+  const [titleLoadError, setTitleLoadError] = useState("");
   const [reviewLink, setReviewLink] = useState({ playerId: "", url: "" });
   const [reviewLinkMessage, setReviewLinkMessage] = useState("");
   const [clubPalette, setClubPalette] = useState<ClubPalette>(["#e8243c", "#f0abb3", "#dce8f0"]);
@@ -109,8 +123,27 @@ export default function PlayerProfilePage() {
     return () => controller.abort();
   }, [id]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch(`/api/player-titles?player_id=${encodeURIComponent(id)}`, { cache: "no-store", signal: controller.signal })
+      .then(async (response) => { const data = await response.json(); if (!response.ok) throw new Error(data.error || "No se han podido cargar los títulos."); return data as { titles: PlayerTitle[] }; })
+      .then((data) => { if (!controller.signal.aborted) { setLoadedTitles({ playerId: id, titles: data.titles }); setTitleLoadError(""); } })
+      .catch((reason) => { if (!controller.signal.aborted) setTitleLoadError(reason instanceof Error ? reason.message : "No se han podido cargar los títulos."); });
+    return () => controller.abort();
+  }, [id]);
+
   const player = state?.player;
   const name = player ? [player.first_name, player.last_name].filter(Boolean).join(" ") : "";
+  const titles = loadedTitles && loadedTitles.playerId === id ? loadedTitles.titles : getPlayerTitlesForPlayer(id);
+  const titleSearch = titleSearchState.playerId === id ? titleSearchState.query : "";
+  const setTitleSearch = (query: string) => setTitleSearchState({ playerId: id, query });
+  const titleSearchTerms = normalizeTitleSearch(titleSearch).trim().split(/\s+/).filter(Boolean);
+  const filteredTitles = titles.filter((title) => {
+    const searchable = normalizeTitleSearch([playerTitleLabel(title), title.competition, playerTitleYear(title), title.team, title.result, title.date, title.source_name].join(" "));
+    return titleSearchTerms.every((term) => searchable.includes(term));
+  });
+  const nationalityCountries = [...new Set([player?.nationality_country, player?.secondary_nationality_country].filter((country): country is string => Boolean(country)))];
+  const showNationalityDetails = Boolean(state?.admin || state?.private_access);
   const current = state?.current_season;
   const clubSeason = currentClubSeason(state?.seasons ?? []);
   const sortedClubs = useMemo(() => [...(state?.clubs ?? [])].sort((a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" })), [state?.clubs]);
@@ -163,11 +196,11 @@ export default function PlayerProfilePage() {
   };
   const startPlayerDataEdit = () => {
     setPlayerDataMessage("");
-    setPlayerDataDraft({ nickname: player?.nickname ?? "", first_name: player?.first_name ?? "", last_name: player?.last_name ?? "", club_id: clubSeason?.club_id ?? "", club_query: state?.career?.retired ? (player?.category === "F" ? "Retirada" : "Retirado") : clubSeason?.club_name ?? clubSeason?.legacy_club_name ?? "", staff_id: state?.career?.staff_id ?? "", position_text: current?.position_text ?? "", height_cm: current?.height_cm ? String(current.height_cm) : "", weight_kg: current?.weight_kg ? String(current.weight_kg) : "", category: player?.category ?? "", birth_year: formatBirthEditInput(player?.birth_date,player?.birth_year), instagram: player?.instagram ?? "", dni: player?.dni ?? "", allergies: player?.allergies ?? "", medications: player?.medications ?? "" });
+    setPlayerDataDraft({ nickname: player?.nickname ?? "", first_name: player?.first_name ?? "", last_name: player?.last_name ?? "", club_id: clubSeason?.club_id ?? "", club_query: state?.career?.retired ? (player?.category === "F" ? "Retirada" : "Retirado") : clubSeason?.club_name ?? clubSeason?.legacy_club_name ?? "", staff_id: state?.career?.staff_id ?? "", position_text: current?.position_text ?? "", height_cm: current?.height_cm ? String(current.height_cm) : "", weight_kg: current?.weight_kg ? String(current.weight_kg) : "", category: player?.category ?? "", birth_year: formatBirthEditInput(player?.birth_date,player?.birth_year), nationality_country: player?.nationality_country ?? "", secondary_nationality_country: player?.secondary_nationality_country ?? "", instagram: player?.instagram ?? "", dni: player?.dni ?? "", allergies: player?.allergies ?? "", medications: player?.medications ?? "" });
     setPlayerDataError(""); setEditingPlayerData(true);
   };
   const startPrivateDataEdit = () => {
-    setPlayerDataDraft({ nickname: player?.nickname ?? "", first_name: player?.first_name ?? "", last_name: player?.last_name ?? "", club_id: clubSeason?.club_id ?? "", club_query: state?.career?.retired ? (player?.category === "F" ? "Retirada" : "Retirado") : clubSeason?.club_name ?? clubSeason?.legacy_club_name ?? "", staff_id: state?.career?.staff_id ?? "", position_text: current?.position_text ?? "", height_cm: current?.height_cm ? String(current.height_cm) : "", weight_kg: current?.weight_kg ? String(current.weight_kg) : "", category: player?.category ?? "", birth_year: formatBirthEditInput(player?.birth_date,player?.birth_year), instagram: player?.instagram ?? "", dni: player?.dni ?? "", allergies: player?.allergies ?? "", medications: player?.medications ?? "" });
+    setPlayerDataDraft({ nickname: player?.nickname ?? "", first_name: player?.first_name ?? "", last_name: player?.last_name ?? "", club_id: clubSeason?.club_id ?? "", club_query: state?.career?.retired ? (player?.category === "F" ? "Retirada" : "Retirado") : clubSeason?.club_name ?? clubSeason?.legacy_club_name ?? "", staff_id: state?.career?.staff_id ?? "", position_text: current?.position_text ?? "", height_cm: current?.height_cm ? String(current.height_cm) : "", weight_kg: current?.weight_kg ? String(current.weight_kg) : "", category: player?.category ?? "", birth_year: formatBirthEditInput(player?.birth_date,player?.birth_year), nationality_country: player?.nationality_country ?? "", secondary_nationality_country: player?.secondary_nationality_country ?? "", instagram: player?.instagram ?? "", dni: player?.dni ?? "", allergies: player?.allergies ?? "", medications: player?.medications ?? "" });
     setContactsDraft({ ...emptyContacts, ...(state?.contacts ?? {}), player_phone_e164: formatSpanishPhone(state?.contacts?.player_phone_e164), tutor1_phone_e164: formatSpanishPhone(state?.contacts?.tutor1_phone_e164), tutor2_phone_e164: formatSpanishPhone(state?.contacts?.tutor2_phone_e164) });
     setContactsMessage(""); setPlayerDataError(""); setEditingPrivateData(true);
   };
@@ -201,7 +234,7 @@ export default function PlayerProfilePage() {
     if (playerDataDraft.club_query.trim() && !/^retirad[oa]$/i.test(playerDataDraft.club_query.trim()) && !playerDataDraft.club_id) { setPlayerDataError("Selecciona un club del listado o deja el campo vacío."); return; }
     setSavingPlayerData(true);
     try {
-      const response = await fetch(`/api/jugadores/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ playerData: { retired: /^retirad[oa]$/i.test(playerDataDraft.club_query.trim()), staff_id: playerDataDraft.staff_id || null, nickname: playerDataDraft.nickname.trim() || null, first_name: playerDataDraft.first_name.trim(), last_name: playerDataDraft.last_name.trim() || null, club_id: playerDataDraft.club_id || null, position_text: playerDataDraft.position_text || null, height_cm, weight_kg, category: playerDataDraft.category || null, birth_year, birth_date: birth.birth_date, instagram: playerDataDraft.instagram.trim() || null, dni: playerDataDraft.dni.trim() || null, allergies: playerDataDraft.allergies.trim() || null, medications: playerDataDraft.medications.trim() || null } }) });
+      const response = await fetch(`/api/jugadores/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ playerData: { retired: /^retirad[oa]$/i.test(playerDataDraft.club_query.trim()), staff_id: playerDataDraft.staff_id || null, nickname: playerDataDraft.nickname.trim() || null, first_name: playerDataDraft.first_name.trim(), last_name: playerDataDraft.last_name.trim() || null, club_id: playerDataDraft.club_id || null, position_text: playerDataDraft.position_text || null, height_cm, weight_kg, category: playerDataDraft.category || null, birth_year, birth_date: birth.birth_date, nationality_country: playerDataDraft.nationality_country.trim() || null, secondary_nationality_country: playerDataDraft.secondary_nationality_country.trim() || null, instagram: playerDataDraft.instagram.trim() || null, dni: playerDataDraft.dni.trim() || null, allergies: playerDataDraft.allergies.trim() || null, medications: playerDataDraft.medications.trim() || null } }) });
       const result = await response.json() as { career?: State["career"]; player?: State["player"]; current_season?: Season | null; seasons?: Season[]; error?: string };
       if (!response.ok || !result.player || !result.seasons) throw new Error(result.error || "No se han podido guardar los datos.");
       setState((value) => value ? { ...value, career: result.career ?? value.career, player: result.player!, current_season: result.current_season ?? null, seasons: result.seasons! } : value);
@@ -214,6 +247,27 @@ export default function PlayerProfilePage() {
   const contactValue = (value: string | null | undefined) => value ?? "";
   const startContactsEdit = (kind: "player" | "tutor2") => { setContactsDraft({ ...emptyContacts, ...(state?.contacts ?? {}), player_phone_e164: formatSpanishPhone(state?.contacts?.player_phone_e164), tutor1_phone_e164: formatSpanishPhone(state?.contacts?.tutor1_phone_e164), tutor2_phone_e164: formatSpanishPhone(state?.contacts?.tutor2_phone_e164) }); setContactsMessage(""); setEditingContacts(kind); };
   const setContactDraft = (field: keyof PlayerContacts, value: string) => setContactsDraft((draft) => ({ ...draft, [field]: value }));
+  const deletePlayer = async () => {
+    if (!state?.admin || !id) return;
+    const player = state.player;
+    if (!window.confirm(`Vas a eliminar definitivamente la ficha de ${[player.first_name, player.last_name].filter(Boolean).join(" ")}. Esta acción no se puede deshacer.`)) return;
+    if (window.prompt(`Segundo control: escribe ${player.id} para confirmar la eliminación.`) !== player.id) return;
+    setDeletingPlayer(true);
+    try {
+      let version = player.version;
+      if (player.published) {
+        const unpublish = await fetch("/api/jugadores", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "set-publication", id: player.id, version, published: false }) });
+        const data = await unpublish.json();
+        if (!unpublish.ok) throw new Error(data.error ?? "No se ha podido ocultar la ficha antes de eliminarla.");
+        version += 1;
+      }
+      const response = await fetch("/api/jugadores", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete-player", id: player.id, version }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "No se ha podido eliminar la ficha.");
+      router.replace("/jugadores");
+    } catch (error) { setPlayerDataError(error instanceof Error ? error.message : "No se ha podido eliminar la ficha."); }
+    finally { setDeletingPlayer(false); }
+  };
   const togglePrivateConsent = async (kind: "food" | "medical" | "technical") => {
     if (!id || !state) return;
     setSavingTechnicalConsent(true);
@@ -270,7 +324,7 @@ export default function PlayerProfilePage() {
             <h1><span>{player.first_name.toUpperCase()}{player.nickname && <> &quot;{player.nickname}&quot;</>}</span>{player.last_name && <strong>{player.last_name.toUpperCase()}</strong>}{state.admin && <em>{player.id}</em>}</h1>
             {state.career?.staff_id && <Link href={"/staff/" + state.career.staff_id} className="player-profile-participation-button mt-3 inline-flex">Ver ficha staff</Link>}
               <div className="player-profile-cover-facts">
-              <span aria-label="Categoría"><small>CATEGORÍA</small><b>{displayCategory}</b></span>
+              <span aria-label="Categoría"><small>CATEGORÍA</small><b>{displayCategory}</b>{!showNationalityDetails && nationalityCountries.length > 0 && <span className="player-profile-cover-nationalities" aria-label={`Nacionalidad: ${nationalityCountries.join(" · ")}`}>{nationalityCountries.map((country) => <NationalityFlag key={country} country={country} />)}</span>}</span>
               <span className="player-profile-season"><small>TEMPORADA</small><b>{displaySeason}</b>{rugbyPositionLabel(current?.position_text) && <strong>{rugbyPositionLabel(current?.position_text)}</strong>}</span>
             </div>
           </div>
@@ -278,9 +332,9 @@ export default function PlayerProfilePage() {
           {state.career?.retired && <span className="player-profile-cover-club" role="img" aria-label="Jugador retirado: botas de rugby colgadas"><HangingRugbyBoots /></span>}
           {!state.career?.retired && current?.club_id && clubShieldUrl(current.club_id) && <Link href={`/clubs/${current.club_id}`} className="player-profile-cover-club image-hover-preview" title={current.club_name ?? "Club actual"}><img src={clubShieldUrl(current.club_id)!} alt={`Escudo de ${current.club_name ?? "su club"}`} className="image-hover-preview-image" /></Link>}
           <div className="player-profile-cover-photo" aria-live="polite">
-            {missingCoverId !== player.id ? <img src={`/api/jugadores/portada/${player.id}?v=${coverVersion}`} alt={`Foto de cabecera de ${name}`} onError={() => setMissingCoverId(player.id)} /> : <span>Foto de cabecera pendiente.</span>}
+            {missingCoverId !== player.id ? <img src={`/api/jugadores/portada/${player.id}?v=${coverVersion}`} alt={`Foto de cabecera de ${name}`} onError={() => setMissingCoverId(player.id)} /> : (state.admin || state.private_access) && <span>Foto de cabecera pendiente.</span>}
           </div>
-          {state.admin && <PlayerCoverActions id={player.id} name={name} onUpdated={refreshCover} />}
+          {state.admin && <><PlayerCoverActions id={player.id} name={name} onUpdated={refreshCover} /><button type="button" onClick={() => void deletePlayer()} disabled={deletingPlayer} className="absolute right-[66px] top-5 z-10 grid h-[34px] w-[34px] place-items-center rounded-full border border-red-200 bg-white/90 text-red-700 hover:bg-red-50 disabled:opacity-60" aria-label="Eliminar ficha del jugador" title="Eliminar ficha"><Trash2 size={16} aria-hidden="true" /></button></>}
         </section>
         {state.admin && !pdfMode && <section className="mt-5 rounded-[8px] border border-red-100 bg-white p-4 shadow-sm">
           <label className="block text-sm font-black uppercase tracking-[.12em] text-neutral-800">URL de edición
@@ -293,18 +347,25 @@ export default function PlayerProfilePage() {
           <article className="club-record-card player-profile-data"><div className="flex items-center justify-between gap-3"><h2>{player.category === "F" ? "DATOS DE LA JUGADORA" : "DATOS DEL JUGADOR"}</h2>{state.admin && !editingPlayerData && <button type="button" className="player-profile-participation-button player-profile-data-edit" aria-label="Editar datos del jugador" title="Editar datos" onClick={startPlayerDataEdit}><Pencil size={15} aria-hidden="true" /></button>}</div>{editingPlayerData ? <div className="mt-4 grid gap-3 sm:grid-cols-2"><label className="text-sm font-semibold">Nombre<input className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" value={playerDataDraft.first_name} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, first_name: event.target.value }))} /></label><label className="text-sm font-semibold">Apellidos<input className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" value={playerDataDraft.last_name} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, last_name: event.target.value }))} /></label><label className="text-sm font-semibold">Apodo<input maxLength={80} className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" value={playerDataDraft.nickname} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, nickname: event.target.value }))} /></label><label className="text-sm font-semibold">Género<select className="mt-1 block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 font-normal" value={playerDataDraft.category} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, category: event.target.value }))}><option value="">Sin género</option><option value="M">Masculino</option><option value="F">Femenino</option></select></label><label className="text-sm font-semibold">Fecha o año de nacimiento<input type="text" inputMode="numeric" placeholder="AAAA o DD/MM/AAAA" maxLength={10} className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" value={playerDataDraft.birth_year} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, birth_year: event.target.value }))} /></label><label className="text-sm font-semibold">Altura (cm)<input type="number" min="1" max="250" className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" value={playerDataDraft.height_cm} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, height_cm: event.target.value }))} /></label><label className="text-sm font-semibold">Peso (kg)<input type="number" min="1" max="250" className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" value={playerDataDraft.weight_kg} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, weight_kg: event.target.value }))} /></label><label className="text-sm font-semibold">Club actual<input list="player-profile-clubs" className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" value={playerDataDraft.club_query} onChange={(event) => setPlayerClubQuery(event.target.value)} placeholder="Buscar club, Retirado o Retirada..." /></label><label className="text-sm font-semibold">Ficha de staff<select value={playerDataDraft.staff_id} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, staff_id: event.target.value }))} className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal"><option value="">Sin ficha vinculada</option>{state.staff_options?.map((person) => <option key={person.id} value={person.id}>{person.name} · {person.id}</option>)}</select></label><label className="text-sm font-semibold">Posición (indicar posiciones)<input list="player-profile-positions" className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" value={playerDataDraft.position_text} onChange={(event) => setPlayerDataDraft((draft) => ({ ...draft, position_text: event.target.value }))} placeholder="Ej. 6 · 7 · 15" /></label><datalist id="player-profile-positions"><option value="Pilar" /><option value="Talonador" /><option value="Segunda línea" /><option value="Flanker" /><option value="Ocho" /><option value="Medio melé" /><option value="Apertura" /><option value="Centro" /><option value="Ala" /><option value="Zaguero" /><option value="Chutador" /></datalist><div className="flex gap-2 sm:col-span-2"><button type="button" className="player-profile-participation-button" disabled={savingPlayerData} aria-label="Guardar datos del jugador" title="Guardar datos" onClick={() => void savePlayerData()}>{savingPlayerData ? "Guardando…" : <Save size={16} aria-hidden="true" />}</button><button type="button" className="player-edit-cancel" aria-label="Cancelar edición" title="Cancelar" disabled={savingPlayerData} onClick={() => setEditingPlayerData(false)}><X size={16} aria-hidden="true" /></button></div>{playerDataError && <small className="player-profile-participation-error sm:col-span-2" role="alert">{playerDataError}</small>}</div> : <dl>
             {player.nickname && <div className="player-profile-data-nickname"><dt>Apodo</dt><dd>{player.nickname}</dd></div>}<div><dt>Género</dt><dd>{player.category === "M" ? "Masculino" : player.category === "F" ? "Femenino" : "—"}</dd></div>
             <div><dt>Fecha o año de nacimiento</dt><dd>{formatBirthInput(player.birth_date,player.birth_year) || "—"}</dd></div>
+            {showNationalityDetails && <><div className="player-profile-data-country"><dt>Nacionalidad</dt><dd><NationalityFlag country={player.nationality_country} />{player.nationality_country || "—"}</dd></div><div className="player-profile-data-country"><dt>Doble nacionalidad</dt><dd><NationalityFlag country={player.secondary_nationality_country} />{player.secondary_nationality_country || "—"}</dd></div></>}
             <div><dt>Altura</dt><dd>{current?.height_cm ? `${current.height_cm} cm` : "—"}</dd></div>
             <div><dt>Peso</dt><dd>{current?.weight_kg ? `${current.weight_kg} kg` : "—"}</dd></div>
             <div className="player-profile-data-club"><dt>Club actual</dt><dd>{state.career?.retired ? (player.category === "F" ? "Retirada" : "Retirado") : clubSeason?.club_id ? <Link href={`/clubs/${clubSeason.club_id}`}>{clubSeason.club_name}</Link> : clubSeason?.club_name ?? clubSeason?.legacy_club_name ?? "—"}</dd></div>
             <div className="player-profile-data-position"><dt>Posición</dt><dd>{rugbyPositionLabel(current?.position_text) ?? "—"}</dd></div>
-          </dl>}{playerDataMessage && <p role="status" className="text-sm text-green-700">{playerDataMessage}</p>}{state.private_access && !state.admin && <PlayerClubPermissions playerId={player.id} />}</article>
+          </dl>}{editingPlayerData && <div className="player-profile-nationality-editors"><CountryPicker value={playerDataDraft.nationality_country} onChange={(nationality_country) => setPlayerDataDraft((draft) => ({ ...draft, nationality_country }))} className="block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" /><CountryPicker label="Doble nacionalidad" value={playerDataDraft.secondary_nationality_country} onChange={(secondary_nationality_country) => setPlayerDataDraft((draft) => ({ ...draft, secondary_nationality_country }))} className="block w-full rounded-lg border border-neutral-300 px-3 py-2 font-normal" /></div>}{playerDataMessage && <p role="status" className="text-sm text-green-700">{playerDataMessage}</p>}{state.private_access && !state.admin && <PlayerClubPermissions playerId={player.id} />}</article>
           <article className="club-record-card player-profile-callups">
             <p>CONVOCATORIAS</p>
             <div className="player-profile-callups-pills">{orderedCallups.map((federation) => <PlayerActivityLink key={federation.id} playerId={player.id} kind="convocatorias" federation={federation.id} className={`player-profile-callup-pill ${federation.id.startsWith("FN") ? "national" : "regional"}`} aria-label={`${federation.count} convocatoria${federation.count === 1 ? "" : "s"} ${federation.scope}`} title={federation.scope}><img src={federationShieldUrl(federation.id) ?? ""} alt="" /><b>{federation.count}</b></PlayerActivityLink>)}</div>
             {!state.selections.length && <small>Sin convocatorias registradas</small>}
-            <PlayerNewsPanel key={player.id} playerId={player.id} admin={state.admin} />
-            <p>CAMPUS &amp; EXPERIENCES</p>
-            <div className="player-profile-callups-pills">{participationCampuses.map(({ campus, count }) => <Link key={campus} href={participationHref} className="player-profile-callup-pill" aria-label={`${count} participación${count === 1 ? "" : "es"} en ${participationCampusLabel(campus)}`}><img src={`/api/hitos/profesionales/categorias/${encodeURIComponent(campus)}/escudo`} alt={`Logo ${participationCampusLabel(campus)}`} /><b>{count}</b></Link>)}</div>
+            <div className="player-profile-callups-secondary">
+              <PlayerNewsPanel key={player.id} playerId={player.id} admin={state.admin} />
+              <TitleSummary count={titleLoadError ? "!" : titles.length}>
+                <label className="mt-2 block text-xs font-semibold text-neutral-600">Buscar título<input type="search" className="mt-1 block w-full rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-sm font-normal text-neutral-900" placeholder="Competición, año, equipo…" value={titleSearch} onChange={(event) => setTitleSearch(event.target.value)} /></label>
+                {titleLoadError && <p role="alert" className="mt-2 text-xs text-red-700">{titleLoadError}</p>}
+                {filteredTitles.length ? <ul className="mt-2 grid gap-2">{filteredTitles.map((title) => <li key={title.id} className="rounded-lg border border-neutral-200 bg-white p-2"><p className="text-[10px] font-black uppercase tracking-wide text-red-700">{playerTitleYear(title) ?? "—"} · {playerTitleLabel(title)}</p>{title.competition && <p className="mt-1 text-xs font-bold text-neutral-900">{title.competition}</p>}{[title.team, title.result, title.date].filter(Boolean).length > 0 && <p className="mt-1 text-xs text-neutral-600">{[title.team, title.result, title.date].filter(Boolean).join(" · ")}</p>}{title.source_url && <a href={title.source_url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-red-700 underline">Fuente: {title.source_name || title.source_url}</a>}</li>)}</ul> : <p className="mt-2 text-xs text-neutral-500">{titles.length ? "No se han encontrado títulos con esa búsqueda." : "Sin títulos deportivos registrados."}</p>}
+              </TitleSummary>
+              <div className="player-profile-campus-summary"><p>CAMPUS &amp; EXPERIENCES</p><div className="player-profile-callups-pills">{participationCampuses.map(({ campus, count }) => <Link key={campus} href={participationHref} className="player-profile-callup-pill" aria-label={`${count} participación${count === 1 ? "" : "es"} en ${participationCampusLabel(campus)}`}><img src={`/api/hitos/profesionales/categorias/${encodeURIComponent(campus)}/escudo`} alt={`Logo ${participationCampusLabel(campus)}`} /><b>{count}</b></Link>)}</div></div>
+            </div>
 
             <div className="player-profile-participation-actions"><Link href={participationHref} className="player-profile-participation-button">Ver detalle</Link>{state.admin && <button type="button" className="player-profile-participation-button" onClick={startParticipationEdit} aria-label="Editar" title="Editar"><Pencil size={15} aria-hidden="true" /></button>}</div>
             {showParticipationDetail && <div className="player-profile-participation-expanded"><b>{editingParticipation ? "EDITAR PARTICIPACIONES" : "DETALLE DE PARTICIPACIONES"}</b>{participationEntries.length ? <ul>{(editingParticipation ? participationDraft : participationEntries).map(({ year, campus, registration_number }, index) => <li key={year}>{editingParticipation ? <input aria-label={`Fecha o año de participación ${year}`} value={year} placeholder="YYYY o DD/MM/YY" onChange={(event) => setParticipationDraft((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, year: event.target.value } : entry))} /> : <strong>{year}</strong>}{editingParticipation ? <><select aria-label={`Campus ${year}`} value={campus} onChange={(event) => setParticipationDraft((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, campus: event.target.value } : entry))}>{!state.campuses?.some((item) => item.id === campus) && <option value={campus}>{participationCampusLabel(campus)}</option>}{state.campuses?.map((item) => <option key={item.id} value={item.id}>{item.siglas || item.label}</option>)}</select><input aria-label={`Registro de campus ${year}`} value={registration_number ?? ""} placeholder="Registro" onChange={(event) => setParticipationDraft((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, registration_number: event.target.value.toUpperCase() } : entry))} /></> : <span>{[registration_number, participationCampusLabel(campus)].filter(Boolean).join(" · ")}</span>}</li>)}</ul> : <span>{hasPendingParticipationYear ? "Pendiente identificar año." : "Sin detalle registrado."}</span>}{editingParticipation && <><div className="player-profile-participation-manual"><label>Número de participaciones<input type="number" min={participationDraft.length} max="99" value={participationCountDraft} onChange={(event) => setParticipationCountDraft(event.target.value)} /></label><label><input type="checkbox" checked={participationPendingYearDraft} onChange={(event) => setParticipationPendingYearDraft(event.target.checked)} /> Pendiente identificar año</label></div><div className="player-profile-participation-edit-actions"><button type="button" className="player-profile-participation-button" disabled={savingParticipation} onClick={() => void saveParticipation()}>{savingParticipation ? "Guardando…" : <Save size={16} aria-hidden="true" />}</button><button type="button" className="player-edit-cancel" aria-label="Cancelar edición" title="Cancelar" disabled={savingParticipation} onClick={() => setEditingParticipation(false)}><X size={16} aria-hidden="true" /></button></div>{participationError && <small className="player-profile-participation-error" role="alert">{participationError}</small>}</>}</div>}

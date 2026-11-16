@@ -61,7 +61,7 @@
 .typeFilter, .activeFilter { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; padding: 8px 14px; border: 1px solid #d4d4d4; border-radius: 8px; background: white; color: #404040; font-size: 13px; font-weight: 700; cursor: pointer; }
 .activeFilter { background: #b91c1c; border-color: #b91c1c; color: white; }
 .typeFilters span { padding: 2px 6px; border-radius: 12px; background: #0000000a; font-size: 11px; }
-.typeFilters button:focus-visible { outline: 2px solid #dc2626; outline-offset: 3px; }
+.typeFilters button:focus-visible, .typeFilters a:focus-visible { outline: 2px solid #dc2626; outline-offset: 3px; }
 .selectionRow td { padding: 0 8px 12px; background: #fafafa; border-bottom: 1px solid #e5e5e5; }
 .selectionFields { display: grid; grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(110px, 1fr)) minmax(150px, 2fr); gap: 10px; padding: 10px; border: 1px solid #e5e5e5; border-radius: 8px; }
 .participationFields { grid-template-columns: minmax(145px, 1fr) minmax(250px, 2fr) repeat(2, minmax(110px, 1fr)) minmax(150px, 2fr); }
@@ -85,9 +85,9 @@
 @media (max-width: 700px) { .createForm { grid-template-columns: 1fr; } }
 
 .typeGroup { display: flex; flex: 1; min-width: 150px; flex-direction: column; align-items: stretch; gap: 6px; }
-.typeGroup > .typeFilter, .typeGroup > .activeFilter { flex-direction: column; gap: 3px; min-height: 70px; }
-.typeGroup > button > span { font-size: 22px; font-weight: 800; }
-.addTypeButton { min-height: 36px; padding: 6px 12px; border: 1px solid #fecaca; border-radius: 7px; background: white; color: #b91c1c; font-size: 13px; font-weight: 800; cursor: pointer; }
+.typeGroup > .typeFilter, .typeGroup > .activeFilter { flex-direction: column; gap: 3px; min-height: 70px; text-decoration: none; }
+.typeGroup > button > span, .typeGroup > a > span { font-size: 22px; font-weight: 800; }
+.addTypeButton { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 12px; border: 1px solid #fecaca; border-radius: 7px; background: white; color: #b91c1c; font-size: 13px; font-weight: 800; cursor: pointer; text-decoration: none; }
 
 .sortHeader { display: inline-flex; align-items: center; gap: 5px; width: 100%; min-height: 32px; padding: 2px 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
 .sortHeader:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; border-radius: 3px; }

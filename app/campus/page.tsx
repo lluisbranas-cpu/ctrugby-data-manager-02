@@ -8,12 +8,12 @@ import { Camera, Save } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { ManagerMenu } from "@/app/components/manager-menu";
 
-type Campus = { id: string; type: "COMP" | "FORM" | "CAMP"; label: string; siglas?: string | null; country: string | null; notes: string | null; updated_at: string; shield_version?: number | null };
+type Campus = { id: string; type: "COMP" | "FORM" | "CAMP"; label: string; siglas?: string | null; country: string | null; notes: string | null; updated_at: string; player_count?: number; shield_version?: number | null };
 type CampusEdition = { campus_id: string; campus: string; year: string; price_eur: number };
 type State = { configured: boolean; admin: boolean; canWrite: boolean; categories: Campus[]; campusEditions: CampusEdition[] };
 
 const inputClass = "rounded-[8px] border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 outline-none focus:border-red-500";
-const campusGridClass = "grid min-w-[990px] grid-cols-[86px_minmax(220px,1.2fr)_100px_130px_88px_minmax(180px,1fr)_92px_88px] gap-2";
+const campusGridClass = "grid min-w-[1070px] grid-cols-[86px_minmax(220px,1.2fr)_86px_100px_130px_88px_minmax(180px,1fr)_92px_88px] gap-2";
 const campusLogoUrl = (id: string, version?: string | number | null) => `/api/hitos/profesionales/categorias/${encodeURIComponent(id)}/escudo${version ? `?v=${encodeURIComponent(String(version))}` : ""}`;
 
 export default function CampusAdminPage() {
@@ -126,10 +126,11 @@ export default function CampusAdminPage() {
             <button disabled={busy} className="campus-quick-submit">Guardar</button>
           </form>}
           <div className="overflow-x-auto">
-            <div className={`campus-table-head ${campusGridClass} border-b border-neutral-200 bg-neutral-50 px-3 py-3 text-[10px] font-black tracking-[.12em] text-neutral-500`}><span>ID</span><span>CAMPUS</span><span>SIGLAS</span><span>PAÍS</span><span>TIPO</span><span>NOTAS</span><span>LOGO</span><span>ACCIONES</span></div>
+            <div className={`campus-table-head ${campusGridClass} border-b border-neutral-200 bg-neutral-50 px-3 py-3 text-[10px] font-black tracking-[.12em] text-neutral-500`}><span>ID</span><span>CAMPUS</span><span>JUG.</span><span>SIGLAS</span><span>PAÍS</span><span>TIPO</span><span>NOTAS</span><span>LOGO</span><span>ACCIONES</span></div>
             <ul className="divide-y divide-neutral-200">{campuses.map((campus) => <li key={campus.id}><form onSubmit={saveCampus} className={`campus-table-row ${campusGridClass} items-center px-3 py-2`}>
               <input name="id" readOnly value={campus.id} className={`${inputClass} bg-neutral-50 text-xs`} />
               <input name="label" defaultValue={campus.label} className={inputClass} />
+              <span className="justify-center font-black tabular-nums text-neutral-900" title="Jugadores únicos asociados al campus">{campus.player_count ?? 0}</span>
               <input name="siglas" defaultValue={campus.siglas ?? ""} className={`${inputClass} uppercase`} />
               <input name="country" defaultValue={campus.country ?? ""} className={inputClass} />
               <input value="CAMP" readOnly className={`${inputClass} bg-neutral-50`} />

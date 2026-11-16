@@ -168,10 +168,11 @@ export function ImageUploadEditor({ file, title, outputWidth, outputHeight, init
       </div>
       {photo.warning && <p className={styles.notice} role="status">{photo.warning}</p>}
       <fieldset disabled={busy} className={styles.controls}>
-        <label>Zoom<input type="range" min="0.5" max="4" step="0.01" value={fitFrame(photo, outputWidth, outputHeight, initialFit).size / frame.size} onChange={(event) => setFrame({ ...frame, size: fitFrame(photo, outputWidth, outputHeight, initialFit).size / Number(event.target.value) })} /></label>
-        <label>Horizontal<input type="range" min="0" max={photo.original.width} step="1" value={frame.x} onChange={(event) => setFrame({ ...frame, x: Number(event.target.value) })} /></label>
-        <label>Vertical<input type="range" min="0" max={photo.original.height} step="1" value={frame.y} onChange={(event) => setFrame({ ...frame, y: Number(event.target.value) })} /></label>
-        {allowRemoveBackground && <label className={styles.checkbox}><input type="checkbox" checked={removeBackground} onChange={(event) => setRemoveBackground(event.target.checked)} />Quitar fondo</label>}
+        <label><span>Zoom</span><input type="range" min="0.5" max="4" step="0.01" value={fitFrame(photo, outputWidth, outputHeight, initialFit).size / frame.size} onChange={(event) => setFrame({ ...frame, size: fitFrame(photo, outputWidth, outputHeight, initialFit).size / Number(event.target.value) })} /></label>
+        <label><span>Horizontal</span><input type="range" min="0" max={photo.original.width} step="1" value={frame.x} onChange={(event) => setFrame({ ...frame, x: Number(event.target.value) })} /></label>
+        <label><span>Vertical</span><input type="range" min="0" max={photo.original.height} step="1" value={frame.y} onChange={(event) => setFrame({ ...frame, y: Number(event.target.value) })} /></label>
+        <button type="button" className={styles.center} onClick={() => setFrame({ ...frame, x: photo.original.width / 2, y: photo.original.height / 2 })}>Centrar imagen</button>
+        {allowRemoveBackground && <label className={styles.checkbox}><input type="checkbox" checked={removeBackground} onChange={(event) => setRemoveBackground(event.target.checked)} />Eliminar fondo exterior</label>}
       </fieldset>
     </>}
     {error && <p className={styles.error} role="alert">{error}</p>}

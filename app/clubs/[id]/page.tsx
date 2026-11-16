@@ -17,6 +17,8 @@ import { ClubFinderMap } from "@/app/components/club-finder-map";
 import { EntityPagination } from "@/app/components/entity-pagination";
 import { defaultClubPalette, type ClubPalette } from "@/app/lib/club-palette";
 import { rugbyPositionLabel } from "@/app/lib/rugby-positions";
+import { DeleteButton } from "@/app/components/delete-button";
+import { useRouter } from "@/lib/sport-navigation";
 
 type Club = {
   id: string;
@@ -67,6 +69,7 @@ type State = {
 
 export default function ClubProfilePage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [state, setState] = useState<State | null>(null);
   const [clubEntries, setClubEntries] = useState<
@@ -83,6 +86,8 @@ export default function ClubProfilePage() {
   const [mediaVersion, setMediaVersion] = useState(0);
   const [palette, setPalette] = useState<ClubPalette>(defaultClubPalette);
   const [savingPalette, setSavingPalette] = useState(false);
+  const [deletingClub, setDeletingClub] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   useEffect(() => {
     const controller = new AbortController();
     void fetch(`/api/clubs/${id}?${new URLSearchParams({ season: groupSeason, category: groupCategory })}`, {
@@ -142,6 +147,28 @@ export default function ClubProfilePage() {
       setPalette(palette);
     } finally {
       setSavingPalette(false);
+    }
+  };
+  const deleteClub = async () => {
+    if (!state?.admin || !club || deletingClub) return;
+    if (!window.confirm(`Vas a eliminar definitivamente la ficha de ${club.name}. ¿Continuar?`)) return;
+    if (window.prompt(`Segundo control: escribe ${club.id} para eliminar la ficha.`) !== club.id) return;
+    setDeletingClub(true);
+    setDeleteError("");
+    try {
+      const response = await fetch(`/api/clubs/${encodeURIComponent(club.id)}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmed: true, confirmation_id: club.id }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "No se ha podido eliminar la ficha del club.");
+      router.replace("/clubs");
+      router.refresh();
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "No se ha podido eliminar la ficha del club.");
+    } finally {
+      setDeletingClub(false);
     }
   };
   const players = useMemo(() => {
@@ -642,6 +669,14 @@ export default function ClubProfilePage() {
               </article>
             </section>
             {!club.is_temporary_group && <ClubPrivateAccess clubId={club.id} admin={state.admin} />}
+            {state.admin && !club.is_temporary_group && <section className="mt-6 flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4">
+              <div>
+                <h2 className="font-black text-red-800">Eliminar ficha del club</h2>
+                <p className="mt-1 text-sm text-red-700">Esta acción requiere una confirmación y escribir el ID del club.</p>
+                {deleteError && <p className="mt-2 text-sm font-semibold text-red-800" role="alert">{deleteError}</p>}
+              </div>
+              <DeleteButton confirmationHandled disabled={deletingClub} onClick={() => void deleteClub()} aria-label={`Eliminar ficha de ${club.name}`} title="Eliminar ficha del club" />
+            </section>}
           </>
         )}
       </div>

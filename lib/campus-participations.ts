@@ -1,4 +1,6 @@
 import { readPlayerNews, savePlayerNews, deletePlayerNews, type PlayerNews } from "./player-news";
+import { catalogConfigured, catalogServiceClient } from "./catalog";
+import { createHash } from "node:crypto";
 
 export type CampusMetric = {
   player_id: string; participation_count: number; participation_years: string[];
@@ -31,6 +33,22 @@ export function detectedCampusEditions(metrics: CampusMetric[], campuses: Campus
 export const isCampusParticipation = (record: PlayerNews) => record.type === "participacion" && record.participation?.kind === "campus";
 
 export async function readCampusParticipationMetrics(includeUnpublished = false): Promise<CampusMetric[]> {
+  if (catalogConfigured()) {
+    const remote = await catalogServiceClient().schema("app_private").from("player_participations")
+      .select("player_id,campus_id,season_year,participation_count,registration_number,email_enabled,pending_year");
+    if (!remote.error) {
+      const metrics = new Map<string, CampusMetric>();
+      for (const row of remote.data ?? []) {
+        const metric: CampusMetric = metrics.get(row.player_id) ?? { player_id: row.player_id, participation_count: 0, participation_years: [], participation_campus: {}, participation_registration_numbers: {} };
+        metric.participation_count += row.participation_count;
+        if (row.season_year) { const year = String(row.season_year); metric.participation_years.push(year); metric.participation_campus![year] = row.campus_id; if (row.registration_number) metric.participation_registration_numbers![`${row.campus_id}:${year}`] = row.registration_number; }
+        if (row.pending_year) metric.participation_pending_year = true;
+        if (!row.email_enabled) metric.participation_email_enabled = false;
+        metrics.set(row.player_id, metric);
+      }
+      return [...metrics.values()].map(metric => ({ ...metric, participation_years: [...new Set(metric.participation_years)].sort() }));
+    }
+  }
   const records = (await readPlayerNews()).filter(record => isCampusParticipation(record) && (includeUnpublished || record.published));
   const metrics = new Map<string, CampusMetric>();
   for (const record of records) {
@@ -49,6 +67,28 @@ export async function readCampusParticipationMetrics(includeUnpublished = false)
   return [...metrics.values()].map(metric => ({...metric, participation_years: metric.participation_years.sort()}));
 }
 
+/** Jugadores únicos vinculados a cada campus, incluso si participan en más de uno el mismo año. */
+export async function readCampusPlayersByCampus(includeUnpublished = false) {
+  if (catalogConfigured()) {
+    const metrics = await readCampusParticipationMetrics(includeUnpublished);
+    const playersByCampus = new Map<string, Set<string>>();
+    for (const metric of metrics) for (const year of metric.participation_years) {
+      const campusId = (metric.participation_campus ?? metric.participation_campuses ?? {})[year] || "CAM001";
+      const players = playersByCampus.get(campusId) ?? new Set<string>(); players.add(metric.player_id); playersByCampus.set(campusId, players);
+    }
+    return playersByCampus;
+  }
+  const records = (await readPlayerNews()).filter(record => isCampusParticipation(record) && (includeUnpublished || record.published));
+  const playersByCampus = new Map<string, Set<string>>();
+  for (const record of records) {
+    const campusId = record.participation?.campus_id || "CAM001";
+    const players = playersByCampus.get(campusId) ?? new Set<string>();
+    players.add(record.player_id);
+    playersByCampus.set(campusId, players);
+  }
+  return playersByCampus;
+}
+
 // Compatibility for existing cards, exports and lists; the records remain the source of truth.
 export async function readCampusMetricsJson() { return JSON.stringify(await readCampusParticipationMetrics()); }
 
@@ -63,6 +103,25 @@ export async function saveCampusParticipationMetrics(next: CampusMetric[], previ
 }
 
 export async function saveCampusPlayerMetric(playerId: string, metric?: CampusMetric) {
+  if (catalogConfigured()) {
+    const db = catalogServiceClient().schema("app_private");
+    const removed = await db.from("player_participations").delete().eq("player_id", playerId);
+    if (removed.error) throw new Error(`No se han podido eliminar las participaciones: ${removed.error.message}`);
+    if (!metric) return;
+    const campusMap = metric.participation_campus ?? metric.participation_campuses ?? {};
+    const rows = metric.participation_years.map((year) => {
+      const campusId = campusMap[year] || "CAM001";
+      const source = { player_id: playerId, campus_id: campusId, season_year: Number(year), participation_count: 1, pending_year: false };
+      return { ...source, registration_number: metric.participation_registration_numbers?.[`${campusId}:${year}`] ?? metric.participation_registration_numbers?.[year] ?? null, email_enabled: metric.participation_email_enabled !== false, source_sha256: createHash("sha256").update(JSON.stringify(source)).digest("hex") };
+    });
+    const missing = Math.max(0, metric.participation_count - metric.participation_years.length);
+    if (missing || metric.participation_pending_year) rows.push({ player_id: playerId, campus_id: "CAM001", season_year: 0, participation_count: Math.max(1, missing), registration_number: null, email_enabled: metric.participation_email_enabled !== false, pending_year: true, source_sha256: createHash("sha256").update(`${playerId}:pending:${missing}`).digest("hex") });
+    if (rows.length) {
+      const saved = await db.from("player_participations").insert(rows);
+      if (saved.error) throw new Error(`No se han podido guardar las participaciones: ${saved.error.message}`);
+    }
+    return;
+  }
   const records = (await readPlayerNews(playerId)).filter(isCampusParticipation);
   if (!metric) {for (const record of records) await deletePlayerNews(record.id); return;}
   const retained = new Set<string>();

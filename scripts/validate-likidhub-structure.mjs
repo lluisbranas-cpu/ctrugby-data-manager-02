@@ -7,8 +7,8 @@ const key = clean(env.serviceRoleKey);
 // apikey. Enviarlas como Bearer JWT provoca 401 en RPC y Storage.
 const headers = { apikey: key };
 const preview = async (response) => (await response.text()).slice(0, 1000) || null;
-const table = async (schema, name) => {
-  try { const response = await fetch(`${baseUrl}/rest/v1/${name}?select=id&limit=1`, { headers: { ...headers, Accept: "application/json", "Accept-Profile": schema } }); const protectedSchema = schema === "app_private" && response.status === 406; return { schema, table: name, ok: response.ok || protectedSchema, protected: protectedSchema, http_status: response.status, http_status_text: response.statusText, error: response.ok || protectedSchema ? null : await preview(response) }; }
+const table = async (schema, name, probeColumn) => {
+  try { const response = await fetch(`${baseUrl}/rest/v1/${name}?select=${probeColumn}&limit=1`, { headers: { ...headers, Accept: "application/json", "Accept-Profile": schema } }); const protectedSchema = schema === "app_private" && response.status === 406; return { schema, table: name, ok: response.ok || protectedSchema, protected: protectedSchema, http_status: response.status, http_status_text: response.statusText, error: response.ok || protectedSchema ? null : await preview(response) }; }
   catch (error) { return { schema, table: name, ok: false, http_status: null, http_status_text: null, error: error instanceof Error ? error.message : String(error) }; }
 };
 const bucket = async () => {
@@ -19,7 +19,14 @@ const privateStructure = async () => {
   try { const response = await fetch(`${baseUrl}/rest/v1/rpc/likidhub_critical_structure`, { method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: "{}" }); return { ok: response.ok, http_status: response.status, http_status_text: response.statusText, result: response.ok ? JSON.parse((await response.text()) || "[]") : null, error: response.ok ? null : await preview(response) }; }
   catch (error) { return { ok: false, http_status: null, http_status_text: null, result: null, error: error instanceof Error ? error.message : String(error) }; }
 };
-const tables = await Promise.all([["public", "catalog_players"], ["app_private", "player_profiles"], ["app_private", "player_seasons"], ["app_private", "player_season_photos"], ["app_private", "operational_media"]].map(([schema, name]) => table(schema, name)));
+const tables = await Promise.all([
+  ["public", "catalog_players", "id"],
+  ["app_private", "player_profiles", "player_id"],
+  ["app_private", "player_seasons", "player_id"],
+  ["app_private", "player_season_photos", "player_id"],
+  ["app_private", "operational_documents", "namespace"],
+  ["app_private", "operational_media", "entity_type"]
+].map(([schema, name, probeColumn]) => table(schema, name, probeColumn)));
 const storage = await bucket();
 const structure = await privateStructure();
 const bucketWarning = !storage.ok && storage.http_status === 404 ? "El bucket puede existir pero Storage API no lo enumera con esta clave; validar mediante la RPC SQL de estructura." : null;

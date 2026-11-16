@@ -6,11 +6,12 @@ import { NewsReaderCard } from "./news-card";
 import { useEffect, useState } from "react";
 import type { PlayerNews } from "@/lib/player-news";
 
-export function PlayerNewsReader({ playerId }: { playerId: string }) {
+export function PlayerNewsReader({ playerId, subjectType = "jugador" }: { playerId: string; subjectType?: "jugador" | "staff" }) {
   const [news, setNews] = useState<PlayerNews[] | null>(null);
   const [error, setError] = useState("");
   const [name, setName] = useState("");
-  const [back, setBack] = useState("/jugadores/" + encodeURIComponent(playerId));
+  const profilePath = (subjectType === "staff" ? "/staff/" : "/jugadores/") + encodeURIComponent(playerId);
+  const [back, setBack] = useState(profilePath);
   const [admin, setAdmin] = useState(false);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -37,7 +38,7 @@ export function PlayerNewsReader({ playerId }: { playerId: string }) {
       <div className="mb-6 flex items-center gap-4">
         <span className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-neutral-200 bg-neutral-100 text-2xl font-black text-neutral-400">
           <span aria-hidden="true">{name ? name.slice(0, 1).toUpperCase() : "J"}</span>
-          <img key={playerId} src={"/api/jugadores/foto/" + encodeURIComponent(playerId)} alt={"Foto destacada de " + (name || playerId)} width={80} height={80} className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+          <img key={playerId} src={(subjectType === "staff" ? "/api/staff/foto/" : "/api/jugadores/foto/") + encodeURIComponent(playerId)} alt={"Foto destacada de " + (name || playerId)} width={80} height={80} className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} />
         </span>
         <div className="min-w-0">
           <h1 className="break-words text-2xl font-black sm:text-3xl">{name || playerId}</h1>

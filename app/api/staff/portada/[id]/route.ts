@@ -4,6 +4,9 @@ import path from "node:path";
 import sharp from "sharp";
 import { NextRequest, NextResponse } from "next/server";
 import { catalogAccess, sameOrigin } from "@/lib/catalog";
+import { catalogServiceClient } from "@/lib/catalog";
+import { operationalMediaBucket } from "@/lib/operational-store";
+import { createHash } from "node:crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,6 +50,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   try {
     return new NextResponse(await readFile(coverPath(id)), { headers: { "Content-Type": "image/webp", "Cache-Control": "private, no-store" } });
   } catch {
+    const remote = await catalogServiceClient().storage.from(operationalMediaBucket).createSignedUrl(`staff-covers/${id}.webp`, 60);
+    if (remote.data?.signedUrl) return NextResponse.redirect(remote.data.signedUrl);
     return new NextResponse(null, { status: 404 });
   }
 }
@@ -83,6 +88,11 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       writeFile(path.join(originalsRoot, `${id}.${metadata.format === "jpeg" ? "jpg" : metadata.format}`), bytes),
       settings ? writeFile(settingsPath(id), JSON.stringify(settings)) : rm(settingsPath(id), { force: true }),
     ]);
+    const db = catalogServiceClient();
+    const upload = await db.storage.from(operationalMediaBucket).upload(`staff-covers/${id}.webp`, prepared, { upsert: true, contentType: "image/webp" });
+    if (upload.error) return reply({ error: "No se ha podido guardar la foto remota." }, 503);
+    const indexed = await db.rpc("likidhub_upsert_operational_media", { p_row: { entity_type: "staff-cover", entity_id: id, variant: "cover", bucket_id: operationalMediaBucket, object_key: `staff-covers/${id}.webp`, content_type: "image/webp", byte_size: prepared.length, source_sha256: createHash("sha256").update(prepared).digest("hex") } });
+    if (indexed.error) return reply({ error: "No se ha podido indexar la foto remota." }, 503);
     return reply({ ok: true, url: `/api/staff/portada/${id}` });
   } catch {
     return reply({ error: "No se ha podido guardar la foto de cabecera." }, 400);
@@ -96,6 +106,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
   if (!await canWrite(request)) return reply({ error: "Acceso de administrador requerido." }, 403);
   try {
     await rm(coverPath(id), { force: true });
+    await catalogServiceClient().storage.from(operationalMediaBucket).remove([`staff-covers/${id}.webp`]);
     await rm(settingsPath(id), { force: true });
     const originals = await readdir(originalsRoot).catch(() => [] as string[]);
     await Promise.all(originals.filter((name) => new RegExp(`^${id}\\.(png|jpg|webp)$`, "i").test(name)).map((name) => rm(path.join(originalsRoot, name), { force: true })));

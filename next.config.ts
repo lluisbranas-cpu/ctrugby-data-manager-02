@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   distDir: process.env.CTRUGBY_NEXT_DIST_DIR || ".next",
   async rewrites() {
     return {
-      beforeFiles: [{ source: "/rugby/:client/:section(jugadores|clubs|staff|participaciones|hitos|destacados|seleccionados|federaciones|noticias|campus|clubes-profesionales|categorias|agrupaciones-temporales|world-rugby)/:path*", destination: "/:section/:path*" }],
+      beforeFiles: [{ source: "/rugby/:client/:section(jugadores|clubs|staff|participaciones|hitos|destacados|seleccionados|federaciones|Federaciones_Nacionales|confederaciones|noticias|titulos|campus|clubes-profesionales|categorias|agrupaciones-temporales|world-rugby|paises|web)/:path*", destination: "/:section/:path*" }],
       afterFiles: [],
       fallback: [],
     };

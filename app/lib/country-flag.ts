@@ -1,7 +1,12 @@
-const countryCodes: Record<string, string> = {
-  Andorra: "AD", Argentina: "AR", Australia: "AU", Bélgica: "BE", Canada: "CA", Canadá: "CA", Chile: "CL", España: "ES", France: "FR", Francia: "FR", Georgia: "GE", Irlanda: "IE", Italia: "IT", Japón: "JP", "Nueva Zelanda": "NZ", "Países Bajos": "NL", Polonia: "PL", Portugal: "PT", Rumanía: "RO", Samoa: "WS", Singapore: "SG", Singapur: "SG", Sudáfrica: "ZA", Suiza: "CH", Tonga: "TO", Uruguay: "UY", "Estados Unidos": "US", Gales: "GB", Escocia: "GB",
-};
+export type CountryOption = { id: string; name: string };
 
-export function countryFlagCode(country: string) {
-  return countryCodes[country]?.toLocaleLowerCase("en-US") ?? null;
-}
+const isoRegionCodes = "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW".split(" ");
+const aliases: Record<string, string> = { "estados unidos": "US", "reino unido": "GB", inglaterra: "GB", escocia: "GB", gales: "GB", "irlanda del norte": "GB", francia: "FR", france: "FR", italia: "IT", italy: "IT", belgica: "BE", canada: "CA", "paises bajos": "NL", holanda: "NL", "nueva zelanda": "NZ", "corea del sur": "KR", "corea del norte": "KP", "china taipei": "TW", taiwan: "TW", "hong kong china": "HK", "r d del congo": "CD", "republica democratica del congo": "CD", "republica del congo": "CG", "costa de marfil": "CI", "cabo verde": "CV", "sudafrica": "ZA", "arabia saudita": "SA", "emiratos arabes unidos": "AE" };
+const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es").replace(/[^a-z0-9]+/g, " ").trim();
+const names = new Intl.DisplayNames(["es"], { type: "region" });
+const codeByName = new Map(isoRegionCodes.map((code) => [normalize(names.of(code) ?? code), code]));
+
+export function countryFlagCode(country: string | null | undefined) { if (!country) return null; const normalized = normalize(country); return (aliases[normalized] ?? codeByName.get(normalized) ?? null)?.toLocaleLowerCase("en-US") ?? null; }
+export function countryFlagEmoji(country: string | null | undefined) { const code = countryFlagCode(country); return code ? String.fromCodePoint(...[...code.toUpperCase()].map((letter) => letter.charCodeAt(0) + 127397)) : null; }
+export const countryOptions: CountryOption[] = isoRegionCodes.map((code) => { const country = names.of(code) ?? code; return { id: country, name: `${String.fromCodePoint(...[...code].map((letter) => letter.charCodeAt(0) + 127397))} ${country}` }; }).sort((a, b) => a.id.localeCompare(b.id, "es"));
+export function canonicalCountryName(country: string | null | undefined) { const code = countryFlagCode(country); return code ? names.of(code) ?? country ?? "" : country ?? ""; }

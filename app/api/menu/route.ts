@@ -26,7 +26,17 @@ const belongsToFederation = (club: Club, federation: Federation) => federation.s
 
 async function readJsonArray<T>(name: string) {
   try {
-    const raw = await readFile(path.join(process.cwd(), "data", "staging", name), "utf8");
+    // Keep the legacy fallback statically enumerated.  A dynamic filename
+    // would make Turbopack package every file in data/staging.
+    const base = () => path.join(process.cwd(), "data", "staging");
+    const raw = name === "staff.json" ? await readFile(path.join(base(), "staff.json"), "utf8")
+      : name === "milestones.json" ? await readFile(path.join(base(), "milestones.json"), "utf8")
+      : name === "milestone-participants.json" ? await readFile(path.join(base(), "milestone-participants.json"), "utf8")
+      : name === "players.json" ? await readFile(path.join(base(), "players.json"), "utf8")
+      : name === "clubs.json" ? await readFile(path.join(base(), "clubs.json"), "utf8")
+      : name === "federations.json" ? await readFile(path.join(base(), "federations.json"), "utf8")
+      : name === "player-seasons.json" ? await readFile(path.join(base(), "player-seasons.json"), "utf8")
+      : "[]";
     const data = JSON.parse(raw) as unknown;
     return Array.isArray(data) ? data as T[] : [];
   } catch {

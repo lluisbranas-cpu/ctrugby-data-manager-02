@@ -6,6 +6,8 @@ import Link from "@/app/components/sport-link";
 import { useRouter } from "@/lib/sport-navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ManagerMenu } from "@/app/components/manager-menu";
+import { countryFlagCode } from "@/app/lib/country-flag";
+import { regionalFlagUrl } from "@/app/lib/regional-flag";
 
 type StaffMilestone = {
   id: string;
@@ -27,7 +29,10 @@ type StaffRow = {
   latest_milestone: StaffMilestone | null;
   milestones: StaffMilestone[];
   profile: {
+    nationality_country: string | null;
+    secondary_nationality_country: string | null;
     section: string | null;
+    selected_roles?: string[];
     associated_label: string | null;
     associated_url: string | null;
     associated_shield_url: string | null;
@@ -45,7 +50,8 @@ type State = {
   scopes: { scope: string; count: number }[];
   staff: StaffRow[];
 };
-type SortKey = "name" | "role";
+type SortKey = "name" | "role" | "nationality" | "secondaryNationality" | "shield" | "linkedin" | "instagram";
+const staffRoleLabel = (profile: StaffRow["profile"]) => profile.selected_roles?.length ? profile.selected_roles.join(" · ") : profile.section ?? "";
 
 function StaffSilhouette({ className = "" }: { className?: string }) {
   return <svg viewBox="0 0 64 64" aria-hidden="true" className={className} fill="none">
@@ -70,6 +76,13 @@ function StaffAssociatedShield({ row }: { row: StaffRow }) {
   const title = row.profile.associated_label ?? `Escudo asociado pendiente de ${row.display_name}`;
   if (row.profile.associated_url) return <Link href={row.profile.associated_url} className="staff-list-shield" title={title} aria-label={title}>{content}</Link>;
   return <span className="staff-list-shield is-empty" title={title} aria-label={title}>{content}</span>;
+}
+
+function StaffNationalityFlag({ country }: { country: string | null }) {
+  const code = countryFlagCode(country);
+  const src = code ? `https://flagcdn.com/w40/${code}.png` : country ? regionalFlagUrl(country) : null;
+  const title = country ?? "Nacionalidad pendiente";
+  return <span className="flex justify-center" title={title} aria-label={title}>{src ? <img src={src} alt={`Bandera de ${country}`} className="h-[15px] w-[23px] rounded-[2px] object-cover shadow-sm" /> : <span className="text-xs text-neutral-400">—</span>}</span>;
 }
 
 export default function StaffPage() {
@@ -117,12 +130,22 @@ export default function StaffPage() {
     return [...(state?.staff ?? [])].filter((row) => {
       const matchesYear = year === "all" || row.seasons.includes(Number(year));
       const matchesScope = scope === "all" || row.scopes.some((item) => item.scope === scope);
-      const haystack = [row.id, row.display_name, row.profile.section ?? "", row.latest_milestone?.category ?? "", row.latest_milestone?.club_text ?? "", row.scopes.map((item) => item.scope).join(" "), row.seasons.join(" ")].join(" ").toLocaleLowerCase("es-ES");
+      const haystack = [row.id, row.display_name, staffRoleLabel(row.profile), row.latest_milestone?.category ?? "", row.latest_milestone?.club_text ?? "", row.scopes.map((item) => item.scope).join(" "), row.seasons.join(" ")].join(" ").toLocaleLowerCase("es-ES");
       return matchesYear && matchesScope && (!text || haystack.includes(text));
     }).sort((a, b) => {
       const value = sort.key === "role"
-        ? (a.profile.section ?? "").localeCompare(b.profile.section ?? "", "es") || a.display_name.localeCompare(b.display_name, "es")
-        : a.display_name.localeCompare(b.display_name, "es");
+        ? staffRoleLabel(a.profile).localeCompare(staffRoleLabel(b.profile), "es") || a.display_name.localeCompare(b.display_name, "es")
+        : sort.key === "nationality"
+          ? (a.profile.nationality_country ?? "").localeCompare(b.profile.nationality_country ?? "", "es") || a.display_name.localeCompare(b.display_name, "es")
+          : sort.key === "secondaryNationality"
+            ? (a.profile.secondary_nationality_country ?? "").localeCompare(b.profile.secondary_nationality_country ?? "", "es") || a.display_name.localeCompare(b.display_name, "es")
+          : sort.key === "shield"
+            ? (a.profile.associated_label ?? "").localeCompare(b.profile.associated_label ?? "", "es") || a.display_name.localeCompare(b.display_name, "es")
+            : sort.key === "linkedin"
+              ? Number(Boolean(a.profile.linkedin_url)) - Number(Boolean(b.profile.linkedin_url)) || a.display_name.localeCompare(b.display_name, "es")
+              : sort.key === "instagram"
+                ? Number(Boolean(a.profile.instagram_url)) - Number(Boolean(b.profile.instagram_url)) || a.display_name.localeCompare(b.display_name, "es")
+                : a.display_name.localeCompare(b.display_name, "es");
       return value * sort.direction;
     });
   }, [query, scope, sort, state?.staff, year]);
@@ -174,11 +197,13 @@ export default function StaffPage() {
         <div className="mt-3 grid gap-6">
           <section className="participations-directory-list overflow-x-auto rounded-2xl bg-white shadow-sm">
             <header className="federation-directory-title participations-directory-title"><div><b>STAFF</b><small>Nombre, rol Rugby y perfiles sociales.</small></div></header>
-            <div className="directory-list-heading participations-directory-head grid min-w-[700px] grid-cols-[minmax(0,1.25fr)_minmax(0,.9fr)_56px_56px_56px] border-y border-neutral-200 bg-neutral-50 px-3 py-3 text-[10px] font-black tracking-[.12em] text-neutral-500"><button className="text-left" onClick={() => order("name")}>NOMBRE {mark("name")}</button><button className="text-left" onClick={() => order("role")}>ROL RUGBY {mark("role")}</button><span className="text-center">ESCUDO</span><span className="text-center">IN</span><span className="text-center">IG</span></div>
-            <ul className="min-w-[700px] divide-y divide-neutral-200">{rows.map((row) => <li key={row.id}>
-              <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(0,.9fr)_56px_56px_56px] items-center gap-2 px-3 py-3 text-neutral-900 hover:bg-red-50/60">
+            <div className="directory-list-heading participations-directory-head grid min-w-[680px] grid-cols-[minmax(220px,1.25fr)_minmax(145px,.9fr)_46px_46px_52px_42px_42px] border-y border-neutral-200 bg-neutral-50 px-3 py-3 text-[10px] font-black tracking-[.08em] text-neutral-500"><button className="text-left whitespace-nowrap" onClick={() => order("name")}>NOMBRE {mark("name")}</button><button className="text-left whitespace-nowrap" onClick={() => order("role")}>ROL RUGBY {mark("role")}</button><button className="text-center whitespace-nowrap" onClick={() => order("nationality")}>NAC. {mark("nationality")}</button><button className="text-center whitespace-nowrap" onClick={() => order("secondaryNationality")}>NAC. {mark("secondaryNationality")}</button><button className="text-center whitespace-nowrap" onClick={() => order("shield")}>ESCUDO {mark("shield")}</button><button className="text-center whitespace-nowrap" onClick={() => order("linkedin")}>IN {mark("linkedin")}</button><button className="text-center whitespace-nowrap" onClick={() => order("instagram")}>IG {mark("instagram")}</button></div>
+            <ul className="min-w-[680px] divide-y divide-neutral-200">{rows.map((row) => <li key={row.id}>
+              <div className="grid grid-cols-[minmax(220px,1.25fr)_minmax(145px,.9fr)_46px_46px_52px_42px_42px] items-center gap-2 px-3 py-3 text-neutral-900 hover:bg-red-50/60">
                 <Link href={`/staff/${row.id}`} className="flex min-w-0 items-center gap-3 hover:text-red-700"><span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-transparent text-neutral-400 shadow-sm"><StaffSilhouette className="h-7 w-7" /><img src={`/api/staff/foto/${row.id}`} alt={`Foto de ${row.display_name}`} className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} /></span><span className="min-w-0"><b className="block truncate text-sm">{row.display_name}</b><small className="mt-1 block truncate text-xs text-neutral-500">{row.id}</small></span></Link>
-                <Link href={`/staff/${row.id}`} className="min-w-0 hover:text-red-700"><b className="block truncate text-sm">{row.profile.section ?? "Sin rol"}</b><small className="mt-1 block truncate text-xs text-neutral-500">Abrir ficha</small></Link>
+                <Link href={`/staff/${row.id}`} className="min-w-0 hover:text-red-700"><b className="block truncate text-sm">{staffRoleLabel(row.profile) || "Sin rol"}</b><small className="mt-1 block truncate text-xs text-neutral-500">Abrir ficha</small></Link>
+                <StaffNationalityFlag country={row.profile.nationality_country} />
+                <StaffNationalityFlag country={row.profile.secondary_nationality_country} />
                 <span className="flex justify-center"><StaffAssociatedShield row={row} /></span>
                 <span className="flex justify-center"><SocialLogo href={row.profile.linkedin_url} type="linkedin" /></span>
                 <span className="flex justify-center"><SocialLogo href={row.profile.instagram_url} type="instagram" /></span>

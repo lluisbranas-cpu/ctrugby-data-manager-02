@@ -1,5 +1,5 @@
 /** Public page URLs. API endpoints, assets and shared administration stay global. */
-export const sportSections = ["jugadores", "clubs", "staff", "participaciones", "hitos", "destacados", "seleccionados", "federaciones", "noticias", "campus", "clubes-profesionales", "categorias", "agrupaciones-temporales", "world-rugby"] as const;
+export const sportSections = ["jugadores", "clubs", "staff", "participaciones", "hitos", "destacados", "seleccionados", "federaciones", "Federaciones_Nacionales", "confederaciones", "noticias", "titulos", "campus", "clubes-profesionales", "categorias", "agrupaciones-temporales", "world-rugby", "paises", "web"] as const;
 export function sportScope(path: string) {
   return /^\/rugby\/([a-z0-9]+(?:-[a-z0-9]+)*)(?=\/|$)/.exec(path)?.[1] ?? null;
 }

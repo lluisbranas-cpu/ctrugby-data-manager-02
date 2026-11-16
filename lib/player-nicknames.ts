@@ -1,11 +1,17 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 const filename = (id: string) => {
   if (!/^JUG\d{4}$/.test(id)) throw new Error("Jugador no válido");
   return path.join(process.cwd(), "data", "staging", "player-nicknames", `${id}.json`);
 };
 export async function readPlayerNickname(id: string): Promise<string | null> {
+  const remote = await readOperationalDocument<unknown>("player-nickname", id).catch(() => null);
+  if (remote?.payload && typeof remote.payload === "object" && !Array.isArray(remote.payload)) {
+    const nickname = (remote.payload as { nickname?: unknown }).nickname;
+    return typeof nickname === "string" ? nickname : null;
+  }
   try {
     const data = JSON.parse(await readFile(filename(id), "utf8"));
     return typeof data.nickname === "string" ? data.nickname : null;
@@ -15,6 +21,7 @@ export async function readPlayerNickname(id: string): Promise<string | null> {
   }
 }
 export async function savePlayerNickname(id: string, nickname: string | null) {
+  await upsertOperationalDocument("player-nickname", id, { nickname });
   const target = filename(id);
   await mkdir(path.dirname(target), { recursive: true });
   const temporary = `${target}.${randomUUID()}.tmp`;

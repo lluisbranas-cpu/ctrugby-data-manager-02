@@ -3,6 +3,7 @@ import { selectionFromBody } from "./news-selection";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { readOperationalDocument, upsertOperationalDocument } from "./operational-store";
 
 export type ManualSelectionAction = "include" | "exclude";
 export type PlayerReference = { id: string; first_name?: string | null; last_name?: string | null };
@@ -82,8 +83,9 @@ export const selectionFederationIds: Record<string, string> = {
 const canonicalFederationId = (value: string) => selectionFederationIds[value.toUpperCase()] ?? value.toUpperCase();
 
 export async function readManualSelectionCallups(): Promise<ManualSelectionCallup[]> {
-  const raw = await readFile(filePath(), "utf8").catch(() => "[]");
-  const local = (JSON.parse(raw) as ManualSelectionCallup[]).map((record) => ({
+  const remote = await readOperationalDocument<ManualSelectionCallup[]>("hito", "manual-selection-callups");
+  const raw = remote?.payload ?? JSON.parse(await readFile(filePath(), "utf8").catch(() => "[]")) as ManualSelectionCallup[];
+  const local = raw.map((record) => ({
     ...record,
     action: (record.action === "exclude" ? "exclude" : "include") as ManualSelectionAction,
     federation_id: canonicalFederationId(record.federation_id),
@@ -104,10 +106,12 @@ export async function readManualSelectionCallups(): Promise<ManualSelectionCallu
 }
 
 export async function saveManualSelectionCallups(records: ManualSelectionCallup[]) {
+  const localRecords = records.filter(record => !record.source_news_id);
+  await upsertOperationalDocument("hito", "manual-selection-callups", localRecords);
   const target = filePath();
   await mkdir(path.dirname(target), { recursive: true });
   const temporary = `${target}.${randomUUID()}.tmp`;
-  await writeFile(temporary, `${JSON.stringify(records.filter(record => !record.source_news_id), null, 2)}\n`, "utf8");
+  await writeFile(temporary, `${JSON.stringify(localRecords, null, 2)}\n`, "utf8");
   await rename(temporary, target);
 }
 

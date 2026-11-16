@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 
 export type PlayerEventSizes = { technical_shirt: string; playing_shirt: string; playing_shorts: string; bermudas: string };
 export const emptyPlayerEventSizes = (): PlayerEventSizes => ({ technical_shirt: "", playing_shirt: "", playing_shorts: "", bermudas: "" });
@@ -22,11 +23,14 @@ export function parsePlayerEventSizes(value: unknown): PlayerEventSizes | null {
 }
 
 export async function readPlayerEventSizes(id: string): Promise<PlayerEventSizes> {
+  const remote = await readOperationalDocument<unknown>("player-event-size", id).catch(() => null);
+  if (remote?.payload) return parsePlayerEventSizes(remote.payload) ?? emptyPlayerEventSizes();
   try { return parsePlayerEventSizes(JSON.parse(await readFile(filename(id), "utf8"))) ?? emptyPlayerEventSizes(); }
   catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return emptyPlayerEventSizes(); throw error; }
 }
 
 export async function savePlayerEventSizes(id: string, sizes: PlayerEventSizes) {
+  await upsertOperationalDocument("player-event-size", id, sizes);
   const target = filename(id);
   await mkdir(path.dirname(target), { recursive: true });
   const temporary = `${target}.${randomUUID()}.tmp`;

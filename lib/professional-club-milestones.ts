@@ -4,6 +4,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { resolveMilestoneClubId } from "@/lib/milestone-trajectory";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 
 export type ProfessionalClubMilestone = {
   source_news_id?: string;
@@ -62,6 +63,8 @@ export async function readLocalClubs() {
 export async function readProfessionalClubMilestones(includeUnpublished = false) { return readParticipationRecords(includeUnpublished); }
 
 export async function readProfessionalCategories() {
+  const remote = await readOperationalDocument<unknown>("catalog", "professional-categories").catch(() => null);
+  if (Array.isArray(remote?.payload)) return (remote.payload as ProfessionalCategory[]).filter((category) => category.id && category.label).map((category) => ({ ...category, type: categoryType(category.type) }));
   const raw = await readFile(categoriesPath(), "utf8").catch(() => "");
   if (!raw) return defaultCategories();
   return (JSON.parse(raw) as ProfessionalCategory[]).filter((category) => category.id && category.label).map((category) => ({
@@ -71,6 +74,7 @@ export async function readProfessionalCategories() {
 }
 
 export async function saveProfessionalCategories(categories: ProfessionalCategory[]) {
+  await upsertOperationalDocument("catalog", "professional-categories", categories);
   const target = categoriesPath();
   await mkdir(path.dirname(target), { recursive: true });
   const temporary = `${target}.${randomUUID()}.tmp`;

@@ -5,6 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import { clubShieldUrls } from "@/app/lib/club-shields";
 import { catalogAccess, sameOrigin } from "@/lib/catalog";
+import { catalogServiceClient } from "@/lib/catalog";
+import { operationalMediaBucket } from "@/lib/operational-store";
+import { createHash } from "node:crypto";
 import { prepareShield } from "@/app/lib/shield-processing";
 
 export const runtime = "nodejs";
@@ -26,6 +29,8 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     const image = await readFile(preparedPath(id));
     return new NextResponse(image, { headers: { "Content-Type": "image/png", "Cache-Control": "no-store" } });
   } catch {
+    const remote = await catalogServiceClient().storage.from(operationalMediaBucket).createSignedUrl(`club-shields/${id}.png`, 60);
+    if (remote.data?.signedUrl) return NextResponse.redirect(remote.data.signedUrl);
     const legacy = clubShieldUrls[id];
     if (legacy) {
       // Serve the historical shield through the app instead of redirecting to
@@ -76,6 +81,23 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     if (prepared.length > 2_000_000)
       return reply({ error: "La copia preparada supera 2 MB. Reduce el original antes de subirlo." }, 413);
     await writeFile(preparedPath(id), prepared);
+    const db = catalogServiceClient();
+    const objectKey = `club-shields/${id}.png`;
+    const upload = await db.storage.from(operationalMediaBucket).upload(objectKey, prepared, { upsert: true, contentType: "image/png" });
+    if (upload.error) return reply({ error: "No se ha podido guardar el escudo remoto." }, 503);
+    const indexed = await db.rpc("likidhub_upsert_operational_media", {
+      p_row: {
+        entity_type: "club-shield",
+        entity_id: id,
+        variant: "shield",
+        bucket_id: operationalMediaBucket,
+        object_key: objectKey,
+        content_type: "image/png",
+        byte_size: prepared.length,
+        source_sha256: createHash("sha256").update(prepared).digest("hex"),
+      },
+    });
+    if (indexed.error) return reply({ error: "No se ha podido indexar el escudo remoto." }, 503);
     return reply({ ok: true, url: `/api/clubs/escudo/${id}` });
   } catch {
     return reply({ error: "No se ha podido preparar y guardar el escudo. Prueba otra imagen." }, 400);
@@ -99,6 +121,23 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       },
     }).png({ compressionLevel: 9 }).toBuffer();
     await writeFile(preparedPath(id), transparent);
+    const db = catalogServiceClient();
+    const objectKey = `club-shields/${id}.png`;
+    const upload = await db.storage.from(operationalMediaBucket).upload(objectKey, transparent, { upsert: true, contentType: "image/png" });
+    if (upload.error) return reply({ error: "No se ha podido borrar el escudo remoto." }, 503);
+    const indexed = await db.rpc("likidhub_upsert_operational_media", {
+      p_row: {
+        entity_type: "club-shield",
+        entity_id: id,
+        variant: "shield",
+        bucket_id: operationalMediaBucket,
+        object_key: objectKey,
+        content_type: "image/png",
+        byte_size: transparent.length,
+        source_sha256: createHash("sha256").update(transparent).digest("hex"),
+      },
+    });
+    if (indexed.error) return reply({ error: "No se ha podido indexar el borrado remoto." }, 503);
     return reply({ ok: true });
   } catch {
     return reply({ error: "No se ha podido borrar el escudo." }, 400);

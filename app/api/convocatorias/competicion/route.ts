@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { catalogAccess, sameOrigin } from "@/lib/catalog";
 import { readGroupClubs } from "@/lib/temporary-group-clubs";
 import { requireConsultation } from "@/lib/consultation-access";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 type Row = { id: string; clubId: string; category: string; phases: string[] };
@@ -17,8 +18,17 @@ const defaults: Row[] = [
 const location = path.join(process.cwd(), "data", "competition", "2026-27.json");
 const reply = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
 async function readRows(): Promise<Row[]> {
+  const remote = await readOperationalDocument<unknown>("competition", "season-2026-27").catch(() => null);
+  if (Array.isArray(remote?.payload)) return remote.payload as Row[];
   try { return JSON.parse(await readFile(location, "utf8")); }
   catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return defaults; throw error; }
+}
+async function saveRows(rows: Row[]) {
+  await upsertOperationalDocument("competition", "season-2026-27", rows);
+  await mkdir(path.dirname(location), { recursive: true });
+  const temporary = location + "." + randomUUID() + ".tmp";
+  try { await writeFile(temporary, JSON.stringify(rows, null, 2), "utf8"); await rename(temporary, location); }
+  finally { await rm(temporary, { force: true }); }
 }
 let queue: Promise<unknown> = Promise.resolve();
 export async function GET(request: NextRequest) {
@@ -40,10 +50,7 @@ export async function POST(request: NextRequest) {
       if (rows.some(existing => existing.id !== clean.id && existing.clubId === clean.clubId && existing.category.toLocaleLowerCase("es") === clean.category.toLocaleLowerCase("es"))) throw new Error("duplicate");
       const index = rows.findIndex(existing => existing.id === clean.id);
       if (index < 0) rows.push(clean); else rows[index] = clean;
-      await mkdir(path.dirname(location), { recursive: true });
-      const temporary = location + "." + randomUUID() + ".tmp";
-      try { await writeFile(temporary, JSON.stringify(rows, null, 2), "utf8"); await rename(temporary, location); }
-      finally { await rm(temporary, { force: true }); }
+      await saveRows(rows);
       return rows;
     });
     queue = task.catch(() => undefined);
@@ -60,10 +67,7 @@ export async function DELETE(request: NextRequest) {
     if (!body || typeof body.id !== "string" || !/^[a-zA-Z0-9-]{1,80}$/.test(body.id)) return reply({ error: "Fila no válida." }, 400);
     const task = queue.then(async () => {
       const rows = (await readRows()).filter(row => row.id !== body.id);
-      await mkdir(path.dirname(location), { recursive: true });
-      const temporary = location + "." + randomUUID() + ".tmp";
-      try { await writeFile(temporary, JSON.stringify(rows, null, 2), "utf8"); await rename(temporary, location); }
-      finally { await rm(temporary, { force: true }); }
+      await saveRows(rows);
       return rows;
     });
     queue = task.catch(() => undefined);

@@ -104,6 +104,6 @@ export function StaffMediaActions({ id, name, onUpdated, avatar = true, cover = 
     {notice && <p role="status">{notice}</p>}
     {pendingAvatar && <ImageUploadEditor file={pendingAvatar} title={`Foto redonda de ${name}`} outputWidth={600} outputHeight={600} initialFit="cover" allowRemoveBackground outputBackground="#e2e7ea" circularFrame onChooseFile={() => avatarInput.current?.click()} onClose={() => setPendingAvatar(null)} onSave={(prepared) => uploadAvatar(pendingAvatar, prepared)} />}
     {pendingCover && <PlayerCoverEditor file={pendingCover} name={name} onChooseFile={() => coverInput.current?.click()} onClose={() => setPendingCover(null)} onSave={(prepared, settings) => uploadCover(pendingCover, prepared, settings)} />}
-    {pendingShield && <ImageUploadEditor file={pendingShield} title={`Escudo asociado de ${name}`} outputWidth={600} outputHeight={600} initialFit="contain" onChooseFile={() => shieldInput.current?.click()} onClose={() => setPendingShield(null)} onSave={(prepared) => uploadShield(pendingShield, prepared)} />}
+    {pendingShield && <ImageUploadEditor file={pendingShield} title={`Escudo asociado de ${name}`} outputWidth={600} outputHeight={600} initialFit="contain" allowRemoveBackground onChooseFile={() => shieldInput.current?.click()} onClose={() => setPendingShield(null)} onSave={(prepared) => uploadShield(pendingShield, prepared)} />}
   </div>;
 }

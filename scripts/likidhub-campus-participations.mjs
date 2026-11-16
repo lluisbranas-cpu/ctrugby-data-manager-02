@@ -17,10 +17,10 @@ export async function loadJugCtrBridge() {
   return bridge;
 }
 export const sha256 = value => createHash("sha256").update(JSON.stringify(value)).digest("hex");
-export function flattenCampusMetrics(metrics, bridge) {
+export function flattenCampusMetrics(metrics) {
   const rows = [], excluded = [];
   for (const metric of metrics) {
-    const playerId = bridge.get(metric.player_id);
+    const playerId = /^JUG\d{4}$/.test(metric.player_id) ? metric.player_id : null;
     if (!playerId) { excluded.push(metric.player_id); continue; }
     const campusByYear = metric.participation_campus ?? metric.participation_campuses ?? {};
     const years = [...new Set((metric.participation_years ?? []).map(String))].filter(year => /^20\d{2}$/.test(year));

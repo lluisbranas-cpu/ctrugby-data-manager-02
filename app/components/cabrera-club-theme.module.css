@@ -1,11 +1,11 @@
 .redCards article {
-  background: #e42636 !important;
+  background: var(--red) !important;
   border-color: #ff7b86 !important;
   color: #fff !important;
 }
 
 .redCards article > div:last-child {
-  background: #e42636;
+  background: var(--red);
   border-top-color: #fff !important;
   color: #fff;
 }
@@ -22,7 +22,7 @@
 }
 
 .redCards article > div:first-child span {
-  color: #101d42 !important;
+  color: var(--navy) !important;
 }
 
 .methodSeal {
@@ -62,7 +62,7 @@
 
 .categoryTabs button[aria-pressed="true"] {
   border-color: #ff7b86;
-  background: #e42636;
+  background: var(--red);
   color: #fff;
 }
 .clubTenure {

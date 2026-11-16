@@ -11,6 +11,7 @@ import { catalogAccess, catalogClient, catalogConfigured, localAdminAccess, same
 import { mergeMilestoneTrajectory } from "@/lib/milestone-trajectory";
 import { findClubDirectoryOverride } from "@/lib/club-directory-overrides";
 import { inferClubLocation } from "@/lib/club-location";
+import { localPlayerIdsFromCatalog } from "@/lib/catalog-player-ids";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
       const visibilityDb = publicTeams ? catalogClient() : db!;
       const visiblePlayers = await visibilityDb.from("catalog_players").select("id").eq("published", true).range(0, 9999);
       if (visiblePlayers.error) return NextResponse.json({ error: "No se han podido comprobar los jugadores publicados." }, { status: 503 });
-      visiblePlayerIds = new Set((visiblePlayers.data ?? []).map((player) => player.id));
+      visiblePlayerIds = localPlayerIdsFromCatalog((visiblePlayers.data ?? []).map((player) => player.id));
     }
     const sportResult = db ? await db.from("catalog_club_sports").select("catalog_sports(name)").eq("club_id", id) : { data: [] as { catalog_sports: { name: string } | { name: string }[] | null }[] };
     const sports = sportResult.data?.flatMap((row) => {
@@ -167,4 +168,26 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     if (update.error || !update.data) return NextResponse.json({ error: "No se han podido guardar los datos del club." }, { status: 503 });
     return NextResponse.json({ club: update.data }, { headers: { "Cache-Control": "private, no-store", Vary: "Cookie" } });
   } catch { return NextResponse.json({ error: "No se han podido guardar los datos del club." }, { status: 400 }); }
+}
+
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  if (!sameOrigin(request)) return NextResponse.json({ error: "Origen no permitido." }, { status: 403 });
+  const id = (await context.params).id.toUpperCase();
+  if (!/^[A-Z]{3}\d{4}$/.test(id)) return NextResponse.json({ error: "Club no válido." }, { status: 400 });
+  if (!catalogConfigured()) return NextResponse.json({ error: "El catálogo todavía no está conectado." }, { status: 503 });
+  try {
+    const body: unknown = await request.json();
+    if (!body || typeof body !== "object" || (body as Record<string, unknown>).confirmed !== true || (body as Record<string, unknown>).confirmation_id !== id) return NextResponse.json({ error: "Confirma la eliminación escribiendo el ID del club." }, { status: 400 });
+    const { db, admin } = await catalogAccess(request);
+    if (!admin) return NextResponse.json({ error: "Acceso de administrador requerido." }, { status: 403 });
+    if (id.startsWith("ATC")) return NextResponse.json({ error: "Las agrupaciones temporales se eliminan desde su gestión específica." }, { status: 400 });
+    const sports = await db.from("catalog_club_sports").delete().eq("club_id", id);
+    if (sports.error) return NextResponse.json({ error: "No se han podido eliminar las relaciones deportivas del club." }, { status: 503 });
+    const result = await db.from("catalog_clubs").delete().eq("id", id).select("id");
+    if (result.error) return NextResponse.json({ error: "No se ha podido eliminar la ficha del club." }, { status: 503 });
+    if (!result.data?.length) return NextResponse.json({ error: "La ficha del club ya no existe." }, { status: 404 });
+    return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "private, no-store", Vary: "Cookie" } });
+  } catch {
+    return NextResponse.json({ error: "No se ha podido eliminar la ficha del club." }, { status: 400 });
+  }
 }

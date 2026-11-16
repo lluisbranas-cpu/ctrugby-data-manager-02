@@ -1,12 +1,14 @@
-import { localNewsPlayers } from "@/lib/news-players";
+import { localNewsPlayers, localNewsStaff } from "@/lib/news-players";
 import { NextRequest, NextResponse } from "next/server";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { requireConsultation } from "@/lib/consultation-access";
-import { catalogAccess, catalogConfigured, localAdminAccess, sameOrigin } from "@/lib/catalog";
+import { catalogAccess, catalogConfigured, catalogServiceClient, localAdminAccess, sameOrigin } from "@/lib/catalog";
 import { readPlayerNews, savePlayerNews, validNewsId, newsWithImage } from "@/lib/player-news";
+import { catalogPlayerId } from "@/lib/catalog-player-ids";
+import { operationalMediaBucket } from "@/lib/operational-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,13 +24,18 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     const news = (await readPlayerNews()).find((item) => item.id === id);
     if (!news || (!admin && !news.published)) return new NextResponse(null, { status: 404, headers });
     const player = localAdminAccess(request)
-      ? { data: (await localNewsPlayers()).find(player => player.id === news.player_id), error: null }
-      : await db.from("catalog_players").select("id").eq("id", news.player_id).maybeSingle();
+      ? { data: [...await localNewsPlayers(), ...await localNewsStaff()].find(player => player.id === news.player_id), error: null }
+      : await db.from("catalog_players").select("id").eq("id", catalogPlayerId(news.player_id)).maybeSingle();
     if (player.error || !player.data) return new NextResponse(null, { status: 404, headers });
     const display = await newsWithImage(news);
     if (display.image_source === "federation" && display.image_url) return NextResponse.redirect(new URL(display.image_url, request.url));
     if (!display.image_updated_at) return new NextResponse(null, { status: 404, headers });
-    return new NextResponse(await readFile(imagePath(id)), { headers: { ...headers, "Content-Type": "image/webp", "X-Content-Type-Options": "nosniff" } });
+    try {
+      return new NextResponse(await readFile(imagePath(id)), { headers: { ...headers, "Content-Type": "image/webp", "X-Content-Type-Options": "nosniff" } });
+    } catch {
+      const remote = await catalogServiceClient().storage.from(operationalMediaBucket).createSignedUrl(`news-images/${id}.webp`, 60);
+      return remote.data?.signedUrl ? NextResponse.redirect(remote.data.signedUrl) : new NextResponse(null, { status: 404, headers });
+    }
   } catch { return new NextResponse(null, { status: 404, headers }); }
 }
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -50,6 +57,17 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     const image = await sharp(bytes, { limitInputPixels: 40_000_000 }).rotate().resize({ width: 1200, height: 800, fit: "inside", withoutEnlargement: true }).webp({ quality: 85 }).toBuffer();
     const target = imagePath(id); const temporary = target + "." + randomUUID() + ".tmp";
     await mkdir(path.dirname(target), { recursive: true }); await writeFile(temporary, image); await rename(temporary, target);
+    const db = catalogServiceClient();
+    const objectKey = `news-images/${id}.webp`;
+    const upload = await db.storage.from(operationalMediaBucket).upload(objectKey, image, { upsert: true, contentType: "image/webp" });
+    if (upload.error) return reply({ error: "No se ha podido guardar la imagen remota." }, 503);
+    const indexed = await db.rpc("likidhub_upsert_operational_media", {
+      p_row: {
+        entity_type: "news-image", entity_id: id, variant: "image", bucket_id: operationalMediaBucket, object_key: objectKey,
+        content_type: "image/webp", byte_size: image.length, source_sha256: createHash("sha256").update(image).digest("hex"),
+      },
+    });
+    if (indexed.error) return reply({ error: "No se ha podido indexar la imagen remota." }, 503);
     const saved = await savePlayerNews(news, new Date().toISOString());
     return reply({ ok: true, news: await newsWithImage(saved) });
   } catch { return reply({ error: "No se ha podido guardar la imagen. Prueba con otra imagen JPG, PNG o WebP." }, 400); }

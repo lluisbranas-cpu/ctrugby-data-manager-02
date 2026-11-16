@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 export type PlayerProfileOverride = {
   category: string | null;
   birth_year: number | null;
+  nationality_country?: string | null;
+  secondary_nationality_country?: string | null;
   birth_date?: string | null;
   instagram: string | null;
   dni: string | null;
@@ -22,6 +24,8 @@ export async function readPlayerProfileOverride(id: string): Promise<PlayerProfi
       birth_date: typeof data.birth_date === "string" ? data.birth_date : null,
       category: data.category === "M" || data.category === "F" ? data.category : null,
       birth_year: typeof data.birth_year === "number" && Number.isInteger(data.birth_year) ? data.birth_year : null,
+      nationality_country: typeof data.nationality_country === "string" && data.nationality_country.trim() ? data.nationality_country.trim() : null,
+      secondary_nationality_country: typeof data.secondary_nationality_country === "string" && data.secondary_nationality_country.trim() ? data.secondary_nationality_country.trim() : null,
       instagram: typeof data.instagram === "string" && data.instagram ? data.instagram : null,
       dni: typeof data.dni === "string" && data.dni ? data.dni : null,
       allergies: typeof data.allergies === "string" && data.allergies ? data.allergies : null,
