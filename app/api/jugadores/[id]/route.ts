@@ -248,7 +248,10 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{id:strin
     const professionalCategories = campusCategories;
     const professional_club_records = trajectoryProfessionalClubs(seasonsWithPhotos, allClubs, professionalCategories);
     return reply({configured:true,admin,career:await readPlayerCareer(id),staff_options:admin ? await readStaffOptions() : [],private_access:privateAccess,event_sizes:(admin || privateAccess) ? await readPlayerEventSizes(id) : null,player:{...player,nickname:await readPlayerNickname(id),category:profile?.category??staged?.category??null,birth_year:profile?.birth_year??staged?.birth_year??null,birth_date:privateAccess ? profileOverride?.birth_date??null : null,nationality_country:profile?.nationality_country ?? null,secondary_nationality_country:profile?.secondary_nationality_country ?? null,instagram:profile?.instagram??null,dni:admin ? profile?.dni ?? staged?.dni ?? null : null,allergies:privateAccess ? profile?.allergies??null : null,dietary_conditions:privateAccess ? profile?.dietary_conditions??null : null,medications:privateAccess ? profile?.medications??null : null},current_season:seasonsWithPhotos[0]??null,seasons:seasonsWithPhotos,professional_category_references:professionalCategories,professional_categories:professionalCategories.filter(category=>category.type!=="CAMP").map(category=>category.label),clubs:admin?(clubsResult.data??[]):[],contacts:admin?contacts:null,billing:admin?await readPlayerBilling(id):null,private_consents:admin ? await readPlayerPrivateConsents(id) : null,participation:metric??{participation_count:0,participation_years:[]},campuses:campusCategories.filter((category)=>category.type==="CAMP").map(category=>({id:category.id,label:category.label,siglas:category.siglas??null})),selections,professional_club_records});
-  } catch { return reply({error:"No se ha podido cargar la ficha del jugador."},503); }
+  } catch (error) {
+    const diagnostic = error instanceof Error ? error.message : "Error desconocido";
+    return reply({ error:"No se ha podido cargar la ficha del jugador.", diagnostic },503);
+  }
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{id:string}> }) {
