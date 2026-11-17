@@ -188,7 +188,7 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{id:strin
       publicDb.from("catalog_players").select("id,first_name,last_name,published,version").eq("id",databaseId).maybeSingle(),
       privateAccessTask,
       privateAccessTask.then((allowed) => allowed && !admin ? db.rpc("app_player_private_profile", { p_player_id: id }) : null),
-      readFile(path.join(base,"players.json"),"utf8"), readCampusMetricsJson(), readFile(path.join(base,"milestones.json"),"utf8"), readFile(path.join(base,"milestone-participants.json"),"utf8"), readFile(path.join(base,"clubs.json"),"utf8"), readFile(path.join(base,"player-seasons.json"),"utf8"), publicDb.from("catalog_clubs").select("id,name"),
+      readFile(path.join(base,"players.json"),"utf8").catch(() => "[]"), readCampusMetricsJson().catch(() => "[]"), readFile(path.join(base,"milestones.json"),"utf8").catch(() => "[]"), readFile(path.join(base,"milestone-participants.json"),"utf8").catch(() => "[]"), readFile(path.join(base,"clubs.json"),"utf8").catch(() => "[]"), readFile(path.join(base,"player-seasons.json"),"utf8").catch(() => "[]"), publicDb.from("catalog_clubs").select("id,name"),
       readProfessionalCategories(),
       readPlayerProfileOverride(id),
       publicMode ? Promise.resolve({ data: null, error: null }) : db.schema("app_private").from("player_profiles").select("category,birth_year,nationality_country,secondary_nationality_country,instagram,dni,allergies,dietary_conditions,medications").eq("player_id", databaseId).maybeSingle(),
