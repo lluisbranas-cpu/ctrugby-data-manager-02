@@ -14,7 +14,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { catalogAccess, catalogClient, catalogConfigured, localAdminAccess, sameOrigin } from "@/lib/catalog";
+import { catalogAccess, catalogClient, catalogConfigured, catalogServiceClient, localAdminAccess, sameOrigin } from "@/lib/catalog";
 import { readSeasonCategories, saveSeasonCategories, readCompetitionCategories, saveCompetitionCategories } from "@/lib/player-season-categories";
 import { readPlayerProfileOverride, savePlayerProfileOverride } from "@/lib/player-profile-overrides";
 import { readLocalPlayerContacts, saveLocalPlayerContacts } from "@/lib/player-private-contacts";
@@ -177,18 +177,22 @@ export async function GET(request:NextRequest,{params}:{params:Promise<{id:strin
   try {
     const databaseId = id;
     const {db,admin}=await catalogAccess(request);
+    const publicMode = request.cookies.get("ctrugby-public-mode")?.value === "1";
+    // En modo público se usa el servidor solo para las consultas explícitamente públicas.
+    // Nunca se consulta app_private ni se devuelve información privada.
+    const publicDb = publicMode ? catalogServiceClient() : db;
     const localAdmin = localAdminAccess(request);
     const privateAccessTask = admin ? Promise.resolve(true) : privatePlayerAccess(request, id);
     const base=path.join(process.cwd(),"data","staging");
     const [found,privateAccess,privateProfile,playersRaw,metricsRaw,milestonesRaw,participantsRaw,clubsRaw,playerSeasonsRaw,clubsResult,campusCategories,profileOverride,profileResult,trajectoryResult,manualSelectionCallups,callupLinks,localFederationsRaw,sourceUrls,publication,categories,competitionCategories]=await Promise.all([
-      db.from("catalog_players").select("id,first_name,last_name,published,version").eq("id",databaseId).maybeSingle(),
+      publicDb.from("catalog_players").select("id,first_name,last_name,published,version").eq("id",databaseId).maybeSingle(),
       privateAccessTask,
       privateAccessTask.then((allowed) => allowed && !admin ? db.rpc("app_player_private_profile", { p_player_id: id }) : null),
-      readFile(path.join(base,"players.json"),"utf8"), readCampusMetricsJson(), readFile(path.join(base,"milestones.json"),"utf8"), readFile(path.join(base,"milestone-participants.json"),"utf8"), readFile(path.join(base,"clubs.json"),"utf8"), readFile(path.join(base,"player-seasons.json"),"utf8"), db.from("catalog_clubs").select("id,name"),
+      readFile(path.join(base,"players.json"),"utf8"), readCampusMetricsJson(), readFile(path.join(base,"milestones.json"),"utf8"), readFile(path.join(base,"milestone-participants.json"),"utf8"), readFile(path.join(base,"clubs.json"),"utf8"), readFile(path.join(base,"player-seasons.json"),"utf8"), publicDb.from("catalog_clubs").select("id,name"),
       readProfessionalCategories(),
       readPlayerProfileOverride(id),
-      db.schema("app_private").from("player_profiles").select("category,birth_year,nationality_country,secondary_nationality_country,instagram,dni,allergies,dietary_conditions,medications").eq("player_id", databaseId).maybeSingle(),
-      db.rpc("player_trajectory_public",{p_player_id:id}),
+      publicMode ? Promise.resolve({ data: null, error: null }) : db.schema("app_private").from("player_profiles").select("category,birth_year,nationality_country,secondary_nationality_country,instagram,dni,allergies,dietary_conditions,medications").eq("player_id", databaseId).maybeSingle(),
+      publicDb.rpc("player_trajectory_public",{p_player_id:id}),
       readManualSelectionCallups(), readCallupLinks(id),
       readFile(path.join(base, "federations.json"), "utf8").catch(() => "[]"), readMilestoneSourceUrls(),
       readHitoPublication(), readSeasonCategories(id), readCompetitionCategories(id),
