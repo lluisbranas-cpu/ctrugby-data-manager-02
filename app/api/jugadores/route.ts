@@ -305,8 +305,11 @@ export async function GET(request: NextRequest) {
     try { return await likidHubPreviewPlayersResponse(); }
     catch { return reply({ error: "No se pudo leer el directorio LikidHub." }, 503); }
   }
-  const consultationDenied = await requireConsultation(request);
-  if (consultationDenied) return consultationDenied;
+  const publicViewRequested = request.nextUrl.searchParams.get("view") === "public";
+  if (!publicViewRequested) {
+    const consultationDenied = await requireConsultation(request);
+    if (consultationDenied) return consultationDenied;
+  }
 
   if (!catalogConfigured()) return reply({ configured: false, admin: false, players: [] });
   try {
