@@ -1,19 +1,17 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
 import sharp from "sharp";
 import { NextRequest, NextResponse } from "next/server";
-import { catalogAccess, catalogConfigured, sameOrigin } from "@/lib/catalog";
+import { catalogAccess, catalogConfigured, catalogServiceClient, sameOrigin } from "@/lib/catalog";
 import { isLocalRequestOrigin } from "@/lib/request-origin";
 import { PlayerTitleNotFoundError, readPlayerTitles, updatePlayerTitleImageMetadata } from "@/lib/player-title-store";
+import { operationalMediaBucket } from "@/lib/operational-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
 const reply = (data: unknown, status = 200) => NextResponse.json(data, { status, headers });
-const imageDirectory = () => path.join(process.cwd(), "data", "staging", "player-title-images");
-const imagePath = (key: string) => path.join(imageDirectory(), `${key}.webp`);
+const imagePath = (key: string) => `player-title-images/${key}.webp`;
 const validId = (id: string) => /^[a-zA-Z0-9][a-zA-Z0-9._-]{1,79}$/.test(id);
 async function checkAdmin(request: NextRequest) {
   if (!sameOrigin(request)) return reply({ error: "Origen no permitido." }, 403);
@@ -38,7 +36,9 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     if (!title?.image_key || !title.image_updated_at || !/^[a-f0-9-]{36}$/i.test(title.image_key)) {
       return new NextResponse(null, { status: 404, headers });
     }
-    return new NextResponse(await readFile(imagePath(title.image_key)), {
+    const remote = await catalogServiceClient().storage.from(operationalMediaBucket).download(imagePath(title.image_key));
+    if (remote.error || !remote.data) return new NextResponse(null, { status: 404, headers });
+    return new NextResponse(Buffer.from(await remote.data.arrayBuffer()), {
       headers: { ...headers, "Content-Type": "image/webp" },
     });
   } catch {
@@ -68,11 +68,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       .webp({ quality: 85 })
       .toBuffer();
     const key = title.image_key ?? randomUUID();
-    await mkdir(imageDirectory(), { recursive: true });
-    const target = imagePath(key);
-    const temporary = `${target}.${randomUUID()}.tmp`;
-    await writeFile(temporary, image);
-    await rename(temporary, target);
+    const uploaded = await catalogServiceClient().storage.from(operationalMediaBucket).upload(imagePath(key), image, {
+      contentType: "image/webp", upsert: true, cacheControl: "31536000",
+    });
+    if (uploaded.error) throw new Error(uploaded.error.message);
     const saved = await updatePlayerTitleImageMetadata(id, new Date().toISOString(), key);
     return reply({ ok: true, title: saved.title, titles: saved.titles });
   } catch (error) {
@@ -90,8 +89,11 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
   try {
     const title = (await readPlayerTitles()).find((item) => item.id === id);
     if (!title) return reply({ error: "No se ha encontrado el título." }, 404);
+    if (title.image_key) {
+      const removed = await catalogServiceClient().storage.from(operationalMediaBucket).remove([imagePath(title.image_key)]);
+      if (removed.error) throw new Error(removed.error.message);
+    }
     const saved = await updatePlayerTitleImageMetadata(id, null);
-    if (title.image_key) await rm(imagePath(title.image_key), { force: true });
     return reply({ ok: true, title: saved.title, titles: saved.titles });
   } catch (error) {
     if (error instanceof PlayerTitleNotFoundError) return reply({ error: error.message }, 404);

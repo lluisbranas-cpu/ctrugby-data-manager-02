@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import path from "node:path";
 import type { PlayerTitle } from "@/lib/player-titles";
+import { readOperationalDocument, upsertOperationalDocument } from "@/lib/operational-store";
 
 export type NewPlayerTitle = { id: string; title: string; year: number; competition: string; result: string; player_ids: string[] }
   & Pick<PlayerTitle, "date" | "source_name" | "source_url" | "staff_ids" | "team" | "unlinked_participants">;
@@ -9,7 +8,8 @@ export type NewPlayerTitle = { id: string; title: string; year: number; competit
 export class PlayerTitleConflictError extends Error {}
 export class PlayerTitleNotFoundError extends Error {}
 
-const filePath = () => path.join(process.cwd(), "data", "staging", "player-titles.json");
+const namespace = "player";
+const documentKey = "titles";
 let titleWrites: Promise<void> = Promise.resolve();
 
 function isPlayerTitle(value: unknown): value is PlayerTitle {
@@ -36,10 +36,11 @@ function isPlayerTitle(value: unknown): value is PlayerTitle {
 }
 
 export async function readPlayerTitles(): Promise<PlayerTitle[]> {
-  const data: unknown = JSON.parse(await readFile(filePath(), "utf8"));
-  if (!Array.isArray(data) || !data.every(isPlayerTitle)) throw new Error("El catálogo de títulos tiene un formato no válido.");
+  const remote = await readOperationalDocument<unknown>(namespace, documentKey);
+  const data: unknown = remote?.payload;
+  if (!Array.isArray(data) || !data.every(isPlayerTitle)) throw new Error("El catálogo de títulos remoto tiene un formato no válido.");
   const ids = data.map((title) => title.id.toLocaleLowerCase("en"));
-  if (new Set(ids).size !== ids.length) throw new Error("El catálogo de títulos contiene IDs duplicados.");
+  if (new Set(ids).size !== ids.length) throw new Error("El catálogo de títulos remoto contiene IDs duplicados.");
   return data;
 }
 
@@ -132,9 +133,6 @@ function sortTitles(titles: PlayerTitle[]) {
 }
 
 async function writeTitles(updatedTitles: PlayerTitle[]) {
-    const target = filePath();
-    await mkdir(path.dirname(target), { recursive: true });
-    const temporary = `${target}.${randomUUID()}.tmp`;
-    await writeFile(temporary, `${JSON.stringify(updatedTitles, null, 2)}\n`, "utf8");
-    await rename(temporary, target);
+  await upsertOperationalDocument(namespace, documentKey, updatedTitles);
+
 }
