@@ -1,0 +1,331 @@
+[
+  {
+    "id": "europe-m18-2026-esp",
+    "title": "Campeón de Europa",
+    "year": 2026,
+    "competition": "Campeonato de Europa M18",
+    "edition": 2026,
+    "achievement": "Campeón de Europa",
+    "team": "España M18",
+    "result": "23-17 ante Georgia",
+    "date": "14/11/2026",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/los-leones-m18-revalidan-el-campeonato-de-europa-tras-superar-a-georgia-23-17/",
+    "player_ids": [
+      "JUG0285",
+      "JUG0308",
+      "JUG0100"
+    ],
+    "image_key": "e613dfd8-9c25-4b3c-8e14-56b16ebd2031",
+    "image_updated_at": "2026-11-16T12:41:21.124Z"
+  },
+  {
+    "id": "u18-girls-7s-2026-france",
+    "title": "Campeona de la Cup del U18 Girls 7s Championship",
+    "year": 2026,
+    "competition": "U18 Girls 7s Championship 2026",
+    "team": "Francia U18 femenina de seven",
+    "result": "Francia 31-7 España (final de la Cup)",
+    "date": "12/07/2026",
+    "source_name": "Rugby Europe",
+    "source_url": "https://www.rugbyeurope.eu/competitions/season-2526/7s-tournaments-2026/u18-girls-7s-championship-2026/spain-v-france-cup-final",
+    "player_ids": [
+      "JUG0378"
+    ],
+    "image_key": "5fbbd69d-45ca-4d55-a272-7b44b8259d71",
+    "image_updated_at": "2026-11-16T12:42:10.793Z"
+  },
+  {
+    "id": "cadettes-elite-france-2026-stade-toulousain",
+    "title": "Campeona de Francia Cadettes Élite",
+    "year": 2026,
+    "competition": "Championnat de France Cadettes Élite",
+    "team": "Stade Toulousain U18 Élite",
+    "result": "Stade Toulousain 39-12 SU Agen (final)",
+    "date": "06/06/2026",
+    "source_name": "La Dépêche",
+    "source_url": "https://www.ladepeche.fr/2026/06/06/finale-cadettes-elite-un-cinquieme-sacre-pour-le-stade-toulousain-13406530.php",
+    "player_ids": [
+      "JUG0378"
+    ],
+    "image_key": "6c2eb8ee-0c2f-4fd1-9712-8f8440cabfd2",
+    "image_updated_at": "2026-11-16T12:42:50.194Z"
+  },
+  {
+    "id": "europe-m18-2025-esp",
+    "title": "Campeón de Europa",
+    "year": 2025,
+    "competition": "Campeonato de Europa M18",
+    "edition": 2025,
+    "achievement": "Campeón de Europa",
+    "team": "España M18",
+    "result": "16-11 ante Georgia",
+    "date": "22/11/2025",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/son-de-oro-los-leones-m18-superan-a-georgia-11-16-y-levanta-el-titulo-europeo-de-la-categoria-por-primera-vez-en-la-historia/",
+    "player_ids": [
+      "JUG0308"
+    ],
+    "image_key": "9eb8aa27-38be-4eb3-a6bc-f372d4f207fa",
+    "image_updated_at": "2026-11-16T12:40:26.144Z"
+  },
+  {
+    "id": "supercopa-espana-2025-vrac",
+    "title": "Campeón de la Supercopa de España",
+    "year": 2025,
+    "competition": "Supercopa de España masculina 2025",
+    "team": "VRAC Quesos Entrepinares",
+    "result": "15-20 ante INEXO El Salvador",
+    "date": "16/11/2025",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/vrac-quesos-entrepinares-levanta-su-novena-supercopa-en-un-renido-derbi-15-20/",
+    "player_ids": [
+      "JUG0366",
+      "JUG0339"
+    ],
+    "staff_ids": [],
+    "unlinked_participants": [
+      "Raúl Calzón",
+      "Pablo Miejimolle",
+      "Giorgi Turabelidze",
+      "Arnau Ojeda",
+      "Alejandro Pérez",
+      "Martín Serrano",
+      "Gabriel Vélez",
+      "Andrea Mastouri",
+      "Pedro Cane",
+      "Pablo Mateos",
+      "Francisco González",
+      "Sergio Molinero",
+      "Miguel Lainz",
+      "Alberto Gómez",
+      "David Gallego",
+      "Mauro Genco",
+      "Kalokalo Gavidi",
+      "Álvaro Pirez",
+      "Gonzalo Domínguez",
+      "Samuel Hollingsworth",
+      "Arnau Andrés"
+    ],
+    "image_key": "133959e5-965b-4427-931d-8739c6aacbde",
+    "image_updated_at": "2026-11-16T12:40:54.895Z"
+  },
+  {
+    "id": "catalunya-s14-espana-2023",
+    "title": "Campeón de España S14",
+    "year": 2023,
+    "competition": "Campeonato de España de Selecciones S14",
+    "team": "Catalunya S14 mixta",
+    "result": "Catalunya, campeona de España",
+    "date": "25-26/03/2023",
+    "source_name": "Federació Catalana de Rugby",
+    "source_url": "https://rugby.cat/wp-content/uploads/2023/11/Memo22_23.pdf",
+    "player_ids": [
+      "JUG0098"
+    ],
+    "image_key": "9296f15a-14b4-4832-b973-78e18334806b",
+    "image_updated_at": "2026-11-16T12:39:21.167Z"
+  },
+  {
+    "id": "majadahonda-liga-iberdrola-2023",
+    "title": "Campeonas de la Liga Iberdrola",
+    "year": 2023,
+    "competition": "Liga Iberdrola femenina 2022/23",
+    "team": "CR Majadahonda femenino",
+    "result": "39-22 ante Corteva Cocos",
+    "date": "29/04/2023",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/cr-majadahonda-gana-la-liga-iberdrola-de-rugby-en-una-vibrante-final-22-39/",
+    "player_ids": [],
+    "staff_ids": [
+      "STF0001"
+    ],
+    "unlinked_participants": [],
+    "image_key": "9ac5d2fb-12b5-43f1-92cc-d2ffd1747bf3",
+    "image_updated_at": "2026-11-16T15:02:42.672Z"
+  },
+  {
+    "id": "majadahonda-b-liga-madrilena-2023",
+    "title": "Campeonas de la Liga Regional Madrileña",
+    "year": 2023,
+    "competition": "Liga Regional Madrileña femenina 2022/23",
+    "team": "CR Majadahonda B (B-Girls)",
+    "result": "69-10 ante Águilas de Toledo; tercer título regional del equipo",
+    "date": "Temporada 2022/23",
+    "source_name": "Rugby Majadahonda",
+    "source_url": "https://rugbymajadahonda.com/campeonas-de-madrid/",
+    "player_ids": [],
+    "staff_ids": [
+      "STF0001"
+    ],
+    "unlinked_participants": [],
+    "image_key": "f3d86df3-c669-44e4-ab4b-bcf9da321324",
+    "image_updated_at": "2026-11-16T15:03:11.341Z"
+  },
+  {
+    "id": "majadahonda-gps-copa-reina-plata-2023",
+    "title": "Subcampeón de las GPS Copa de la Reina Iberdrola 7s",
+    "year": 2023,
+    "competition": "GPS Copa de la Reina Iberdrola 7s",
+    "team": "Energimac Majadahonda",
+    "result": "2.º puesto en la clasificación general con 48 puntos",
+    "date": "11/06/2023",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/eibar-rt-gana-la-vi-edicion-de-las-gps-copa-de-la-reina-iberdrola/",
+    "player_ids": [],
+    "staff_ids": [
+      "STF0001"
+    ],
+    "unlinked_participants": [],
+    "image_key": "f23efe06-6a3c-49f7-b6d0-6904b6b5a945",
+    "image_updated_at": "2026-11-16T15:03:54.826Z"
+  },
+  {
+    "id": "catalunya-s14-espana-2022",
+    "title": "Campeonato de España S14",
+    "year": 2022,
+    "competition": "Campionat Autonòmic S14",
+    "team": "Catalunya S14",
+    "result": "Catalunya 5-5 Madrid; 5-3 en la tanda de lanzamientos a palos",
+    "date": "26-27/03/2022",
+    "source_name": "Federació Catalana de Rugby",
+    "source_url": "https://rugby.cat/catalunya-es-proclama-campiona-del-campionat-autonomic-s14/",
+    "player_ids": [
+      "JUG0360",
+      "JUG0312",
+      "JUG0372",
+      "JUG0314",
+      "JUG0308",
+      "JUG0309",
+      "JUG0286",
+      "JUG0289",
+      "JUG0378"
+    ],
+    "image_key": "691cf757-9e62-4452-9322-d8666a553cf9",
+    "image_updated_at": "2026-11-16T12:37:01.395Z"
+  },
+  {
+    "id": "espana-m14-2022-santboiana",
+    "title": "Campeona de España M14",
+    "year": 2022,
+    "competition": "Campeonato de España M14 de clubes (equipos mixtos)",
+    "team": "Unió Esportiva Santboiana M14",
+    "result": "Campeona de España; final ante CAU Valencia",
+    "date": "mayo de 2022",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/leire-aguilar-la-reina-del-m14-con-santboi-tras-los-pasos-de-anna-puig/",
+    "player_ids": [
+      "JUG0360"
+    ],
+    "image_key": "d3bf0e35-af50-493b-9d2d-c1ddd67e0d07",
+    "image_updated_at": "2026-11-16T12:37:30.106Z"
+  },
+  {
+    "id": "majadahonda-supercopa-iberdrola-2022",
+    "title": "Campeón de la I Supercopa Iberdrola",
+    "year": 2022,
+    "competition": "Supercopa Iberdrola femenina",
+    "team": "CR Majadahonda femenino",
+    "result": "36-12 ante Corteva Cocos",
+    "date": "24/09/2022",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/cr-majadahonda-campeon-de-la-i-supercopa-iberdrola-tras-batir-a-las-cocos-12-36/",
+    "player_ids": [],
+    "staff_ids": [
+      "STF0001"
+    ],
+    "unlinked_participants": [],
+    "image_key": "ec6f950a-88ec-46a7-90ce-27fc2a577144",
+    "image_updated_at": "2026-11-16T15:04:29.708Z"
+  },
+  {
+    "id": "espana-playa-europa-plata-2021",
+    "title": "Subcampeona del Rugby Europe Women's Beach Finals",
+    "year": 2021,
+    "competition": "Rugby Europe Women's Beach Finals",
+    "team": "Selección española femenina de rugby playa",
+    "result": "Plata; final 0-9 ante Rusia",
+    "date": "12/09/2021",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/resultados-de-las-leonas-en-el-europeo-de-rugby-playa/",
+    "player_ids": [],
+    "staff_ids": [
+      "STF0001"
+    ],
+    "unlinked_participants": [],
+    "image_key": "c1bbd663-cf74-448b-ba01-6958daff0cbe",
+    "image_updated_at": "2026-11-16T15:04:55.284Z"
+  },
+  {
+    "id": "espana-playa-europa-bronce-2019",
+    "title": "Bronce en el Campeonato de Europa de rugby playa a 5",
+    "year": 2019,
+    "competition": "Campeonato de Europa femenino de rugby playa a 5",
+    "team": "Selección española femenina de rugby playa",
+    "result": "3.ª; victoria 6-4 ante Letonia por el bronce",
+    "date": "28/07/2019",
+    "source_name": "Federación Española de Rugby",
+    "source_url": "https://ferugby.es/las-leonas-se-cuelgan-el-bronce-en-el-europeo-de-playa-disputado-en-moscu/",
+    "player_ids": [],
+    "staff_ids": [
+      "STF0001"
+    ],
+    "unlinked_participants": [],
+    "image_key": "3bf8e87d-7cd0-48b6-b8a4-73f646f67a81",
+    "image_updated_at": "2026-11-16T15:05:28.460Z"
+  },
+  {
+    "id": "espana-sub14-2018-andalucia",
+    "title": "Campeón de España Sub-14",
+    "year": 2018,
+    "competition": "Campeonato de España de Selecciones Territoriales Sub-14",
+    "team": "Selección Andaluza Sub-14",
+    "result": "12-7 ante Madrid",
+    "date": "16/04/2018",
+    "source_name": "Federación Andaluza de Rugby",
+    "source_url": "https://farugby.com/2018/04/16/campeones-de-espana-seleccion-andaluza-sub-14-estadio-municipal-sanchez-menor/",
+    "player_ids": [
+      "JUG0363"
+    ],
+    "staff_ids": [],
+    "unlinked_participants": [],
+    "image_key": "670a8adf-7944-4328-aad7-199593b9164a",
+    "image_updated_at": "2026-11-16T13:36:34.354Z"
+  },
+  {
+    "id": "bathco-playoff-ascenso-dhb-2017",
+    "title": "Campeón del playoff de ascenso a División de Honor B",
+    "year": 2017,
+    "competition": "Playoff de ascenso a División de Honor B",
+    "team": "DTC Norte CR Santander (Bathco)",
+    "result": "37-42 en el cómputo de la final ante VRAC Quesos Entrepinares; ascenso a DHB",
+    "date": "14/06/2017",
+    "source_name": "El Faradio",
+    "source_url": "https://www.elfaradio.com/2017/06/14/el-crs-culmina-el-objetivo-del-ascenso-con-el-impulso-de-bathco/",
+    "player_ids": [],
+    "staff_ids": [
+      "STF0001"
+    ],
+    "unlinked_participants": [],
+    "image_key": "d1924b90-65f9-4fe2-8ba0-b554ea2d5f90",
+    "image_updated_at": "2026-11-16T15:06:07.376Z"
+  },
+  {
+    "id": "belenos-primera-nacional-grupo-a-2014",
+    "title": "Campeón de Primera Nacional - Grupo A",
+    "year": 2014,
+    "competition": "Primera Nacional - Grupo A",
+    "team": "Belenos RC",
+    "result": "Campeón del grupo A y ascenso directo a División de Honor B",
+    "date": "Temporada 2013/14",
+    "source_name": "Belenos Rugby Club",
+    "source_url": "https://www.belenosrugby.com/historia/",
+    "player_ids": [],
+    "staff_ids": [
+      "STF0001"
+    ],
+    "unlinked_participants": [],
+    "image_key": "0343c1ea-9611-44ff-b071-41968e0929c2",
+    "image_updated_at": "2026-11-16T15:07:47.959Z"
+  }
+]
