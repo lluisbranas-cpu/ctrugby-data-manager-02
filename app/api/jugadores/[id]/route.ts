@@ -168,8 +168,10 @@ async function saveDeletedLocalPlayerSeasons(id: string, years: Set<number>) {
   await rename(temporary, target);
 }
 export async function GET(request:NextRequest,{params}:{params:Promise<{id:string}>}) {
-  const consultationDenied = await requireConsultation(request);
-  if (consultationDenied) return consultationDenied;
+  if (request.cookies.get("ctrugby-public-mode")?.value !== "1") {
+    const consultationDenied = await requireConsultation(request);
+    if (consultationDenied) return consultationDenied;
+  }
 
   const id=(await params).id.toUpperCase(); if(!validId(id)) return reply({error:"Jugador no válido."},400); if(!catalogConfigured()) return reply({configured:false},503);
   try {
