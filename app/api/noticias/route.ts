@@ -39,11 +39,12 @@ export async function GET(request: NextRequest) {
         staff: admin ? localStaff.map((person) => ({id: person.id, name: [person.first_name, person.last_name].filter(Boolean).join(" ")})) : [],
       });
     }
-    const groupMemberships = await readGroupMemberships();
+    const groupMemberships = await readGroupMemberships().catch(() => new Map<string, string[]>());
     const playersWithGroups = players.map((player) => ({...player, club_groups: groupMemberships.get(player.id) ?? []}));
     const ids = new Set(players.map((player) => player.id));
     const news = (await readPlayerNews(playerId ?? undefined)).filter((item) => ids.has(item.player_id) && ((admin && !playerId && request.nextUrl.searchParams.get("view") !== "published") || item.published));
-    return reply({ configured: true, admin, news: (await Promise.all(news.map(newsWithImage))).map((record) => admin ? record : publicNewsRecord(record)), players: playersWithGroups, federations: admin ? await newsFederations(db) : [], clubs: admin ? await readLocalClubs() : [], campuses: admin ? (await readProfessionalCategories()).filter(item => item.type === "CAMP").map(item => ({id: item.id, label: item.label})) : [], categories: admin ? await Promise.all((await readProfessionalCategories()).filter(item => item.type !== "CAMP").map(async item => ({...item,...await participationCategoryImage(item.label)}))) : [] });
+    const professionalCategories = admin ? await readProfessionalCategories().catch(() => []) : [];
+    return reply({ configured: true, admin, news: (await Promise.all(news.map(newsWithImage))).map((record) => admin ? record : publicNewsRecord(record)), players: playersWithGroups, federations: admin ? await newsFederations(db) : [], clubs: admin ? await readLocalClubs().catch(() => []) : [], campuses: professionalCategories.filter(item => item.type === "CAMP").map(item => ({id: item.id, label: item.label})), categories: admin ? await Promise.all(professionalCategories.filter(item => item.type !== "CAMP").map(async item => ({...item,...await participationCategoryImage(item.label)}))) : [] });
   } catch { return reply({ error: "No se han podido cargar las noticias." }, 503); }
 }
 export async function POST(request: NextRequest) {
