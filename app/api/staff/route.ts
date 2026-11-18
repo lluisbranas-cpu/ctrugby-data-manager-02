@@ -159,8 +159,18 @@ export async function GET(request: NextRequest) {
     const root = path.join(process.cwd(), "data", "staging");
     const [staffRaw, participantsRaw, milestonesRaw, sourcesRaw, ctrugbyProfiles, linkedinProfiles, privateProfiles, featuredByStaff, roleCategories, roleAssignments, campusParticipations, clubs, federations, campuses, catalogClubs, motivationalPhrases, credentialsByStaff] = await Promise.all([
       readStaffDocument<Staff[]>("directory", path.join(root, "staff.json"), []),
-      readFile(path.join(root, "milestone-participants.json"), "utf8"),
-      readFile(path.join(root, "milestones.json"), "utf8"),
+      catalog
+        ? catalog.db.from("catalog_participants").select("id,kind,display_name,player_id,staff_id").then((result) => {
+            if (result.error) throw new Error(`No se han podido leer los participantes: ${result.error.message}`);
+            return JSON.stringify(result.data ?? []);
+          })
+        : readFile(path.join(root, "milestone-participants.json"), "utf8"),
+      catalog
+        ? catalog.db.from("catalog_milestones").select("id,participant_id,scope,category,season_label,club_text,position_text").then((result) => {
+            if (result.error) throw new Error(`No se han podido leer los hitos: ${result.error.message}`);
+            return JSON.stringify(result.data ?? []);
+          })
+        : readFile(path.join(root, "milestones.json"), "utf8"),
       readFile(path.join(root, "milestone-sources.json"), "utf8").catch(() => "[]"),
       readStaffDocument<StaffProfile[]>("ctrugby-profiles", path.join(root, "staff-ctrugby-profiles.json"), []),
       readStaffDocument<StaffProfile[]>("linkedin-profiles", path.join(root, "staff-linkedin-profiles.json"), []),

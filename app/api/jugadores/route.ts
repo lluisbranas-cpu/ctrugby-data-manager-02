@@ -203,15 +203,17 @@ async function localSheetData() {
 }
 async function localMilestoneSummaryByPlayer() {
   try {
-    const base = path.join(process.cwd(), "data", "staging");
-    const [milestonesRaw, participantsRaw, manualSelectionCallups] = await Promise.all([
-      readFile(path.join(base, "milestones.json"), "utf8"),
-      readFile(path.join(base, "milestone-participants.json"), "utf8"),
+    const [milestoneResult, participantResult, manualSelectionCallups] = await Promise.all([
+      catalogServiceClient().from("catalog_milestones").select("id,participant_id,scope,category,season_label,club_text,position_text"),
+      catalogServiceClient().from("catalog_participants").select("id,player_id"),
       readManualSelectionCallups(),
     ]);
+    if (milestoneResult.error) throw new Error(`No se han podido leer los hitos: ${milestoneResult.error.message}`);
+    if (participantResult.error) throw new Error(`No se han podido leer los participantes: ${participantResult.error.message}`);
+    const milestones = (milestoneResult.data ?? []) as SheetMilestone[];
+    const milestoneParticipants = (participantResult.data ?? []) as SheetMilestoneParticipant[];
     const publication = await readHitoPublication();
-    const milestones = JSON.parse(milestonesRaw) as SheetMilestone[];
-    const milestoneParticipants = JSON.parse(participantsRaw) as SheetMilestoneParticipant[];
+ 
     const playerByParticipant = new Map(milestoneParticipants.filter((participant) => participant.player_id).map((participant) => [participant.id, participant.player_id!]));
     const milestonesByPlayer = new Map<string, number>();
     const selectedFederationsByPlayer = new Map<string, Set<string>>();
