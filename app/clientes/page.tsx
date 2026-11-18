@@ -89,13 +89,25 @@ export default function ClientsPage() {
               <h2 className="text-sm font-extrabold text-[#15395f]">Filtrar por tipo de cliente</h2>
               <span className="text-xs text-neutral-500">Selecciona una categoría para actualizar el listado</span>
             </div>
-            <nav aria-label="Filtrar clientes por categoría" className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              {[{ id: "", name: "TODOS", count: state.clients.length }, ...state.types.map(type => ({ id: type.id, name: type.name, count: state.clients.filter(client => client.type_id === type.id).length }))].map(item =>
-                <button key={item.id || "all"} type="button" aria-pressed={filter === item.id} onClick={() => setFilter(item.id)}
-                  className={`flex min-h-14 items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1b4980] ${filter === item.id ? "border-[#1b4980] bg-[#1b4980] text-white shadow-md" : "border-neutral-200 bg-[#f3f5f7] text-[#46515d] hover:border-neutral-400 hover:bg-white"}`}>
-                  <span className="text-sm font-extrabold">{item.name}</span>
-                  <span className={`min-w-8 rounded-full px-2 py-1 text-center text-xs font-extrabold tabular-nums ${filter === item.id ? "bg-white/20 text-white" : "bg-white text-[#506170]"}`}>{item.count}</span>
-                </button>)}
+            <nav aria-label="Tipos de cliente" className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
+              {state.types.map(type => {
+                const count = state.clients.filter(client => client.type_id === type.id).length;
+                return <div key={type.id} className="relative min-h-24 rounded-xl border border-neutral-200 bg-[#f3f5f7] text-[#46515d] transition hover:border-[#1b4980] hover:shadow-md">
+                  <Link href={`/clientes/tipo/${encodeURIComponent(type.id)}`} className="flex h-full min-h-24 flex-col justify-between gap-3 rounded-xl px-4 py-3 pr-12 no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1b4980]" aria-label={`Ver ${count} clientes de tipo ${type.name}`}>
+                    <span className="text-sm font-extrabold">{type.name}</span>
+                    <span className="flex items-center gap-2 text-xs font-semibold"><span className="rounded-full bg-white px-2 py-1 font-extrabold tabular-nums text-[#15395f]">{count}</span> clientes <span aria-hidden="true">→</span></span>
+                  </Link>
+                  <button type="button" disabled={busy} onClick={() => { setTab("type"); setTypeDraft({ ...type }); setSearch(""); }}
+                    className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-[#15395f] hover:bg-[#e2eaf3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1b4980]"
+                    title={`Editar configuración de ${type.name}`} aria-label={`Editar tipo ${type.name}`}>
+                    <Pencil size={16} aria-hidden="true" />
+                  </button>
+                </div>;
+              })}
+              <button type="button" disabled={busy} onClick={() => { setTab("type"); setTypeDraft({ ...emptyType }); setSearch(""); }}
+                className="flex min-h-24 flex-col justify-center rounded-xl border-2 border-dashed border-[#8caccb] bg-[#eef5fc] px-4 py-3 text-left text-sm font-extrabold text-[#174c80] hover:border-[#1b4980] hover:bg-[#e0efff] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1b4980]">
+                <span aria-hidden="true" className="mb-1 text-xl">+</span> Añadir tipo de cliente
+              </button>
             </nav>
           </div>}
           <div className="mb-4 flex flex-wrap items-center gap-3">
