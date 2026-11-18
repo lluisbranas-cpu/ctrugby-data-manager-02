@@ -39,9 +39,10 @@ export default function ClientsPage() {
       if (!response.ok) throw new Error(data.error);
       setState(data);
       const editId = new URLSearchParams(window.location.search).get("editar");
-      if (editId && data.clients?.some((item: Customer) => item.id === editId)) {
+      const editClient = data.clients?.find((item: Customer) => item.id === editId);
+      if (editClient) {
         setTab("client");
-        setDraft({ ...data.clients.find((item: Customer) => item.id === editId) });
+        setDraft({ ...editClient });
       }
       return true;
     } catch (error) { setNotice(error instanceof Error ? error.message : "No se han podido cargar los datos."); return false; }
@@ -81,7 +82,7 @@ export default function ClientsPage() {
   const saveType = (event: FormEvent) => { event.preventDefault(); if (typeDraft) void mutate("type", "save", typeDraft); };
   const saveClient = (event: FormEvent) => { event.preventDefault(); if (draft) void mutate("client", "save", draft); };
   return <main className="directory-app">
-    <header className="catalog-topbar"><Link href="/" className="catalog-brand"><img src="/ctrugby-logo-contrast.webp" alt="CTRugby" width={100} height={54} /><strong>RUGBY - HUB</strong></Link><ManagerMenu /></header>
+    <header className="catalog-topbar"><Link href="/" className="catalog-brand"><img src="/likid-logo-inverse.png" alt="LIKID" width={100} height={54} /><strong>ADMINISTRACIÓN · LIKID</strong></Link><ManagerMenu /></header>
     <div className="mx-auto max-w-7xl space-y-5 px-4 py-8 sm:px-8">
       <header><p className="text-xs font-bold text-red-600">ADMINISTRACIÓN</p><h1 className="text-3xl font-black">Clientes</h1><p className="mt-2 text-sm text-neutral-600">Tipos de cliente, características especiales e identidad visual.</p></header>
       {notice && <p role="status" className="catalog-notice">{notice}</p>}
@@ -91,8 +92,8 @@ export default function ClientsPage() {
         <section className="rounded-xl bg-white p-4 shadow-sm">
           {tab === "client" && <div className="mb-5">
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-sm font-extrabold text-[#15395f]">Filtrar por tipo de cliente</h2>
-              <span className="text-xs text-neutral-500">Selecciona una categoría para actualizar el listado</span>
+              <h2 className="text-sm font-extrabold text-[#15395f]">Tipos de cliente</h2>
+              <span className="text-xs text-neutral-500">Selecciona una categoría para abrir sus clientes</span>
             </div>
             <nav aria-label="Tipos de cliente" className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
               {state.types.map(type => {
@@ -119,7 +120,6 @@ export default function ClientsPage() {
             {tab === "type" && <label className="min-w-48 flex-1"><span className="sr-only">Buscar tipo de cliente</span><input className={input} placeholder="Buscar tipos de cliente…" value={search} onChange={event => setSearch(event.target.value)} /></label>}
             {tab === "type" && <button className={button} disabled={busy} onClick={() => setTypeDraft({ ...emptyType })}>+ Añadir tipo de cliente</button>}
           </div>
-          {tab === "client" && <p className="mb-3 text-xs font-semibold text-neutral-600" role="status">Mostrando {visibleClients.length} de {state.clients.length} clientes{filter ? ` · ${state.types.find(type => type.id === filter)?.name ?? "Categoría"}` : ""}{search ? ` · Búsqueda: ${search}` : ""}</p>}
           {tab === "client" && !state.types.length && <p className="mb-4 text-sm">Crea primero un tipo de cliente.</p>}
           {tab === "type" && <div className="overflow-x-auto"><table className="w-full text-left text-sm"><caption className="sr-only">{tab === "client" ? "Lista de clientes y su categoría" : "Tipos de cliente y características especiales"}</caption><thead className="border-b bg-neutral-50"><tr>{(tab === "client" ? ["Cliente", "Tipo / categoría", "Características", ...(showParticipationsColumn ? ["Participaciones"] : []), "Cabecera", "Apellidos", "Botones", "Fondo", "Estilo y tipografía", "Acciones"] : ["Tipo de cliente", "Características especiales", "Registra participaciones", "Clientes", "Acciones"]).map(label => <th key={label} className="p-3">{label}</th>)}</tr></thead><tbody>
             {tab === "client" ? visibleClients.map(client => <tr key={client.id} className="border-b align-top"><td className="p-3"><div className="flex items-center gap-3"><LogoPicker logo={client.logo} name={client.name} disabled={busy || Boolean(draft)} onFile={file => void selectLogo(file, client)} /><b>{client.name}</b></div></td><td className="p-3">{state.types.find(type => type.id === client.type_id)?.name}</td><td className="max-w-xs whitespace-pre-wrap p-3">{client.characteristics || "—"}</td>{showParticipationsColumn && <td className="p-3">{client.participations ?? "—"}</td>}{[client.primary_color, client.surname_color, client.accent_color, client.secondary_color].map((color, index) => <td className="p-3" key={index}><span title={color} className="inline-block h-6 w-6 rounded border border-neutral-300" style={{ backgroundColor: color }} /><small className="block font-mono">{color}</small></td>)}<td className="max-w-xs whitespace-pre-wrap p-3">{client.style || "—"}<small className="block">{client.typography}</small></td><td className="p-3"><div className="flex gap-2"><button disabled={busy} className={button} onClick={() => setDraft({ ...client })} title={`Editar ${client.name}`} aria-label={`Editar ${client.name}`}><Pencil size={16} aria-hidden="true" /></button><button disabled={busy} className={button + " text-red-700"} onClick={() => void mutate("client", "delete", client)} title={`Eliminar ${client.name}`} aria-label={`Eliminar ${client.name}`}><Trash2 size={16} aria-hidden="true" /></button></div></td></tr>) : visibleTypes.map(type => { const count = state.clients.filter(client => client.type_id === type.id).length; return <tr key={type.id} className="border-b"><td className="p-3 font-bold">{type.name}</td><td className="max-w-lg whitespace-pre-wrap p-3">{type.characteristics || "—"}</td><td className="p-3">{type.track_participations ? "Sí" : "No"}</td><td className="p-3">{count}</td><td className="p-3"><div className="flex gap-2"><button className={button} disabled={busy} onClick={() => setTypeDraft({ ...type })} title={`Editar tipo ${type.name}`} aria-label={`Editar tipo ${type.name}`}><Pencil size={16} aria-hidden="true" /></button><button className={button + " text-red-700"} disabled={busy || count > 0} title={count ? "Reasigna los clientes antes de eliminar el tipo" : "Eliminar tipo"} onClick={() => void mutate("type", "delete", type)} title={`Eliminar tipo ${type.name}`} aria-label={`Eliminar tipo ${type.name}`}><Trash2 size={16} aria-hidden="true" /></button></div></td></tr>; })}
