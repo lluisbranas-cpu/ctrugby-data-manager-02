@@ -5,9 +5,10 @@ const nextConfig: NextConfig = {
   // A separate build directory lets a temporary local test run without
   // interrupting another Next development server using the default `.next`.
   distDir: process.env.CTRUGBY_NEXT_DIST_DIR || ".next",
+  async redirects() { return [{ source: "/", destination: "/Likid", permanent: false }]; },
   async rewrites() {
     return {
-      beforeFiles: [{ source: "/rugby/:client/:section(jugadores|clubs|staff|participaciones|hitos|destacados|seleccionados|federaciones|Federaciones_Nacionales|confederaciones|noticias|titulos|campus|clubes-profesionales|categorias|agrupaciones-temporales|world-rugby|paises|web)/:path*", destination: "/:section/:path*" }],
+      beforeFiles: [{ source: "/Likid", destination: "/" }, { source: "/rugby/:client/:section(jugadores|clubs|staff|participaciones|hitos|destacados|seleccionados|federaciones|Federaciones_Nacionales|confederaciones|noticias|titulos|campus|clubes-profesionales|categorias|agrupaciones-temporales|world-rugby|paises|web)/:path*", destination: "/:section/:path*" }],
       afterFiles: [],
       fallback: [],
     };
