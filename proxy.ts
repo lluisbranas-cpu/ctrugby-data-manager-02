@@ -22,7 +22,7 @@ export async function proxy(request: NextRequest) {
   const publicClubTeams = ["/clubs/ESP0022/equipos", "/clubs/ESP0023/equipos", "/clubs/ESP0010/equipos", "/clubs/rugby-laietans", "/clubs/cabrera/nuestros-equipos.html"].includes(path);
   const assetFile = /\.(?:png|jpe?g|webp|gif|svg|ico|woff2?|ttf)$/i.test(path) && (path.slice(1).indexOf("/") === -1 || /^\/(?:club-backgrounds|club-covers|club-shields|federation-shields|fonts|jerseys|player-covers|professional-category-shields|staff-covers|staff-photos|staff-shields|vision)\//.test(path));
   // Auth screens and the assets needed to display them must remain reachable.
-  if (path === "/" || path.startsWith("/api/") || path.startsWith("/_next/") || assetFile || publicClubTeams ||
+  if (path === "/" || path === "/Likid" || path.startsWith("/api/") || path.startsWith("/_next/") || assetFile || publicClubTeams ||
       ["/acceso", "/login", "/recuperar", "/restablecer", "/restablecer-local", "/invitado", "/invitado/confirmar"].includes(path)) return continueRequest();
   const privateLink = path.startsWith("/r/") || path.startsWith("/revision-jugador/");
   if (privateLink) {
