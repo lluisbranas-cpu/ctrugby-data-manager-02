@@ -1,4 +1,3 @@
-import { AppVersion } from "./components/app-version";
 import type { Metadata } from "next";
 import { ClientPreviewProvider } from "./components/client-preview";
 import Image from "next/image";
@@ -34,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col"><ClientPreviewProvider development={process.env.NODE_ENV !== "production"}><style>{`.global-likid-logo{position:fixed;z-index:80;top:12px;left:20px;display:flex;align-items:center;height:48px;padding:0 10px;border-radius:8px;background:#1b4980;box-shadow:0 2px 10px #17212b22}.global-likid-logo img{display:block;width:94px;height:auto}body:has(main>header) .global-likid-logo{display:none}@media(max-width:700px){.global-likid-logo{top:9px;left:14px}.global-likid-logo img{width:82px}}`}</style><Link className="global-likid-logo" href="/" aria-label={`${brand.product}, inicio`}><Image src={brand.logo} alt={brand.product} width={94} height={48} priority /></Link>{children}<LegalFooter dataOrigin={dataOrigin} /><AppVersion /><RecoveryLinkRedirect /><UniversalMenu /><AppNavigation /></ClientPreviewProvider></body>
+      <body className="min-h-full flex flex-col"><ClientPreviewProvider development={process.env.NODE_ENV !== "production"}><style>{`.global-likid-logo{position:fixed;z-index:80;top:12px;left:20px;display:flex;align-items:center;height:48px;padding:0 10px;border-radius:8px;background:#1b4980;box-shadow:0 2px 10px #17212b22}.global-likid-logo img{display:block;width:94px;height:auto}body:has(main>header) .global-likid-logo{display:none}@media(max-width:700px){.global-likid-logo{top:9px;left:14px}.global-likid-logo img{width:82px}}`}</style><Link className="global-likid-logo" href="/" aria-label={`${brand.product}, inicio`}><Image src={brand.logo} alt={brand.product} width={94} height={48} priority /></Link>{children}<LegalFooter dataOrigin={dataOrigin} /><RecoveryLinkRedirect /><UniversalMenu /><AppNavigation /></ClientPreviewProvider></body>
     </html>
   );
 }
