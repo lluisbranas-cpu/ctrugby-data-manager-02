@@ -1,5 +1,6 @@
 import Link from "@/app/components/sport-link";
 import Image from "next/image";
+import { AppVersion } from "./app-version";
 
 /** Pie legal común. Los textos jurídicos se mantienen en sus rutas originales. */
 export function LegalFooter({ dataOrigin: _dataOrigin }: { dataOrigin: string }) {
@@ -23,7 +24,7 @@ export function LegalFooter({ dataOrigin: _dataOrigin }: { dataOrigin: string })
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-5 py-4 text-[11px] text-[#93afcb] sm:px-8 lg:px-14">
           <span>© {new Date().getFullYear()} LIKID MK Services · Todos los derechos reservados.</span>
-          <span>Diseñado para web y móvil</span>
+          <AppVersion />
         </div>
       </div>
     </footer>
