@@ -10,7 +10,7 @@ export function AppNavigation() {
   const [access, setAccess] = useState<{ authenticated: boolean; admin: boolean; guest: boolean }>({ authenticated: false, admin: false, guest: false });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const hidden = /^\/jugadores\/JUG\d{4}\/(noticias|participaciones|convocatorias)$/.test(pathname) || pathname.startsWith("/revision-jugador/") || ["/acceso", "/login", "/invitado", "/invitado/confirmar", "/restablecer"].includes(pathname);
+  const hidden = pathname === "/" || /^\/jugadores\/JUG\d{4}\/(noticias|participaciones|convocatorias)$/.test(pathname) || pathname.startsWith("/revision-jugador/") || ["/acceso", "/login", "/invitado", "/invitado/confirmar", "/restablecer"].includes(pathname);
   useEffect(() => { if (hidden) return; void fetch("/api/acceso/estado", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then((data) => { if (data) setAccess({ authenticated: Boolean(data.authenticated), admin: Boolean(data.admin), guest: Boolean(data.guest) }); }).catch(() => setAccess({ authenticated: false, admin: false, guest: false })); }, [hidden, pathname]);
   if (hidden) return null;
   const logout = async () => {
